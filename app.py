@@ -524,8 +524,12 @@ async def health(): return {"status":"healthy","model":ANTHROPIC_MODEL,"key_set"
 @app.get("/ask")
 async def ask(query: str):
     try:
-        # Example: call Claude API here
-        result = {"answer": f"Claude response to: {query}"}
+        resp = await client.messages.create(
+            model=ANTHROPIC_MODEL,
+            max_tokens=500,
+            messages=[{"role": "user", "content": query}]
+        )
+        result = {"answer": resp.content[0].text}
         return JSONResponse(content=result)
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)
