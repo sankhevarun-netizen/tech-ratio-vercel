@@ -18,7 +18,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import anthropic
 import uvicorn
-
+from fastapi.responses import JSONResponse
 load_dotenv()
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 ANTHROPIC_MODEL   = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-4-6")
@@ -521,7 +521,14 @@ async def report(req: ReportReq):
 
 @app.get("/api/health")
 async def health(): return {"status":"healthy","model":ANTHROPIC_MODEL,"key_set":bool(ANTHROPIC_API_KEY)}
-
+@app.get("/ask")
+async def ask(query: str):
+    try:
+        # Example: call Claude API here
+        result = {"answer": f"Claude response to: {query}"}
+        return JSONResponse(content=result)
+    except Exception as e:
+        return JSONResponse(content={"error": str(e)}, status_code=500)
 # ═══════════════════════════════════════════════════════════════════════════════
 # EMBEDDED HTML (complete single-page application)
 # ═══════════════════════════════════════════════════════════════════════════════
