@@ -12,8 +12,6 @@ from collections import defaultdict
 
 from fastapi import FastAPI, File, Form, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
 from pydantic import BaseModel
 import anthropic
 from dotenv import load_dotenv
@@ -25,21 +23,8 @@ ANTHROPIC_MODEL   = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-4-6")
 client = anthropic.AsyncAnthropic(api_key=ANTHROPIC_API_KEY)
 
 # ── FastAPI App ────────────────────────────────────────────────────────────
-app = FastAPI(title="Tech Rationalization AI Agent", version="1.0.0")
+app = FastAPI(title="PlatformAssessor AI", version="2.0.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
-
-# Serve public/ folder as static (for local dev without Vercel CLI)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PUBLIC_DIR = os.path.join(BASE_DIR, "public")
-if os.path.isdir(PUBLIC_DIR):
-    app.mount("/static", StaticFiles(directory=PUBLIC_DIR), name="static")
-
-@app.get("/")
-async def serve_ui():
-    idx = os.path.join(PUBLIC_DIR, "index.html")
-    if os.path.exists(idx):
-        return FileResponse(idx)
-    return {"status": "API running. Open /static/index.html or use Vercel."}
 
 
 # ═══════════════════════════════════════════════════════════════════════════
