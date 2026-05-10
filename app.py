@@ -208,6 +208,26 @@ COL_ALIAS = {
     "environment":"deployment","hosting":"deployment",
     "integration_count":"integrations","age":"age_years",
     "eol":"end_of_life","deprecated":"end_of_life",
+    # additional name aliases
+    "application_name":"name","product_name":"name","product":"name",
+    "system_name":"name","system":"name","software":"name","solution":"name",
+    "service_name":"name","service":"name","asset_name":"name","asset":"name",
+    "technology":"name","tech_name":"name","component":"name",
+    # additional cost aliases
+    "total_cost":"annual_cost","yearly_cost":"annual_cost","license_cost":"annual_cost",
+    "license_fee":"annual_cost","subscription_cost":"annual_cost","subscription":"annual_cost",
+    "spend":"annual_cost","budget":"annual_cost","annual_budget":"annual_cost",
+    "contract_value":"annual_cost","contract_cost":"annual_cost",
+    # additional user aliases
+    "seats":"user_count","licenses":"user_count","license_count2":"user_count","headcount":"user_count",
+    # additional category aliases
+    "tool_type":"category","app_type":"category","type2":"category",
+    # additional vendor aliases
+    "manufacturer":"vendor","provider":"vendor","publisher":"vendor","oem":"vendor",
+    # additional age aliases
+    "years_in_use":"age_years","tool_age":"age_years","implementation_year":"age_years",
+    # additional integration aliases
+    "number_of_integrations":"integrations","num_integrations":"integrations","api_count":"integrations",
 }
 
 def _norm_cat(raw:str)->str:
@@ -287,6 +307,14 @@ def _df(df)->List[Dict]:
     import pandas as pd
     df.columns=[c.lower().strip().replace(" ","_").replace("-","_") for c in df.columns]
     df=df.rename(columns={k:v for k,v in COL_ALIAS.items() if k in df.columns})
+    # Fallback: detect name column if not found
+    if "name" not in df.columns:
+        str_cols = [c for c in df.columns if df[c].dtype == object and c not in
+                    ("vendor","category","description","owner","business_unit","deployment",
+                     "criticality","license_type","end_of_life","compliance_required")]
+        if str_cols:
+            best = max(str_cols, key=lambda c: df[c].nunique())
+            df = df.rename(columns={best: "name"})
     df=df.where(pd.notna(df),None)
     return [normalize(r.to_dict()) for _,r in df.iterrows()]
 
@@ -419,7 +447,7 @@ tbody td{{padding:9px 13px;border-bottom:1px solid #f0f3fa}}tbody tr:hover{{back
 @media print{{body{{background:#fff}}.w{{box-shadow:none;max-width:100%}}.rm{{grid-template-columns:repeat(3,1fr)}}}}</style></head>
 <body><div class="w">
 <div class="hdr"><h1>Technology Rationalization Assessment Report</h1>
-<p>Enterprise Platform, Application &amp; Tools Assessment · AI-Powered Advisory · KPMG-Style 6R Framework</p>
+<p>Enterprise Platform, Application &amp; Tools Assessment · AI-Powered Advisory · 6R Rationalization Framework</p>
 <p style="margin-top:10px;opacity:.6;font-size:12px">Generated: {datetime.now().strftime('%d %B %Y %H:%M')} · CONFIDENTIAL</p></div>
 <div class="kpi">
 <div class="kc"><div class="kv">{len(tools)}</div><div class="kl">Tools Assessed</div></div>
@@ -542,7 +570,7 @@ def get_html() -> str:
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Tech Rationalization AI Agent</title>
+<title>PlatformAssessor AI</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -668,6 +696,32 @@ textarea:focus{outline:none;border-color:var(--blue)}
 select,input[type=text]{padding:7px 12px;border-radius:7px;border:1px solid var(--bdr);font-size:13px;background:var(--sur);color:var(--txt)}
 select:focus,input:focus{outline:none;border-color:var(--blue)}
 @media(max-width:900px){.kg{grid-template-columns:1fr 1fr}.cg{grid-template-columns:1fr}.rmc{grid-template-columns:1fr}}
+.kpmg-mark{flex-shrink:0;border-radius:4px;overflow:hidden}
+/* Wizard */
+.wiz-steps{display:flex;align-items:center;gap:0}
+.ws{display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;min-width:80px}
+.wn{width:30px;height:30px;border-radius:50%;background:var(--bdr);color:var(--mut);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;transition:all .2s}
+.wt{font-size:10px;color:var(--mut);font-weight:600;text-align:center;white-space:nowrap}
+.ws.active .wn{background:var(--blue);color:#fff}
+.ws.active .wt{color:var(--blue)}
+.ws.done .wn{background:var(--green);color:#fff}
+.ws.done .wt{color:var(--green)}
+.ws-line{flex:1;height:2px;background:var(--bdr);min-width:20px}
+.phase-pane{}
+.wiz-nav{display:flex;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid var(--bdr)}
+.fg4{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.fg{display:flex;flex-direction:column;gap:5px}
+.fl2{font-size:11px;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.5px}
+.fi2{padding:9px 12px;border-radius:7px;border:1px solid var(--bdr);font-size:13px;background:var(--sur);color:var(--txt);width:100%}
+.fi2:focus{outline:none;border-color:var(--blue)}
+.ck-row{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:7px;cursor:pointer;font-size:13px;transition:background .15s}
+.ck-row:hover{background:var(--bg)}
+.ck-row input{width:15px;height:15px;accent-color:var(--blue);cursor:pointer}
+/* Summary cards in Phase 6 */
+.sum-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.sum-card{background:var(--bg);border-radius:8px;padding:12px;border:1px solid var(--bdr)}
+.sum-label{font-size:10px;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.sum-val{font-size:13px;font-weight:600;color:var(--navy)}
 </style>
 </head>
 <body>
@@ -675,8 +729,13 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
 <!-- SIDEBAR -->
 <aside class="sb">
   <div class="sb-logo">
-    <div class="ic">&#9889;</div>
-    <div><strong>TechRatio AI</strong><span>Enterprise Advisory</span></div>
+    <div class="kpmg-mark">
+      <svg width="52" height="22" viewBox="0 0 52 22" xmlns="http://www.w3.org/2000/svg">
+        <rect width="52" height="22" rx="3" fill="#fff"/>
+        <text x="3" y="16" font-family="Arial Black,Arial" font-size="14" font-weight="900" fill="#00338D" letter-spacing="0.5">KPMG</text>
+      </svg>
+    </div>
+    <div><strong>PlatformAssessor AI</strong><span>Enterprise Advisory</span></div>
   </div>
   <div class="sb-sec">
     <div class="sb-lbl">Main</div>
@@ -693,14 +752,11 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
     <div class="sb-lbl">Output</div>
     <div class="nav" data-tab="reports"><span class="ni">&#128196;</span><span>Reports</span></div>
   </div>
-  <div class="sb-ft">
-    <div class="sc"><div class="sl">Model</div><div class="sv" id="mdl">gpt-4o</div></div>
-  </div>
 </aside>
 <!-- MAIN -->
 <div class="main">
   <div class="topbar">
-    <div><div class="tt" id="pt">Dashboard</div><div class="ts">KPMG-Style 6R Rationalization &bull; Telecom &amp; Enterprise AI Agent</div></div>
+    <div><div class="tt" id="pt">Dashboard</div><div class="ts">6R Rationalization &bull; Enterprise Technology Advisory Platform</div></div>
     <div class="fx g2">
       <button class="btn bs1 bsm" onclick="go('ingest')">+ Ingest Data</button>
       <button class="btn bp1 bsm" onclick="go('assessment');runAssess()">&#127919; Run Assessment</button>
@@ -735,8 +791,8 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
       <div style="display:flex;align-items:center;gap:18px">
         <div style="font-size:44px">&#129302;</div>
         <div style="flex:1">
-          <div style="font-size:16px;font-weight:700;margin-bottom:5px">Platform, Application &amp; Tools Rationalization AI Agent</div>
-          <div style="font-size:12px;opacity:.8;line-height:1.6">Powered by OpenAI GPT-4o &bull; KPMG-Style 6R Model &bull; Telecom &amp; TMT Optimized &bull; Upload your tool inventory &bull; Get AI-powered scores &bull; Generate CIO-ready roadmaps &amp; reports</div>
+          <div style="font-size:16px;font-weight:700;margin-bottom:5px">PlatformAssessor AI &mdash; Enterprise Technology Rationalization</div>
+          <div style="font-size:12px;opacity:.8;line-height:1.6">AI-Powered 6R Rationalization Model &bull; Telecom &amp; Enterprise Optimized &bull; Upload your tool inventory &bull; Get AI-powered scores across 7 dimensions &bull; Generate CIO-ready roadmaps &amp; reports</div>
         </div>
         <div class="fx g2">
           <button class="btn bsm" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3)" onclick="go('chat')">Chat with AI</button>
@@ -746,54 +802,257 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
     </div>
   </div>
 
-  <!-- INGEST -->
+  <!-- INGEST — 6-Phase Wizard -->
   <div class="tab" id="tab-ingest">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
-      <div>
-        <div class="card">
-          <div class="ch"><span>&#128193;</span><span class="ct">Upload File (CSV / Excel / JSON / PDF)</span></div>
-          <div class="uz" id="uz">
-            <div class="ui2">&#9729;&#65039;</div>
-            <h3 style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:6px">Drop file here or click to upload</h3>
-            <p id="un" style="color:var(--mut);font-size:13px">CSV, Excel, JSON, PDF supported</p>
-            <div style="display:flex;gap:6px;justify-content:center;margin-top:12px">
-              <span style="background:var(--bg);border:1px solid var(--bdr);padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;color:var(--mut)">CSV</span>
-              <span style="background:var(--bg);border:1px solid var(--bdr);padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;color:var(--mut)">XLSX</span>
-              <span style="background:var(--bg);border:1px solid var(--bdr);padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;color:var(--mut)">JSON</span>
-              <span style="background:var(--bg);border:1px solid var(--bdr);padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;color:var(--mut)">PDF</span>
+    <!-- Phase progress bar -->
+    <div class="wiz-header card m4" style="padding:16px 24px">
+      <div class="wiz-steps" id="wizSteps">
+        <div class="ws active" id="ws1" onclick="gotoPhase(1)"><div class="wn">1</div><div class="wt">Organisation</div></div>
+        <div class="ws-line"></div>
+        <div class="ws" id="ws2" onclick="gotoPhase(2)"><div class="wn">2</div><div class="wt">Tool Inventory</div></div>
+        <div class="ws-line"></div>
+        <div class="ws" id="ws3" onclick="gotoPhase(3)"><div class="wn">3</div><div class="wt">Business Context</div></div>
+        <div class="ws-line"></div>
+        <div class="ws" id="ws4" onclick="gotoPhase(4)"><div class="wn">4</div><div class="wt">Technical Context</div></div>
+        <div class="ws-line"></div>
+        <div class="ws" id="ws5" onclick="gotoPhase(5)"><div class="wn">5</div><div class="wt">Financial Params</div></div>
+        <div class="ws-line"></div>
+        <div class="ws" id="ws6" onclick="gotoPhase(6)"><div class="wn">6</div><div class="wt">Assess &amp; Report</div></div>
+      </div>
+    </div>
+
+    <!-- Phase 1: Organisation Profile -->
+    <div class="phase-pane" id="ph1">
+      <div class="card">
+        <div class="ch"><span>&#127970;</span><span class="ct">Phase 1 &mdash; Organisation Profile</span></div>
+        <p class="tx mu2 m4">Provide context about your organisation so the AI can tailor its assessment framework.</p>
+        <div class="fg4">
+          <div class="fg"><label class="fl2">Organisation / Company Name</label><input type="text" id="p1org" class="fi2" placeholder="e.g., Airtel, Tanla Platforms..."></div>
+          <div class="fg"><label class="fl2">Industry Sector</label>
+            <select id="p1ind" class="fi2">
+              <option value="telecom">Telecom / TMT</option>
+              <option value="banking">Banking &amp; Financial Services</option>
+              <option value="healthcare">Healthcare &amp; Life Sciences</option>
+              <option value="retail">Retail &amp; E-Commerce</option>
+              <option value="energy">Energy &amp; Utilities</option>
+              <option value="manufacturing">Manufacturing &amp; Industrial</option>
+              <option value="enterprise">Large Enterprise (General)</option>
+            </select>
+          </div>
+          <div class="fg"><label class="fl2">Approximate Employees</label>
+            <select id="p1sz" class="fi2">
+              <option value="startup">&lt; 500</option>
+              <option value="mid">500 &ndash; 5,000</option>
+              <option value="large" selected>5,000 &ndash; 50,000</option>
+              <option value="enterprise">&gt; 50,000</option>
+            </select>
+          </div>
+          <div class="fg"><label class="fl2">Number of Business Units</label><input type="number" id="p1bu" class="fi2" placeholder="e.g., 8" min="1" max="200"></div>
+          <div class="fg" style="grid-column:1/-1"><label class="fl2">Primary Geography / Markets</label><input type="text" id="p1geo" class="fi2" placeholder="e.g., India, SEA, Africa, Europe..."></div>
+        </div>
+        <div class="wiz-nav"><button class="btn bp1" onclick="gotoPhase(2)">Continue to Tool Inventory &rarr;</button></div>
+      </div>
+    </div>
+
+    <!-- Phase 2: Tool Inventory Upload -->
+    <div class="phase-pane" id="ph2" style="display:none">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div>
+          <div class="card m4">
+            <div class="ch"><span>&#128229;</span><span class="ct">Phase 2 &mdash; Upload Tool Inventory</span></div>
+            <p class="tx mu2 m4">Upload a CSV, Excel, JSON or PDF file with your tool portfolio. Supported column names: Tool Name, Vendor, Category, Annual Cost, Users, Criticality, Deployment, Age, Integrations, End of Life.</p>
+            <div class="uz" id="uz">
+              <div class="ui2">&#9729;&#65039;</div>
+              <h3 style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:6px">Drop file here or click to browse</h3>
+              <p id="un" style="color:var(--mut);font-size:13px">CSV, Excel, JSON, PDF supported</p>
+              <div style="display:flex;gap:6px;justify-content:center;margin-top:12px">
+                <span style="background:var(--bg);border:1px solid var(--bdr);padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;color:var(--mut)">CSV</span>
+                <span style="background:var(--bg);border:1px solid var(--bdr);padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;color:var(--mut)">XLSX</span>
+                <span style="background:var(--bg);border:1px solid var(--bdr);padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;color:var(--mut)">JSON</span>
+                <span style="background:var(--bg);border:1px solid var(--bdr);padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;color:var(--mut)">PDF</span>
+              </div>
+              <input type="file" id="fi" accept=".csv,.xlsx,.xls,.json,.pdf" style="display:none">
             </div>
-            <input type="file" id="fi" accept=".csv,.xlsx,.xls,.json,.pdf" style="display:none">
+          </div>
+          <div class="card">
+            <div class="ch"><span>&#9999;&#65039;</span><span class="ct">Or Paste Free Text Description</span></div>
+            <textarea id="ti" rows="8" placeholder="Describe tools in plain text. Example:&#10;&#10;Tool: Splunk Enterprise&#10;Vendor: Splunk&#10;Category: Logging&#10;Annual Cost: 180000&#10;Users: 150&#10;Criticality: High&#10;Deployment: On-Prem"></textarea>
+            <div class="fx g2 mt4">
+              <button class="btn bp1" id="bi">&#9889; Ingest &amp; Score Tools</button>
+              <button class="btn bs1" id="bsmp">Load Sample Data</button>
+            </div>
           </div>
         </div>
-        <div class="card">
-          <div class="ch"><span>&#9999;&#65039;</span><span class="ct">Or Paste Free Text Description</span></div>
-          <textarea id="ti" rows="10" placeholder="Describe tools in plain text. Example:&#10;&#10;Tool: Splunk Enterprise&#10;Vendor: Splunk&#10;Category: Logging&#10;Annual Cost: 180000&#10;Users: 150&#10;Criticality: High&#10;Deployment: On-Prem&#10;Age Years: 6&#10;&#10;Tool: Dynatrace&#10;Vendor: Dynatrace&#10;Category: APM&#10;Annual Cost: 95000&#10;Users: 60&#10;Criticality: High&#10;Deployment: Cloud"></textarea>
-          <div class="fx g2 mt4">
-            <button class="btn bp1" id="bi">&#9889; Ingest &amp; Score Tools</button>
-            <button class="btn bs1" id="bsmp">Load Sample Data</button>
+        <div>
+          <div class="card m4">
+            <div class="ch"><span>&#127991;&#65039;</span><span class="ct">6R Action Framework</span></div>
+            <div style="display:flex;flex-direction:column;gap:9px">
+              <div class="fx g2 ic2"><span class="b br">Retain</span><span class="tx">Strategic &amp; healthy &mdash; no immediate action required</span></div>
+              <div class="fx g2 ic2"><span class="b bh">Rehost</span><span class="tx">Lift-and-shift to cloud infrastructure</span></div>
+              <div class="fx g2 ic2"><span class="b bp">Replatform</span><span class="tx">Minor modernization with managed services</span></div>
+              <div class="fx g2 ic2"><span class="b bf">Refactor</span><span class="tx">Significant redesign &amp; re-architecture needed</span></div>
+              <div class="fx g2 ic2"><span class="b bl">Replace</span><span class="tx">Better market alternative &mdash; plan migration</span></div>
+              <div class="fx g2 ic2"><span class="b bt">Retire</span><span class="tx">Decommission &mdash; redundant or end-of-life</span></div>
+            </div>
+          </div>
+          <div class="card" id="p2status" style="border:2px dashed var(--bdr);background:#fafbff">
+            <div class="es" style="padding:32px 16px">
+              <div class="ei">&#128229;</div>
+              <h3>Awaiting Tool Data</h3>
+              <p>Upload a file or paste tool descriptions above, then click <strong>Ingest &amp; Score Tools</strong>.</p>
+            </div>
           </div>
         </div>
       </div>
-      <div>
-        <div class="card m4">
-          <div class="ch"><span>&#8505;&#65039;</span><span class="ct">How It Works</span></div>
-          <div style="display:flex;flex-direction:column;gap:14px">
-            <div class="fx g2 ic2"><div style="width:30px;height:30px;background:#eef4ff;border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--blue);flex-shrink:0">1</div><div><strong>Ingest</strong> &mdash; Upload CSV/Excel/JSON/PDF or paste free text tool descriptions</div></div>
-            <div class="fx g2 ic2"><div style="width:30px;height:30px;background:#eef4ff;border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--blue);flex-shrink:0">2</div><div><strong>Score</strong> &mdash; AI scores each tool on 7 dimensions with 6R action assigned</div></div>
-            <div class="fx g2 ic2"><div style="width:30px;height:30px;background:#eef4ff;border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--blue);flex-shrink:0">3</div><div><strong>Detect</strong> &mdash; Finds overlapping tools with consolidation savings estimate</div></div>
-            <div class="fx g2 ic2"><div style="width:30px;height:30px;background:#eef4ff;border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--blue);flex-shrink:0">4</div><div><strong>Assess</strong> &mdash; GPT-4o generates executive recommendations &amp; roadmap</div></div>
-            <div class="fx g2 ic2"><div style="width:30px;height:30px;background:#eef4ff;border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--blue);flex-shrink:0">5</div><div><strong>Export</strong> &mdash; Download print-ready HTML report for CIO/CTO presentation</div></div>
+      <div class="wiz-nav"><button class="btn bs1" onclick="gotoPhase(1)">&larr; Back</button><button class="btn bp1" onclick="gotoPhase(3)">Continue to Business Context &rarr;</button></div>
+    </div>
+
+    <!-- Phase 3: Business Context -->
+    <div class="phase-pane" id="ph3" style="display:none">
+      <div class="card">
+        <div class="ch"><span>&#128203;</span><span class="ct">Phase 3 &mdash; Business &amp; Compliance Context</span></div>
+        <p class="tx mu2 m4">Help the AI understand your compliance obligations and strategic priorities for a more targeted assessment.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">Compliance &amp; Regulatory Requirements</div>
+            <div style="display:flex;flex-direction:column;gap:8px" id="complianceList">
+              <label class="ck-row"><input type="checkbox" value="GDPR"><span>GDPR (Data Protection)</span></label>
+              <label class="ck-row"><input type="checkbox" value="TRAI"><span>TRAI Regulations (Telecom)</span></label>
+              <label class="ck-row"><input type="checkbox" value="SOC2"><span>SOC 2 Type II</span></label>
+              <label class="ck-row"><input type="checkbox" value="ISO27001"><span>ISO 27001</span></label>
+              <label class="ck-row"><input type="checkbox" value="PCI-DSS"><span>PCI-DSS</span></label>
+              <label class="ck-row"><input type="checkbox" value="HIPAA"><span>HIPAA</span></label>
+              <label class="ck-row"><input type="checkbox" value="DPDP"><span>India DPDP Act</span></label>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">Strategic Priorities</div>
+            <div style="display:flex;flex-direction:column;gap:8px" id="priorityList">
+              <label class="ck-row"><input type="checkbox" value="cost_reduction" checked><span>Cost Reduction &amp; Optimisation</span></label>
+              <label class="ck-row"><input type="checkbox" value="cloud_migration"><span>Cloud Migration</span></label>
+              <label class="ck-row"><input type="checkbox" value="security"><span>Security &amp; Compliance Posture</span></label>
+              <label class="ck-row"><input type="checkbox" value="consolidation" checked><span>Vendor Consolidation</span></label>
+              <label class="ck-row"><input type="checkbox" value="digital_transformation"><span>Digital Transformation</span></label>
+              <label class="ck-row"><input type="checkbox" value="observability"><span>Observability &amp; Monitoring</span></label>
+              <label class="ck-row"><input type="checkbox" value="agility"><span>Engineering Agility &amp; DevOps</span></label>
+            </div>
           </div>
         </div>
-        <div class="card">
-          <div class="ch"><span>&#127991;&#65039;</span><span class="ct">6R Action Reference</span></div>
-          <div style="display:flex;flex-direction:column;gap:9px">
-            <div class="fx g2 ic2"><span class="b br">Retain</span><span class="tx">Strategic &amp; healthy &mdash; no immediate action</span></div>
-            <div class="fx g2 ic2"><span class="b bh">Rehost</span><span class="tx">Lift-and-shift to cloud infrastructure</span></div>
-            <div class="fx g2 ic2"><span class="b bp">Replatform</span><span class="tx">Minor modernization with managed services</span></div>
-            <div class="fx g2 ic2"><span class="b bf">Refactor</span><span class="tx">Significant redesign &amp; re-architecture</span></div>
-            <div class="fx g2 ic2"><span class="b bl">Replace</span><span class="tx">Better market alternative &mdash; plan migration</span></div>
-            <div class="fx g2 ic2"><span class="b bt">Retire</span><span class="tx">Decommission &mdash; redundant or end-of-life</span></div>
+        <div class="fg4" style="margin-top:18px">
+          <div class="fg" style="grid-column:1/-1"><label class="fl2">Specific Focus Area (Optional)</label><input type="text" id="p3focus" class="fi2" placeholder="e.g., Observability stack rationalisation, Security tool overlap, BSS/OSS modernisation..."></div>
+        </div>
+        <div class="wiz-nav"><button class="btn bs1" onclick="gotoPhase(2)">&larr; Back</button><button class="btn bp1" onclick="gotoPhase(4)">Continue to Technical Context &rarr;</button></div>
+      </div>
+    </div>
+
+    <!-- Phase 4: Technical Context -->
+    <div class="phase-pane" id="ph4" style="display:none">
+      <div class="card">
+        <div class="ch"><span>&#9881;&#65039;</span><span class="ct">Phase 4 &mdash; Technical &amp; Operational Context</span></div>
+        <p class="tx mu2 m4">Provide your current infrastructure posture to calibrate Rehost and Replatform recommendations.</p>
+        <div class="fg4">
+          <div class="fg">
+            <label class="fl2">Current Cloud Adoption Level</label>
+            <select id="p4cloud" class="fi2">
+              <option value="minimal">Minimal (&lt;10% cloud)</option>
+              <option value="emerging">Emerging (10&ndash;30% cloud)</option>
+              <option value="moderate" selected>Moderate (30&ndash;60% cloud)</option>
+              <option value="advanced">Advanced (60&ndash;80% cloud)</option>
+              <option value="cloud-first">Cloud-First (&gt;80% cloud)</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label class="fl2">Primary Cloud Provider</label>
+            <select id="p4provider" class="fi2">
+              <option value="aws">AWS</option>
+              <option value="azure" selected>Microsoft Azure</option>
+              <option value="gcp">Google Cloud (GCP)</option>
+              <option value="multi">Multi-Cloud</option>
+              <option value="private">Private Cloud / On-Prem</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label class="fl2">Rationalisation Timeline</label>
+            <select id="p4timeline" class="fi2">
+              <option value="6m">6 months (urgent)</option>
+              <option value="12m" selected>12 months (standard)</option>
+              <option value="18m">18 months (phased)</option>
+              <option value="24m">24 months (long-term)</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label class="fl2">SLA / Availability Requirement</label>
+            <select id="p4sla" class="fi2">
+              <option value="standard">Standard (99.5%)</option>
+              <option value="high">High (99.9%)</option>
+              <option value="critical" selected>Mission Critical (99.99%)</option>
+              <option value="telecom">Telecom Grade (99.999%)</option>
+            </select>
+          </div>
+          <div class="fg" style="grid-column:1/-1">
+            <label class="fl2">Current Pain Points / Technical Challenges</label>
+            <textarea id="p4pain" rows="3" placeholder="e.g., Too many overlapping monitoring tools, legacy on-prem systems with high maintenance cost, security gaps in IAM layer..."></textarea>
+          </div>
+        </div>
+        <div class="wiz-nav"><button class="btn bs1" onclick="gotoPhase(3)">&larr; Back</button><button class="btn bp1" onclick="gotoPhase(5)">Continue to Financial Parameters &rarr;</button></div>
+      </div>
+    </div>
+
+    <!-- Phase 5: Financial Parameters -->
+    <div class="phase-pane" id="ph5" style="display:none">
+      <div class="card">
+        <div class="ch"><span>&#128176;</span><span class="ct">Phase 5 &mdash; Financial Parameters</span></div>
+        <p class="tx mu2 m4">Financial constraints help calibrate ROI projections and prioritise recommendations by economic impact.</p>
+        <div class="fg4">
+          <div class="fg">
+            <label class="fl2">Annual IT / Technology Budget (USD)</label>
+            <input type="number" id="p5budget" class="fi2" placeholder="e.g., 5000000">
+          </div>
+          <div class="fg">
+            <label class="fl2">Target Cost Reduction (%)</label>
+            <select id="p5target" class="fi2">
+              <option value="5">5% (conservative)</option>
+              <option value="10" selected>10% (moderate)</option>
+              <option value="20">20% (aggressive)</option>
+              <option value="30">30%+ (transformational)</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label class="fl2">Rationalisation Priority Driver</label>
+            <select id="p5priority" class="fi2">
+              <option value="cost">Cost Optimisation First</option>
+              <option value="risk">Risk Mitigation First</option>
+              <option value="velocity" selected>Balanced (Cost + Risk + Speed)</option>
+              <option value="innovation">Innovation Enablement</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label class="fl2">Acceptable Migration Disruption</label>
+            <select id="p5disruption" class="fi2">
+              <option value="none">Zero disruption (rolling migrations)</option>
+              <option value="low" selected>Low (maintenance windows only)</option>
+              <option value="moderate">Moderate (planned downtime OK)</option>
+            </select>
+          </div>
+        </div>
+        <div class="wiz-nav"><button class="btn bs1" onclick="gotoPhase(4)">&larr; Back</button><button class="btn bp1" onclick="gotoPhase(6)">Review &amp; Run Assessment &rarr;</button></div>
+      </div>
+    </div>
+
+    <!-- Phase 6: Review & Run Assessment -->
+    <div class="phase-pane" id="ph6" style="display:none">
+      <div class="card m4">
+        <div class="ch"><span>&#127919;</span><span class="ct">Phase 6 &mdash; Review &amp; Run AI Assessment</span></div>
+        <div id="p6summary" style="margin-bottom:18px"></div>
+        <div style="background:linear-gradient(135deg,#003366,#0063DC);border-radius:10px;padding:24px;color:#fff;display:flex;align-items:center;gap:20px">
+          <div style="font-size:48px">&#129302;</div>
+          <div style="flex:1">
+            <div style="font-size:16px;font-weight:700;margin-bottom:6px">Ready for AI Assessment</div>
+            <div style="font-size:12px;opacity:.8;line-height:1.6">The AI will analyse your tool portfolio against all 7 scoring dimensions, apply the 6R framework, identify duplication opportunities, and generate a CIO-ready executive report with a phased roadmap.</div>
+          </div>
+          <div class="fx g2" style="flex-direction:column">
+            <button class="btn" style="background:#00A651;color:#fff;font-size:14px;padding:12px 24px" id="ba2">&#127919; Run Full AI Assessment</button>
+            <button class="btn" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);font-size:12px" onclick="go('inventory')">View Tool Inventory</button>
           </div>
         </div>
       </div>
@@ -853,7 +1112,7 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
       <div class="es">
         <div class="ei">&#129302;</div>
         <h3>No Assessment Yet</h3>
-        <p>Ingest your tool inventory, then click <strong>Run AI Assessment</strong> to get GPT-4o powered recommendations.</p>
+        <p>Ingest your tool inventory, then click <strong>Run AI Assessment</strong> to get AI-powered recommendations.</p>
         <div class="fx g2 mt4" style="justify-content:center">
           <button class="btn bs1" onclick="go('ingest')">Ingest Data First</button>
           <button class="btn bp1" onclick="runAssess()">Run Assessment Now</button>
@@ -876,8 +1135,8 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
       <div class="cm" id="cm">
         <div class="msg ma">
           <div class="mav">AI</div>
-          <div class="mb2"><strong>Tech Rationalization AI Agent &mdash; Ready</strong><br><br>
-I am your enterprise technology strategy consultant, specializing in Platform, Application &amp; Tools rationalization using KPMG-style frameworks optimized for Telecom and large enterprise environments.<br><br>
+          <div class="mb2"><strong>PlatformAssessor AI &mdash; Ready</strong><br><br>
+I am your enterprise technology strategy consultant, specialising in Platform, Application &amp; Tools rationalisation using a proven 6R framework optimised for Telecom and large enterprise environments.<br><br>
 I can help you:<br>
 &bull; <strong>Assess</strong> your tool portfolio across 7 scoring dimensions<br>
 &bull; <strong>Apply</strong> the 6R model (Retain / Rehost / Replatform / Refactor / Replace / Retire)<br>
@@ -906,6 +1165,8 @@ Upload your tool inventory in <strong>Data Ingest</strong> for full portfolio an
               <div><div style="font-weight:700">Executive Summary Report</div><div class="tx mu2">Full assessment &bull; Recommendations &bull; Roadmap &bull; ROI</div></div>
             </div>
             <button class="btn bp1 wf" id="brpt">&#11015; Download HTML Report</button>
+            <button class="btn bs1 wf" style="margin-top:8px" id="bpdf">&#128438; Print / Save as PDF</button>
+            <p class="tx mu2" style="margin-top:8px">Use your browser's Print dialog and select "Save as PDF" for a PDF copy.</p>
           </div>
         </div>
         <div class="card">
@@ -946,8 +1207,9 @@ const A='';
 async function init(){
   setupNav(); setupIngest(); setupChat();
   document.getElementById('ba').onclick=runAssess;
+  document.getElementById('ba2').onclick=runAssess;
   document.getElementById('brpt').onclick=dlReport;
-  try{const r=await fetch(A+'/api/health');const d=await r.json();document.getElementById('mdl').textContent=d.model||'gpt-4o';}catch(_){}
+  document.getElementById('bpdf').onclick=printReport;
 }
 
 function setupNav(){
@@ -968,6 +1230,38 @@ function setupIngest(){
   fi.onchange=()=>{if(fi.files[0])document.getElementById('un').textContent='Selected: '+fi.files[0].name;};
   document.getElementById('bi').onclick=doIngest;
   document.getElementById('bsmp').onclick=loadSample;
+  gotoPhase(1);
+}
+
+let CUR_PHASE=1;
+function gotoPhase(n){
+  CUR_PHASE=n;
+  for(let i=1;i<=6;i++){
+    const pp=document.getElementById('ph'+i);
+    if(pp) pp.style.display=i===n?'block':'none';
+    const ws=document.getElementById('ws'+i);
+    if(ws){ws.classList.remove('active','done');if(i<n)ws.classList.add('done');else if(i===n)ws.classList.add('active');}
+  }
+  if(n===6) buildP6Summary();
+}
+
+function buildP6Summary(){
+  const org=document.getElementById('p1org').value||'Not specified';
+  const ind=document.getElementById('p1ind');
+  const indTxt=ind.options[ind.selectedIndex].text;
+  const compliance=[...document.querySelectorAll('#complianceList input:checked')].map(x=>x.value);
+  const priorities=[...document.querySelectorAll('#priorityList input:checked')].map(x=>x.value.replace(/_/g,' '));
+  const cloud=document.getElementById('p4cloud');
+  const timeline=document.getElementById('p4timeline');
+  const target=document.getElementById('p5target');
+  document.getElementById('p6summary').innerHTML=`<div class="sum-grid">
+    <div class="sum-card"><div class="sum-label">Organisation</div><div class="sum-val">${e(org)}</div></div>
+    <div class="sum-card"><div class="sum-label">Industry</div><div class="sum-val">${e(indTxt)}</div></div>
+    <div class="sum-card"><div class="sum-label">Tools Ingested</div><div class="sum-val">${TOOLS.length} tools &bull; ${DUPS.length} overlaps detected</div></div>
+    <div class="sum-card"><div class="sum-label">Compliance</div><div class="sum-val">${compliance.length?compliance.join(', '):'None specified'}</div></div>
+    <div class="sum-card"><div class="sum-label">Cloud Posture</div><div class="sum-val">${e(cloud.options[cloud.selectedIndex].text)}</div></div>
+    <div class="sum-card"><div class="sum-label">Cost Target</div><div class="sum-val">${e(target.options[target.selectedIndex].text)} reduction &bull; ${e(timeline.options[timeline.selectedIndex].text)}</div></div>
+  </div>`;
 }
 
 async function doIngest(){
@@ -1186,18 +1480,31 @@ function setupFlt(){
 }
 
 async function runAssess(){
-  if(!TOOLS.length)return toast('Ingest your tool inventory first','er');
-  showLd('AI Agent is analysing your portfolio...');
+  if(!TOOLS.length)return toast('Ingest tool data first','er');
+  const ind=document.getElementById('p1ind')||document.getElementById('ai2');
+  const industry=(ind?ind.value:'')||'telecom';
+  const focusEl=document.getElementById('p3focus')||document.getElementById('af');
+  const baseFocus=focusEl?focusEl.value:'';
+  const compliance=[...document.querySelectorAll('#complianceList input:checked')].map(x=>x.value);
+  const priorities=[...document.querySelectorAll('#priorityList input:checked')].map(x=>x.value.replace(/_/g,' '));
+  const org=(document.getElementById('p1org')||{}).value||'';
+  const pain=(document.getElementById('p4pain')||{}).value||'';
+  const focusParts=[baseFocus,compliance.length?'Compliance: '+compliance.join(', '):'',priorities.length?'Priorities: '+priorities.join(', '):'',pain?'Pain points: '+pain:'',org?'Organisation: '+org:''].filter(Boolean);
+  const focus=focusParts.join(' | ');
+  showLd('Running AI assessment...');
   try{
     const r=await fetch(A+'/api/assess',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({tools:TOOLS,duplications:DUPS,
-        industry:document.getElementById('ai2').value,
-        focus:document.getElementById('af').value||null})});
+      body:JSON.stringify({tools:TOOLS,duplications:DUPS,industry,focus})});
     const d=await r.json(); hideLd();
     if(!r.ok)return toast(d.detail||'Assessment failed','er');
-    ASSESS=d.assessment; rAssess(ASSESS); rPrev(); toast('Assessment complete','ok');
+    ASSESS=d.assessment;
+    renderAssess();
+    toast('Assessment complete','ok');
+    go('assessment');
   }catch(ex){hideLd();toast('Error: '+ex.message,'er');}
 }
+
+function renderAssess(){rAssess(ASSESS);rPrev();}
 
 function rAssess(a){
   const el=document.getElementById('ar'); let html='';
@@ -1287,6 +1594,20 @@ async function dlReport(){
   }catch(ex){hideLd();toast('Error: '+ex.message,'er');}
 }
 
+async function printReport(){
+  if(!TOOLS.length)return toast('Ingest data first','er');
+  showLd('Preparing PDF report...');
+  try{
+    const r=await fetch(A+'/api/report',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({tools:TOOLS,duplications:DUPS,assessment:ASSESS})});
+    const d=await r.json(); hideLd();
+    const w=window.open('','_blank');
+    w.document.write(d.html);
+    w.document.close();
+    setTimeout(()=>w.print(),800);
+  }catch(ex){hideLd();toast('Error: '+ex.message,'er');}
+}
+
 function rPrev(){
   const el=document.getElementById('rp'); if(!TOOLS.length)return;
   const tc=TOOLS.reduce((s,t)=>s+(t.annual_cost||0),0);
@@ -1321,13 +1642,13 @@ document.addEventListener('DOMContentLoaded',init);
 # ═══════════════════════════════════════════════════════════════════════════════
 if __name__ == "__main__":
     if not ANTHROPIC_API_KEY:
-        print("\n⚠️  WARNING: ANTHROPIC_API_KEY not set!")
+        print("\n[WARNING] ANTHROPIC_API_KEY not set!")
         print("   Create a .env file with:  ANTHROPIC_API_KEY=sk-ant-...\n")
     else:
-        print(f"\n✅ Anthropic API key loaded | Model: {ANTHROPIC_MODEL}")
+        print(f"\n[OK] Anthropic API key loaded | Model: {ANTHROPIC_MODEL}")
 
-    print("🚀 Starting Tech Rationalization AI Agent...")
-    print("📍 Open your browser at: http://localhost:8000\n")
+    print("[STARTING] PlatformAssessor AI...")
+    print("[INFO] Open your browser at: http://localhost:8000\n")
 
     # Auto-open browser after 1.5 seconds
     threading.Timer(1.5, lambda: webbrowser.open("http://localhost:8000")).start()
