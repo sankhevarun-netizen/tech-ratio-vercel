@@ -755,18 +755,19 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
 <div class="app">
 <!-- SIDEBAR -->
 <aside class="sb">
-  <div class="sb-logo">
-    <div class="kpmg-mark" style="flex-shrink:0">
-      <svg width="38" height="38" viewBox="0 0 38 38" xmlns="http://www.w3.org/2000/svg">
-        <rect x="0" y="0" width="17" height="17" fill="#fff"/>
-        <rect x="21" y="0" width="17" height="17" fill="#fff"/>
-        <rect x="0" y="21" width="17" height="17" fill="#fff"/>
-        <rect x="21" y="21" width="17" height="17" fill="#fff"/>
+  <div class="sb-logo" style="flex-direction:column;align-items:flex-start;gap:8px">
+    <div style="background:#fff;border-radius:5px;padding:8px 12px;display:inline-block;line-height:0">
+      <svg width="108" height="40" viewBox="0 0 108 40" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0"  y="0"  width="18" height="18" fill="#00338D"/>
+        <rect x="21" y="0"  width="18" height="18" fill="#00338D"/>
+        <rect x="0"  y="21" width="18" height="18" fill="#00338D"/>
+        <rect x="21" y="21" width="18" height="18" fill="#00338D"/>
+        <text x="45" y="29" font-family="Arial Black,Arial,Helvetica,sans-serif" font-size="24" font-weight="900" fill="#00338D" dominant-baseline="auto">KPMG</text>
       </svg>
     </div>
     <div>
-      <strong style="color:#fff;font-size:17px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:1.5px;font-weight:900;display:block;line-height:1.1">KPMG</strong>
-      <span style="color:rgba(255,255,255,.55);font-size:10px;font-weight:500;letter-spacing:.3px">PlatformAssessor AI</span>
+      <span style="color:rgba(255,255,255,.8);font-size:11px;font-weight:600;letter-spacing:.3px;display:block">PlatformAssessor AI</span>
+      <span style="color:rgba(255,255,255,.4);font-size:10px">Enterprise Advisory</span>
     </div>
   </div>
   <div class="sb-sec">
