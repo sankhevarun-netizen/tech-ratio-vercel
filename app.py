@@ -519,17 +519,27 @@ async def chat(req: ChatReq):
 async def ingest(file: Optional[UploadFile]=File(None), text: Optional[str]=Form(None)):
     tools: List[Dict] = []
     if file and file.filename:
-        content = await file.read()
-        ext = file.filename.lower().rsplit(".",1)[-1]
-        if   ext == "csv":           tools = parse_csv_bytes(content)
-        elif ext in ("xlsx","xls"):  tools = parse_excel_bytes(content)
-        elif ext == "json":          tools = parse_json_bytes(content)
-        elif ext == "pdf":
-            raw = parse_pdf_bytes(content)
-            if raw: tools = [normalize(t) for t in await ai_parse_text(raw)]
+        try:
+            content = await file.read()
+            ext = file.filename.lower().rsplit(".",1)[-1]
+            if   ext == "csv":           tools = parse_csv_bytes(content)
+            elif ext in ("xlsx","xls"):  tools = parse_excel_bytes(content)
+            elif ext == "json":          tools = parse_json_bytes(content)
+            elif ext == "pdf":
+                raw = parse_pdf_bytes(content)
+                if raw: tools = [normalize(t) for t in await ai_parse_text(raw)]
+            else:
+                raise HTTPException(400, f"Unsupported file type: .{ext}. Use CSV, Excel, JSON, or PDF.")
+        except HTTPException: raise
+        except Exception as ex:
+            raise HTTPException(400, f"File parsing failed: {str(ex)}. Ensure the file has a header row with tool data.")
     elif text:
         tools = [normalize(t) for t in await ai_parse_text(text)]
+    else:
+        raise HTTPException(400, "No file or text provided.")
     tools = apply_scores(tools)
+    if not tools:
+        raise HTTPException(400, "No tools found in the uploaded data. Check that your file has a header row and tool names.")
     dups  = detect_dups(tools)
     return {"tools":tools,"duplications":dups,
             "summary":{"total_tools":len(tools),
@@ -876,11 +886,10 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
           </div>
           <div class="card">
             <div class="ch"><span>&#9999;&#65039;</span><span class="ct">Or Paste Free Text Description</span></div>
-            <textarea id="ti" rows="8" placeholder="Describe tools in plain text. Example:&#10;&#10;Tool: Splunk Enterprise&#10;Vendor: Splunk&#10;Category: Logging&#10;Annual Cost: 180000&#10;Users: 150&#10;Criticality: High&#10;Deployment: On-Prem"></textarea>
-            <div class="fx g2 mt4">
-              <button class="btn bp1" id="bi">&#9889; Ingest &amp; Score Tools</button>
-              <button class="btn bs1" id="bsmp">Load Sample Data</button>
-            </div>
+            <textarea id="ti" rows="6" placeholder="Describe tools in plain text. Example:&#10;&#10;Tool: Splunk Enterprise&#10;Vendor: Splunk&#10;Category: Logging&#10;Annual Cost: 180000&#10;Users: 150&#10;Criticality: High&#10;Deployment: On-Prem"></textarea>
+            <div class="mt4"><button class="btn bp1 wf" id="bi" style="padding:12px 16px;font-size:14px;background:var(--green)">&#9889; Ingest &amp; Score Tools</button></div>
+            <div class="fx g2 mt4" style="justify-content:flex-end"><button class="btn bs1 bsm" id="bsmp">Load Sample Data</button></div>
+            <p class="tx mu2" style="margin-top:8px;text-align:center">After uploading a file or pasting text above, click <strong>Ingest &amp; Score Tools</strong> to process your inventory.</p>
           </div>
         </div>
         <div>
@@ -904,7 +913,7 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
           </div>
         </div>
       </div>
-      <div class="wiz-nav"><button class="btn bs1" onclick="gotoPhase(1)">&larr; Back</button><button class="btn bp1" onclick="gotoPhase(3)">Continue to Business Context &rarr;</button></div>
+      <div class="wiz-nav"><button class="btn bs1" onclick="gotoPhase(1)">&larr; Back</button><span id="p2toolcount" style="flex:1;font-size:12px;color:var(--green);font-weight:600;text-align:center"></span><button class="btn bp1" onclick="continueFromPhase2()">Continue to Business Context &rarr;</button></div>
     </div>
 
     <!-- Phase 3: Business Context -->
@@ -1227,7 +1236,7 @@ function setupIngest(){
   uz.ondragover=e=>{e.preventDefault();uz.classList.add('dg');};
   uz.ondragleave=()=>uz.classList.remove('dg');
   uz.ondrop=e=>{e.preventDefault();uz.classList.remove('dg');if(e.dataTransfer.files[0]){fi.files=e.dataTransfer.files;document.getElementById('un').textContent='Selected: '+fi.files[0].name;}};
-  fi.onchange=()=>{if(fi.files[0])document.getElementById('un').textContent='Selected: '+fi.files[0].name;};
+  fi.onchange=()=>{if(fi.files[0])document.getElementById('un').textContent='Selected: '+fi.files[0].name+' — click Ingest below';};
   document.getElementById('bi').onclick=doIngest;
   document.getElementById('bsmp').onclick=loadSample;
   gotoPhase(1);
@@ -1264,7 +1273,7 @@ function buildP6Summary(){
   </div>`;
 }
 
-async function doIngest(){
+async function doIngest(wizardMode=false){
   const file=document.getElementById('fi').files[0], text=document.getElementById('ti').value.trim();
   if(!file&&!text)return toast('Please upload a file or enter tool descriptions','er');
   showLd('Ingesting and scoring tools with AI...');
@@ -1279,8 +1288,32 @@ async function doIngest(){
     renderDash(); renderInv();
     const nb=document.getElementById('nb'); nb.textContent=TOOLS.length; nb.classList.add('show');
     toast('Ingested '+d.summary.total_tools+' tools successfully','ok');
-    go('inventory');
+    updateP2Status(d.summary);
+    if(wizardMode) gotoPhase(3);
+    else go('inventory');
   }catch(e){hideLd();toast('Error: '+e.message,'er');}
+}
+
+function updateP2Status(summary){
+  const el=document.getElementById('p2status');
+  if(!el)return;
+  el.style.border='2px solid var(--green)';
+  el.style.background='#f0faf5';
+  el.innerHTML=`<div style="text-align:center;padding:24px 16px">
+    <div style="font-size:40px;margin-bottom:10px">&#9989;</div>
+    <h3 style="color:var(--green);font-size:16px;margin-bottom:8px">${summary?summary.total_tools:TOOLS.length} Tools Ingested &amp; Scored</h3>
+    <p style="color:var(--mut);font-size:13px;margin-bottom:6px">${DUPS.length} overlap pairs detected</p>
+    <p style="color:var(--green);font-size:12px;font-weight:700">Portfolio scored &mdash; ready for AI assessment</p>
+  </div>`;
+  const tc=document.getElementById('p2toolcount');
+  if(tc) tc.textContent=(summary?summary.total_tools:TOOLS.length)+' tools ready';
+}
+
+async function continueFromPhase2(){
+  if(TOOLS.length>0){gotoPhase(3);return;}
+  const file=document.getElementById('fi').files[0], text=document.getElementById('ti').value.trim();
+  if(!file&&!text)return toast('Please upload a file or paste tool descriptions, then click Ingest & Score Tools','er');
+  await doIngest(true);
 }
 
 function loadSample(){

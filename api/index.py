@@ -526,17 +526,27 @@ async def chat(req: ChatReq):
 async def ingest(file: Optional[UploadFile]=File(None), text: Optional[str]=Form(None)):
     tools: List[Dict] = []
     if file and file.filename:
-        content = await file.read()
-        ext = file.filename.lower().rsplit(".",1)[-1]
-        if   ext == "csv":           tools = parse_csv_bytes(content)
-        elif ext in ("xlsx","xls"):  tools = parse_excel_bytes(content)
-        elif ext == "json":          tools = parse_json_bytes(content)
-        elif ext == "pdf":
-            raw = parse_pdf_bytes(content)
-            if raw: tools = [normalize(t) for t in await ai_parse_text(raw)]
+        try:
+            content = await file.read()
+            ext = file.filename.lower().rsplit(".",1)[-1]
+            if   ext == "csv":           tools = parse_csv_bytes(content)
+            elif ext in ("xlsx","xls"):  tools = parse_excel_bytes(content)
+            elif ext == "json":          tools = parse_json_bytes(content)
+            elif ext == "pdf":
+                raw = parse_pdf_bytes(content)
+                if raw: tools = [normalize(t) for t in await ai_parse_text(raw)]
+            else:
+                raise HTTPException(400, f"Unsupported file type: .{ext}. Use CSV, Excel, JSON, or PDF.")
+        except HTTPException: raise
+        except Exception as ex:
+            raise HTTPException(400, f"File parsing failed: {str(ex)}. Ensure the file has a header row with tool data.")
     elif text:
         tools = [normalize(t) for t in await ai_parse_text(text)]
+    else:
+        raise HTTPException(400, "No file or text provided.")
     tools = apply_scores(tools)
+    if not tools:
+        raise HTTPException(400, "No tools found in the uploaded data. Check that your file has a header row and tool names.")
     dups  = detect_dups(tools)
     return {"tools":tools,"duplications":dups,
             "summary":{"total_tools":len(tools),
