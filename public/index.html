@@ -194,9 +194,65 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
 .ag-txt strong{color:#fff}
 .ag-next{margin-top:9px;display:inline-flex;align-items:center;gap:6px;padding:5px 13px;border-radius:6px;font-size:12px;font-weight:600;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;cursor:pointer;transition:all .15s}
 .ag-next:hover{background:rgba(255,255,255,.28)}
+/* Welcome screen */
+.ws-overlay{position:fixed;inset:0;z-index:9999;background:linear-gradient(180deg,#06101f 0%,#091528 60%,#050e1c 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;overflow-y:auto;padding:30px 20px}
+.ws-badge{display:flex;align-items:center;gap:8px;background:#111f38;border:1px solid #1e3252;border-radius:30px;padding:7px 18px;margin-bottom:26px}
+.ws-badge-dot{width:8px;height:8px;border-radius:50%;background:#00A651;animation:pulse 2s ease-in-out infinite;flex-shrink:0}
+.ws-badge-txt{font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:#5e8fc0}
+.ws-title{font-size:48px;font-weight:900;color:#fff;text-align:center;line-height:1.1;margin-bottom:8px}
+.ws-sub1{font-size:32px;font-weight:700;color:#00c8ff;text-align:center;margin-bottom:14px}
+.ws-sub2{font-size:14px;color:#4e6e95;text-align:center;max-width:500px;line-height:1.7;margin-bottom:30px}
+.ws-card{background:#0d1c32;border:1px solid #1a2e4e;border-radius:16px;padding:30px 32px;max-width:680px;width:100%}
+.ws-welcome{font-size:10px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:#00c8ff;margin-bottom:10px}
+.ws-heading{font-size:21px;font-weight:800;color:#fff;margin-bottom:12px}
+.ws-desc{font-size:13px;color:#6a8fb5;line-height:1.75;margin-bottom:8px}
+.ws-desc strong{color:#a8c4e0}
+.ws-stages{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:20px 0}
+@media(min-width:640px){.ws-stages{grid-template-columns:repeat(3,1fr)}}
+.ws-stage{background:#101f36;border:1px solid #1a2e4e;border-radius:10px;padding:18px 10px;text-align:center;transition:border-color .15s}
+.ws-stage:hover{border-color:#0063DC}
+.ws-stage-ico{font-size:26px;margin-bottom:8px}
+.ws-stage-lbl{font-size:12px;font-weight:700;color:#d0e4f7}
+.ws-footer{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.ws-footer-l{font-size:12px;color:#344d6a}
+.ws-footer-l strong{color:#5e8fb5}
+.ws-footer-r{font-size:12px;color:#344d6a}
+.ws-cta{width:100%;padding:15px;background:linear-gradient(90deg,#0049a8,#0063DC 50%,#00a3e0);border:none;border-radius:10px;font-size:15px;font-weight:700;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:filter .15s;letter-spacing:.3px}
+.ws-cta:hover{filter:brightness(1.1)}
 </style>
 </head>
 <body>
+
+<!-- WELCOME SCREEN -->
+<div class="ws-overlay" id="welcomeScreen">
+  <div class="ws-badge">
+    <span class="ws-badge-dot"></span>
+    <span class="ws-badge-txt">Enterprise AI Assessment</span>
+  </div>
+  <div class="ws-title">Technology Rationalization</div>
+  <div class="ws-sub1">&amp; Portfolio Assessment</div>
+  <div class="ws-sub2">A structured decision-support agent that assesses your technology portfolio and produces an actionable AI-powered rationalization roadmap.</div>
+  <div class="ws-card">
+    <div class="ws-welcome">Welcome</div>
+    <div class="ws-heading">Ready to rationalize your technology portfolio?</div>
+    <p class="ws-desc">This agent mirrors a <strong>KPMG-style senior consulting workshop</strong>. We'll move through <strong>6 assessment phases</strong>, each building on the last.</p>
+    <p class="ws-desc">At the end, you'll receive a tailored rationalization report covering the 6R model, cost savings analysis, risk highlights, and a full PDF download.</p>
+    <div class="ws-stages">
+      <div class="ws-stage"><div class="ws-stage-ico">&#127919;</div><div class="ws-stage-lbl">Scope</div></div>
+      <div class="ws-stage"><div class="ws-stage-ico">&#128229;</div><div class="ws-stage-lbl">Upload Tools</div></div>
+      <div class="ws-stage"><div class="ws-stage-ico">&#128202;</div><div class="ws-stage-lbl">Dashboard</div></div>
+      <div class="ws-stage"><div class="ws-stage-ico">&#9881;</div><div class="ws-stage-lbl">Assessment</div></div>
+      <div class="ws-stage"><div class="ws-stage-ico">&#128161;</div><div class="ws-stage-lbl">Pain Points</div></div>
+      <div class="ws-stage"><div class="ws-stage-ico">&#128196;</div><div class="ws-stage-lbl">Report</div></div>
+    </div>
+    <div class="ws-footer">
+      <span class="ws-footer-l">Estimated time: <strong>5–8 minutes</strong></span>
+      <span class="ws-footer-r">6 phases &middot; AI-powered rationalization</span>
+    </div>
+    <button class="ws-cta" onclick="document.getElementById('welcomeScreen').style.display='none';go('ingest');">Begin Assessment &nbsp;&rarr;</button>
+  </div>
+</div>
+
 <div class="app">
 <!-- SIDEBAR -->
 <aside class="sb">
