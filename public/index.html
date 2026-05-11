@@ -162,7 +162,7 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
 <!-- SIDEBAR -->
 <aside class="sb">
   <div class="sb-logo" style="flex-direction:column;align-items:flex-start;gap:6px;padding:14px 14px 12px">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 482 192" width="182" height="73" style="display:block;border-radius:3px">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 482 192" width="148" height="59" style="display:block;border-radius:3px">
       <defs>
         <clipPath id="kpmgclip">
           <rect x="4"   y="6"  width="108" height="97"/>
@@ -386,6 +386,24 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
         </div>
         <div class="fg4" style="margin-top:18px">
           <div class="fg" style="grid-column:1/-1"><label class="fl2">Specific Focus Area (Optional)</label><input type="text" id="p3focus" class="fi2" placeholder="e.g., Observability stack rationalisation, Security tool overlap, BSS/OSS modernisation..."></div>
+        </div>
+        <!-- Auto-populated from file upload -->
+        <div id="p3detected" style="display:none;margin-top:16px">
+          <div style="background:#f0faf5;border:1px solid #b8e6d0;border-left:4px solid var(--green);border-radius:8px;padding:14px 18px">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+              <span style="font-size:16px">&#9989;</span>
+              <span style="font-size:12px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.5px">Pain Points &amp; Challenges Detected from Uploaded File</span>
+            </div>
+            <div id="p3detectedList" style="display:flex;flex-direction:column;gap:6px"></div>
+            <p style="font-size:11px;color:var(--mut);margin-top:10px">These have been extracted from your tool data and pre-filled below. Edit as needed before continuing.</p>
+          </div>
+        </div>
+        <!-- Extracted business challenges textarea -->
+        <div class="fg4" id="p3challengeRow" style="display:none;margin-top:14px">
+          <div class="fg" style="grid-column:1/-1">
+            <label class="fl2">Business Challenges &amp; Pain Points (from file)</label>
+            <textarea id="p3challenges" rows="4" placeholder="Extracted business challenges will appear here after file upload in Phase 2..." style="padding:12px;border:1px solid var(--bdr);border-radius:8px;font-size:13px;font-family:inherit;line-height:1.6;width:100%"></textarea>
+          </div>
         </div>
         <div class="wiz-nav"><button class="btn bs1" onclick="gotoPhase(2)">&larr; Back</button><button class="btn bp1" onclick="gotoPhase(4)">Continue to Technical Context &rarr;</button></div>
       </div>
@@ -731,10 +749,11 @@ async function doIngest(wizardMode=false){
       const bField=document.getElementById('p5budget');
       if(bField&&!bField.value) bField.value=d.detected_budget;
     }
-    // Auto-populate Phase 4 pain points if found in file
+    // Auto-populate Phase 3 & 4 with pain points / challenges from file
     if(d.pain_points&&d.pain_points.length){
+      populateP3Challenges(d.pain_points);
       const pField=document.getElementById('p4pain');
-      if(pField&&!pField.value) pField.value=d.pain_points.join('; ');
+      if(pField&&!pField.value) pField.value=d.pain_points.join('\n');
     }
     if(wizardMode) gotoPhase(3);
     else go('inventory');
@@ -761,6 +780,42 @@ async function continueFromPhase2(){
   const file=document.getElementById('fi').files[0], text=document.getElementById('ti').value.trim();
   if(!file&&!text)return toast('Please upload a file or paste tool descriptions, then click Ingest & Score Tools','er');
   await doIngest(true);
+}
+
+function populateP3Challenges(painPoints){
+  if(!painPoints||!painPoints.length)return;
+  // Show the detected panel
+  const panel=document.getElementById('p3detected');
+  const list=document.getElementById('p3detectedList');
+  const row=document.getElementById('p3challengeRow');
+  const ta=document.getElementById('p3challenges');
+  const focus=document.getElementById('p3focus');
+  if(panel&&list){
+    list.innerHTML=painPoints.map(p=>`<div style="display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--txt);padding:5px 0;border-bottom:1px solid rgba(0,100,50,.08)"><span style="color:var(--green);font-weight:700;flex-shrink:0">&#8227;</span><span>${e(p)}</span></div>`).join('');
+    panel.style.display='block';
+  }
+  if(row) row.style.display='block';
+  if(ta&&!ta.value) ta.value=painPoints.join('\n');
+  // Pre-fill focus area with a concise summary if empty
+  if(focus&&!focus.value){
+    focus.value=painPoints.slice(0,2).join('; ');
+  }
+  // Auto-check strategic priorities based on keywords in pain points
+  const allText=painPoints.join(' ').toLowerCase();
+  const kw={
+    cost_reduction:['cost','expensive','overpriced','budget','spend','license','saving'],
+    security:['security','compliance','risk','vulnerability','gdpr','audit'],
+    cloud_migration:['on-prem','legacy','cloud','migrate','moderniz','lift'],
+    consolidation:['overlap','duplicate','redundant','too many','consolidat','multiple'],
+    observability:['monitor','observ','logging','alert','visibility','trace'],
+    agility:['slow','manual','devops','ci/cd','deploy','agil','velocity'],
+  };
+  Object.entries(kw).forEach(([val,words])=>{
+    if(words.some(w=>allText.includes(w))){
+      const cb=document.querySelector(`#priorityList input[value="${val}"]`);
+      if(cb) cb.checked=true;
+    }
+  });
 }
 
 function loadSample(){
@@ -969,7 +1024,8 @@ async function runAssess(){
   const priorities=[...document.querySelectorAll('#priorityList input:checked')].map(x=>x.value.replace(/_/g,' '));
   const org=(document.getElementById('p1org')||{}).value||'';
   const pain=(document.getElementById('p4pain')||{}).value||'';
-  const focusParts=[baseFocus,compliance.length?'Compliance: '+compliance.join(', '):'',priorities.length?'Priorities: '+priorities.join(', '):'',pain?'Pain points: '+pain:'',org?'Organisation: '+org:''].filter(Boolean);
+  const bizChallenges=(document.getElementById('p3challenges')||{}).value||'';
+  const focusParts=[baseFocus,compliance.length?'Compliance: '+compliance.join(', '):'',priorities.length?'Priorities: '+priorities.join(', '):'',bizChallenges?'Business challenges: '+bizChallenges:'',pain?'Technical pain points: '+pain:'',org?'Organisation: '+org:''].filter(Boolean);
   const focus=focusParts.join(' | ');
   showLd('Running AI assessment...');
   try{
