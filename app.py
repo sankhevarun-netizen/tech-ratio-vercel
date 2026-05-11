@@ -637,7 +637,7 @@ tbody tr{{page-break-inside:avoid}}
 <body><div class="w">
 <div class="hdr">
 <div style="display:flex;align-items:center;gap:22px;margin-bottom:22px">
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 482 192" width="160" height="64" style="border-radius:3px;flex-shrink:0">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 482 192" width="72" height="29" style="border-radius:3px;flex-shrink:0">
 <defs><clipPath id="rptclip"><rect x="4" y="6" width="108" height="97"/><rect x="122" y="6" width="108" height="97"/><rect x="240" y="6" width="108" height="97"/><rect x="358" y="6" width="108" height="97"/></clipPath></defs>
 <rect width="482" height="192" fill="#fff"/>
 <rect x="4" y="6" width="108" height="97" fill="#00338D"/>
