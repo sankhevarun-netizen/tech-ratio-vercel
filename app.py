@@ -399,9 +399,34 @@ DUPLICATION ANALYSIS:
 
 Return ONLY valid JSON (no markdown, no explanation) with these exact keys:
 {{
-  "executive_summary": "<3-5 paragraph CIO-ready narrative covering portfolio health, key findings, pain areas, and strategic direction>",
+  "executive_summary": {{
+    "tool_ecosystem": "3-5 concise bullet points (use • prefix). State total tool count, categories, key vendors, deployment mix, overall maturity level, and the top 2-3 challenges the client is currently facing. Be specific with numbers and tool names. NO paragraphs — bullets only.",
+    "overlapping_tools": "3-5 concise bullet points (use • prefix). Name EACH overlapping tool pair explicitly (e.g. '• Splunk & ELK — both serve Logging, ~$225K combined cost, consolidate to Splunk'). Include estimated cost savings per pair. Focus only on real duplicates identified.",
+    "benchmarking": "3-5 concise bullet points (use • prefix). Compare current tools vs market-standard alternatives on cost, capability, and vendor maturity. Highlight where the client is overpaying vs market rate or using below-par tools. Be data-driven.",
+    "kpis_success_factors": "3-5 concise bullet points (use • prefix). Format as 'Current: X → Target: Y'. Cover tool count, annual spend, risk level, duplicate pairs, cloud adoption %, and any other relevant KPIs. Show measurable improvement targets.",
+    "recommendations": "3-5 concise bullet points (use • prefix). Name the specific tools to Retain / Replace / Retire / Consolidate and why. Include the preferred platform choice where a replacement is recommended. Be decisive and specific — no generic advice.",
+    "rollout_roadmap": "3-5 concise bullet points (use • prefix). Phased plan: Phase 1 (0-3m quick wins), Phase 2 (3-12m strategic), Phase 3 (12-24m transformation). Highlight key dependencies between phases. Name the specific tools/actions in each phase."
+  }},
   "portfolio_overview": {{"total_tools":<int>,"total_annual_cost":<float>,"portfolio_health":"Healthy|At Risk|Critical","health_rationale":"<brief>"}},
-  "portfolio_pain_areas": ["<pain area 1>","<pain area 2>"],
+  "before_after_comparison": {{
+    "current_state": {{
+      "tool_count": <total number of tools>,
+      "annual_cost": <total annual cost as number>,
+      "duplicate_pairs": <number of overlapping tool pairs>,
+      "eol_tools": <number of end-of-life tools>,
+      "risk_level": "High|Medium|Low",
+      "key_issues": ["<specific issue naming tools>","<specific issue>","<specific issue>","<specific issue>"]
+    }},
+    "future_state": {{
+      "projected_tool_count": <estimated count after rationalization>,
+      "projected_annual_cost": <estimated annual cost after savings>,
+      "estimated_annual_savings": <projected annual savings as number>,
+      "eol_tools_resolved": <number of EOL issues to be addressed>,
+      "risk_level": "High|Medium|Low",
+      "improvements": ["<specific improvement e.g. Retire Symantec, standardise on CrowdStrike>","<specific improvement>","<specific improvement>","<specific improvement>","<specific improvement>"]
+    }}
+  }},
+  "portfolio_pain_areas": ["<specific pain area 1>","<specific pain area 2>","<specific pain area 3>"],
   "rationalization_summary": {{"Retain":<int>,"Rehost":<int>,"Replatform":<int>,"Refactor":<int>,"Replace":<int>,"Retire":<int>}},
   "duplicate_tools": [{{"tool_a":"<name>","tool_b":"<name>","category":"<cat>","overlap_reason":"<why duplicate>","recommendation":"<action>"}}],
   "top_recommendations": [{{"rank":1,"title":"<title>","description":"<detail>","impact":"<impact>","effort":"Low|Medium|High","priority":"Critical|High|Medium","confidence":"High|Medium|Low","timeline":"0-3 months|3-12 months|12-24 months"}}],
@@ -447,7 +472,18 @@ def build_report(tools:List[Dict],dups:List[Dict],assessment:Dict)->str:
     act_rows="".join(f"<tr><td>{bdg(a)}</td><td><b>{c}</b></td><td>{round(c/max(sum(cnts.values()),1)*100)}%</td></tr>"
         for a,c in cnts.items())
 
-    ex=assessment.get("executive_summary","Run an AI Assessment to generate the executive summary.")
+    raw_ex=assessment.get("executive_summary","Run an AI Assessment to generate the executive summary.")
+    if isinstance(raw_ex, dict):
+        ex_eco   = raw_ex.get("tool_ecosystem","")
+        ex_ovlp  = raw_ex.get("overlapping_tools","")
+        ex_bench = raw_ex.get("benchmarking","")
+        ex_kpis  = raw_ex.get("kpis_success_factors","")
+        ex_rec   = raw_ex.get("recommendations","")
+        ex_road  = raw_ex.get("rollout_roadmap","")
+        ex = None
+    else:
+        ex = raw_ex
+        ex_eco = ex_ovlp = ex_bench = ex_kpis = ex_rec = ex_road = ""
     recs=assessment.get("top_recommendations",[])
     rm=assessment.get("roadmap",{})
     oc=assessment.get("expected_outcomes",{})
@@ -455,6 +491,69 @@ def build_report(tools:List[Dict],dups:List[Dict],assessment:Dict)->str:
     pain_areas=assessment.get("portfolio_pain_areas",[])
     dup_tools=assessment.get("duplicate_tools",[])
     tool_analysis=assessment.get("tool_analysis",[])
+    bac=assessment.get("before_after_comparison",{})
+
+    # Build before/after comparison HTML block
+    if bac:
+        _cs = bac.get("current_state", {})
+        _fs = bac.get("future_state", {})
+        def _bac_row(icon, color, text):
+            return (f'<div style="display:flex;gap:7px;align-items:flex-start;font-size:12px;'
+                    f'padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06)">'
+                    f'<span style="color:{color};flex-shrink:0;font-weight:700">{icon}</span>'
+                    f'<span style="color:#333">{text}</span></div>')
+        _issue_rows = "".join(_bac_row("&#9888;","#E31837",x) for x in (_cs.get("key_issues") or []))
+        _impr_rows  = "".join(_bac_row("&#10003;","#00A651",x) for x in (_fs.get("improvements") or []))
+        _cs_cost  = "${:,.0f}".format(_cs.get("annual_cost",0) or 0)
+        _fs_cost  = "${:,.0f}".format(_fs.get("projected_annual_cost",0) or 0)
+        _fs_save  = "${:,.0f}".format(_fs.get("estimated_annual_savings",0) or 0)
+        bac_html = f"""<div class="sec pb">
+<h2>Before vs After: Rationalization Impact</h2>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+<div style="background:#fff5f5!important;border:1px solid #fad7d7;border-top:4px solid #E31837;border-radius:8px;padding:20px">
+<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#E31837;margin-bottom:14px">&#128198; CURRENT STATE (AS-IS)</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+<div style="background:#fff!important;padding:10px;border-radius:6px;text-align:center"><div style="font-size:22px;font-weight:800;color:#1a2340">{_cs.get("tool_count","--")}</div><div style="font-size:10px;color:#666;text-transform:uppercase;margin-top:2px">Tools</div></div>
+<div style="background:#fff!important;padding:10px;border-radius:6px;text-align:center"><div style="font-size:16px;font-weight:800;color:#1a2340">{_cs_cost}</div><div style="font-size:10px;color:#666;text-transform:uppercase;margin-top:2px">Annual Cost</div></div>
+<div style="background:#fff!important;padding:10px;border-radius:6px;text-align:center"><div style="font-size:22px;font-weight:800;color:#E31837">{_cs.get("duplicate_pairs","--")}</div><div style="font-size:10px;color:#666;text-transform:uppercase;margin-top:2px">Duplicate Pairs</div></div>
+<div style="background:#fff!important;padding:10px;border-radius:6px;text-align:center"><div style="font-size:16px;font-weight:800;color:#E31837">{_cs.get("risk_level","--")}</div><div style="font-size:10px;color:#666;text-transform:uppercase;margin-top:2px">Risk Level</div></div>
+</div>
+<div style="font-size:10px;font-weight:700;color:#E31837;text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px">Key Issues Identified</div>
+{_issue_rows or '<div style="font-size:12px;color:#999">No issues listed</div>'}
+</div>
+<div style="background:#f0faf5!important;border:1px solid #b8e6d0;border-top:4px solid #00A651;border-radius:8px;padding:20px">
+<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#00A651;margin-bottom:14px">&#9989; FUTURE STATE (POST-RATIONALIZATION)</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+<div style="background:#fff!important;padding:10px;border-radius:6px;text-align:center"><div style="font-size:22px;font-weight:800;color:#00A651">{_fs.get("projected_tool_count","--")}</div><div style="font-size:10px;color:#666;text-transform:uppercase;margin-top:2px">Tools (Projected)</div></div>
+<div style="background:#fff!important;padding:10px;border-radius:6px;text-align:center"><div style="font-size:16px;font-weight:800;color:#00A651">{_fs_cost}</div><div style="font-size:10px;color:#666;text-transform:uppercase;margin-top:2px">Annual Cost (Est.)</div></div>
+<div style="background:#fff!important;padding:10px;border-radius:6px;text-align:center"><div style="font-size:22px;font-weight:800;color:#00A651">{_fs_save}</div><div style="font-size:10px;color:#666;text-transform:uppercase;margin-top:2px">Annual Savings</div></div>
+<div style="background:#fff!important;padding:10px;border-radius:6px;text-align:center"><div style="font-size:16px;font-weight:800;color:#00A651">{_fs.get("risk_level","--")}</div><div style="font-size:10px;color:#666;text-transform:uppercase;margin-top:2px">Target Risk</div></div>
+</div>
+<div style="font-size:10px;font-weight:700;color:#00A651;text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px">Improvements After Rationalization</div>
+{_impr_rows or '<div style="font-size:12px;color:#999">No improvements listed</div>'}
+</div>
+</div>
+</div>"""
+    else:
+        bac_html = ""
+
+    # Pre-build conditional executive summary panel HTML
+    def _ex_panel(bg, border, label_color, icon, label, content):
+        return (
+            f'<div style="background:{bg}!important;border-left:4px solid {border};border-radius:0 8px 8px 0;padding:14px 18px">'
+            f'<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:{label_color};margin-bottom:8px">{icon}&nbsp; {label}</div>'
+            f'<div style="font-size:13px;line-height:1.8;color:#1a2340;white-space:pre-wrap">{content}</div></div>'
+        ) if content else ""
+    ex_struct_html = (
+        f'<div style="display:flex;flex-direction:column;gap:12px">'
+        + _ex_panel("#f0f4fa","#003366","#003366","&#127970;","Current State of Tool Ecosystem &amp; Challenges",ex_eco)
+        + _ex_panel("#fff5f5","#E31837","#c0392b","&#128257;","Overlapping Tools — Cost Reduction Opportunities",ex_ovlp)
+        + _ex_panel("#f5f0ff","#7B2FBE","#7B2FBE","&#128200;","Benchmarking Analysis vs Market",ex_bench)
+        + _ex_panel("#fff8f0","#FFC200","#b08000","&#127919;","Current KPIs vs To-Be Success Factors",ex_kpis)
+        + _ex_panel("#f0faf5","#00A651","#00A651","&#9989;","Recommendations — Choosing the Right Platform",ex_rec)
+        + _ex_panel("#f8fbff","#0063DC","#0063DC","&#128506;","Implementation &amp; Rollout Plan Roadmap",ex_road)
+        + '</div>'
+    ) if ex is None else f'<div class="exec">{ex}</div>'
 
     rec_html="".join(f"""<div class="rc">
 <div style="display:flex;align-items:center;gap:9px;margin-bottom:8px">
@@ -549,7 +648,10 @@ tbody tr{{page-break-inside:avoid}}
 <div class="kc"><div class="kv">{len(dups)}</div><div class="kl">Overlap Pairs</div></div>
 <div class="kc"><div class="kv">${pot_save:,.0f}</div><div class="kl">Est. Savings</div></div>
 </div>
-<div class="sec pb"><h2>Executive Summary</h2><div class="exec">{ex}</div></div>
+<div class="sec pb"><h2>Executive Summary</h2>
+{ex_struct_html}
+</div>
+{bac_html}
 <div class="sec"><h2>Rationalization Action Summary</h2>
 <table><thead><tr><th>Action</th><th>Count</th><th>% of Portfolio</th></tr></thead>
 <tbody>{act_rows}</tbody></table></div>
