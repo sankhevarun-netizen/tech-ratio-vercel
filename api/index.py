@@ -412,12 +412,12 @@ DUPLICATION ANALYSIS:
 Return ONLY valid JSON (no markdown, no explanation) with these exact keys:
 {{
   "executive_summary": {{
-    "tool_ecosystem": "3-5 concise bullet points (use • prefix). State total tool count, categories, key vendors, deployment mix, overall maturity level, and the top 2-3 challenges the client is currently facing. Be specific with numbers and tool names. NO paragraphs — bullets only.",
-    "overlapping_tools": "3-5 concise bullet points (use • prefix). Name EACH overlapping tool pair explicitly (e.g. '• Splunk & ELK — both serve Logging, ~$225K combined cost, consolidate to Splunk'). Include estimated cost savings per pair. Focus only on real duplicates identified.",
-    "benchmarking": "3-5 concise bullet points (use • prefix). Compare current tools vs market-standard alternatives on cost, capability, and vendor maturity. Highlight where the client is overpaying vs market rate or using below-par tools. Be data-driven.",
-    "kpis_success_factors": "3-5 concise bullet points (use • prefix). Format as 'Current: X → Target: Y'. Cover tool count, annual spend, risk level, duplicate pairs, cloud adoption %, and any other relevant KPIs. Show measurable improvement targets.",
-    "recommendations": "3-5 concise bullet points (use • prefix). Name the specific tools to Retain / Replace / Retire / Consolidate and why. Include the preferred platform choice where a replacement is recommended. Be decisive and specific — no generic advice.",
-    "rollout_roadmap": "3-5 concise bullet points (use • prefix). Phased plan: Phase 1 (0-3m quick wins), Phase 2 (3-12m strategic), Phase 3 (12-24m transformation). Highlight key dependencies between phases. Name the specific tools/actions in each phase."
+    "tool_ecosystem": "1 short paragraph (3-4 sentences max) focused on rationalization context: total tool count, key categories, deployment mix, vendor concentration, and the 2-3 most critical challenges driving the need for rationalization. Be specific with numbers.",
+    "overlapping_tools": "1 short paragraph identifying duplicate/redundant tools by name. For each overlap: state the two tools, the category, combined annual cost, and which to consolidate. End with total estimated savings from eliminating overlaps. Keep it factual and direct.",
+    "benchmarking": "1 short paragraph comparing the portfolio against market standards. Call out tools that are overpriced vs market rate, tools below industry maturity, and any end-of-life tools. Reference specific tool names and cost or maturity gaps where data supports it.",
+    "kpis_success_factors": "1 short paragraph contrasting current state vs post-rationalization targets. Cover: tool count (current vs target), annual spend (current vs projected), risk level, duplicate pairs to eliminate, and cloud adoption improvement. Use 'Current X → Target Y' phrasing inline.",
+    "recommendations": "1 short paragraph with specific, actionable rationalization decisions. Name which tools to Retain, which to Replace (with the recommended replacement), which to Retire, and which to Consolidate. Tie each decision to a business or cost rationale. Be decisive.",
+    "rollout_roadmap": "1 short paragraph outlining the phased rationalization plan. Phase 1 (0-3m): immediate retirements and quick wins. Phase 2 (3-12m): replacements and migrations. Phase 3 (12-24m): platform consolidation and transformation. Note key dependencies between phases."
   }},
   "portfolio_overview": {{"total_tools":<int>,"total_annual_cost":<float>,"portfolio_health":"Healthy|At Risk|Critical","health_rationale":"<brief>"}},
   "before_after_comparison": {{
