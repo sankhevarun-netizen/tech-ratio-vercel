@@ -598,12 +598,80 @@ def build_report(tools:List[Dict],dups:List[Dict],assessment:Dict)->str:
     sev_col = {"Critical":"#c0392b","High":"#e67e22","Medium":"#f39c12"}
     risk_html="".join(f"""<div class="rsk">
 <div style="font-size:10px;font-weight:700;color:#fff;background:{sev_col.get(r.get('severity','Medium'),'#888')};padding:3px 8px;border-radius:4px;align-self:flex-start;white-space:nowrap">{r.get('severity','').upper()}</div>
-<div><div style="font-weight:700;color:#1a2340;font-size:13px">{r.get('risk_type','')} Risk</div>
-<div style="font-size:12px;color:#555;margin:4px 0;line-height:1.5">{r.get('description','')}</div>
-<div style="font-size:11px;color:#00A651;font-weight:600">Mitigation: {r.get('mitigation','')}</div></div></div>""" for r in risks)
+<div><div style="font-weight:700;color:#1a2340;font-size:12px">{r.get('risk_type','')} Risk</div>
+<div style="font-size:11px;color:#555;margin:3px 0;line-height:1.5">{r.get('description','')}</div>
+<div style="font-size:10px;color:#00A651;font-weight:600">Mitigation: {r.get('mitigation','')}</div></div></div>""" for r in risks)
+
+    # ── Reference-style pre-builds ─────────────────────────────────────────
+    cnt_r: Dict[str,int] = {}
+    for t in tools:
+        a=t.get("rationalization_action","TBD"); cnt_r[a]=cnt_r.get(a,0)+1
+    retire_eol=sum(1 for t in tools if t.get("end_of_life") or t.get("rationalization_action")=="Retire")
+    avg_score=round(sum(t.get("composite_score",0) for t in tools)/max(len(tools),1),1)
+    def _sc(s): return "#00A651" if s>=7 else ("#FFC200" if s>=5 else "#E31837")
+    ACL={"Retain":"color:#155724;background:#d4edda","Rehost":"color:#004085;background:#cce5ff",
+         "Replatform":"color:#856404;background:#fff3cd","Refactor":"color:#7d3c00;background:#fde8d8",
+         "Replace":"color:#721c24;background:#f8d7da","Retire":"color:#383d41;background:#e2e3e5","TBD":"color:#333;background:#eee"}
+    CMAP={"Retain":"#00A651","Rehost":"#0063DC","Replatform":"#FFC200","Refactor":"#FF7700","Replace":"#E31837","Retire":"#6B7A99","TBD":"#aaa"}
+    sav_pct=round(min(100,pot_save/max(total_cost,1)*100))
+    kpi_badges="".join(f'<span style="display:inline-block;padding:1px 8px;border-radius:10px;font-size:10px;font-weight:700;{ACL[a]};margin-right:3px;margin-top:5px">{a[:2].upper()}·{cnt_r[a]}</span>' for a in ["Retain","Replace","Retire"] if cnt_r.get(a))
+    kpi_html=(
+        f'<div class="kpi-row">'
+        f'<div class="kc"><div class="kl">TOOLS ASSESSED <span class="kli">i</span></div><div class="kv">{len(tools)}</div><div class="ks">portfolio active</div>{kpi_badges}</div>'
+        f'<div class="kc"><div class="kl">ANNUAL SPEND <span class="kli">i</span></div><div class="kv">${total_cost:,.0f}</div><div class="ks">technology budget</div><div class="kbar"><div class="kbf" style="width:70%;background:#003366"></div></div></div>'
+        f'<div class="kc"><div class="kl">OVERLAP PAIRS <span class="kli">i</span></div><div class="kv">{len(dups)}</div><div class="ks">consolidation alerts</div></div>'
+        f'<div class="kc"><div class="kl">EST. SAVINGS <span class="kli">i</span></div><div class="kv">${pot_save:,.0f}</div><div class="ks">annual potential</div><div class="kbar"><div class="kbf" style="width:{sav_pct}%;background:#00A651"></div></div></div>'
+        f'<div class="kc"><div class="kl">RETIRE / EOL <span class="kli">i</span></div><div class="kv" style="color:#E31837">{retire_eol}</div><div class="ks">immediate action</div></div>'
+        f'<div class="kc"><div class="kl">AVG TOOL SCORE <span class="kli">i</span></div><div class="kv" style="color:{_sc(avg_score)}">{avg_score}</div><div class="ks">portfolio health</div><div class="kbar"><div class="kbf" style="width:{round(avg_score*10)}%;background:{_sc(avg_score)}"></div></div></div>'
+        f'</div>'
+    )
+    layer_tabs="".join(f'<span class="lt">{a} <span class="lc">{cnt_r.get(a,0)}</span></span>' for a in ["Retain","Rehost","Replatform","Refactor","Replace","Retire"] if cnt_r.get(a,0)>0)
+    layer_nav_html=(f'<div class="lnav"><div class="lnav-title">Rationalization Layer Navigator <span style="font-size:10px;font-weight:400;opacity:.5">6R &#8594; Roadmap</span></div>'
+                    f'<span class="lt on">All Tools <span class="lc">{len(tools)}</span></span>{layer_tabs}</div>')
+    tf_rows="".join(
+        f'<div class="tf-item"><div class="tf-r1"><span class="bdg" style="{ACL.get(t.get("rationalization_action","TBD"),ACL["TBD"])}">{t.get("rationalization_action","TBD")}</span>'
+        f'<span class="tf-name">{t.get("name","")}</span><span class="tf-score" style="color:{_sc(t.get("composite_score",0))}">{t.get("composite_score",0)}/10</span></div>'
+        f'<div class="tf-r2">{t.get("vendor","") or "—"} &bull; {t.get("category","")}'
+        f'{(" &bull; ${:,.0f}/yr".format(t.get("annual_cost"))) if t.get("annual_cost") else ""}'
+        f'{(" &bull; "+str(t.get("user_count"))+" users") if t.get("user_count") else ""}</div></div>'
+        for t in tools[:20])
+    tf_html=(f'<div class="tool-feed"><div class="col-hdr"><span class="col-hdr-title">Tool Portfolio</span>'
+             f'<span style="font-size:10px;color:#6B7A99">{len(tools)} tools active</span></div>{tf_rows}</div>')
+    cost_by_act: Dict[str,float]={}
+    for t in tools:
+        a2=t.get("rationalization_action","TBD"); cost_by_act[a2]=cost_by_act.get(a2,0.0)+(t.get("annual_cost") or 0)
+    _tc2=sum(cost_by_act.values()) or 1.0; _cum2=0.0; ib_rows=""
+    for a2,cv in sorted(cost_by_act.items(),key=lambda x:x[1],reverse=True):
+        p2=cv/_tc2*100; _cum2+=p2
+        ib_rows+=(f'<div class="ib-row"><div class="ib-label">{a2}</div><div class="ib-bar">'
+                  f'<div style="height:100%;display:flex;border-radius:4px;overflow:hidden">'
+                  f'<div style="width:{p2:.1f}%;background:{CMAP.get(a2,"#aaa")};height:100%"></div>'
+                  f'<div style="width:{min(_cum2,100.0)-p2:.1f}%;background:#B8D4EE;height:100%"></div>'
+                  f'</div></div><div class="ib-pct">{p2:.0f}% &middot; cum {_cum2:.0f}%</div></div>')
+    ib_html=(f'<div class="impact-col"><div class="col-hdr"><span class="col-hdr-title">Impact-Weighted Cost Distribution</span>'
+             f'<div style="font-size:10px;color:#666;display:flex;gap:7px;align-items:center">'
+             f'<span style="width:8px;height:8px;background:#003366;border-radius:2px;display:inline-block"></span>Value '
+             f'<span style="width:8px;height:8px;background:#B8D4EE;border-radius:2px;display:inline-block;margin-left:3px"></span>Cumul.</div></div>{ib_rows}</div>')
+    cats_h: Dict[str,Any]={}
+    for t in tools:
+        cat=t.get("category","Other")
+        if cat not in cats_h: cats_h[cat]={"cnt":0,"scores":[],"action":0}
+        cats_h[cat]["cnt"]+=1
+        if t.get("composite_score"): cats_h[cat]["scores"].append(t["composite_score"])
+        if t.get("rationalization_action") in ("Retire","Replace"): cats_h[cat]["action"]+=1
+    def _hp(cat:str,d:Dict)->str:
+        sc=round(sum(d["scores"])/len(d["scores"]),1) if d["scores"] else 0; col=_sc(sc)
+        sev=(f'<div class="hp-sev" style="color:#E31837">Action needed: {d["action"]}</div>') if d["action"] else ""
+        return (f'<div class="health-panel"><div class="hp-row">'
+                f'<div class="hp-ring" style="background:{col}22;color:{col};border:2px solid {col}">{sc}</div>'
+                f'<div style="flex:1"><div class="hp-name">{cat}</div>'
+                f'<div class="hp-sub">{d["cnt"]} tool{"s" if d["cnt"]!=1 else ""} &bull; Avg {sc}/10</div>{sev}</div></div></div>')
+    hp_html=(f'<div><div class="col-hdr"><span class="col-hdr-title">Category Health</span></div>'
+             +"".join(_hp(c,d) for c,d in sorted(cats_h.items(),key=lambda x:x[1]["cnt"],reverse=True)[:7])+'</div>')
+    three_col_html=f'<div class="three-col">{tf_html}{ib_html}{hp_html}</div>'
 
     return f"""<!DOCTYPE html><html lang="en"><head>
-<meta charset="UTF-8"><title>Tool Rationalization Report -- {datetime.now().strftime('%B %Y')}</title>
+<meta charset="UTF-8"><title>Tool Rationalization Report — {datetime.now().strftime('%B %Y')}</title>
 <style>
 @page{{size:A4;margin:14mm 14mm 18mm 14mm}}
 *{{margin:0;padding:0;box-sizing:border-box;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important}}
@@ -612,10 +680,45 @@ body{{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:#f0f4fa
 /* Cover / Header */
 .hdr{{background:linear-gradient(135deg,#003366 0%,#0063DC 100%);color:#fff;padding:36px 40px 32px}}
 .hdr h1{{font-size:22px;font-weight:700;margin-bottom:5px}}.hdr p{{opacity:.75;font-size:12px;margin-top:3px}}
-/* KPI bar */
-.kpi{{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#ccd6e8}}
-.kc{{background:#fff;padding:20px 16px;text-align:center}}
-.kv{{font-size:24px;font-weight:800;color:#0063DC}}.kl{{font-size:10px;color:#666;text-transform:uppercase;letter-spacing:.5px;margin-top:3px}}
+/* KPI row */
+.kpi-row{{display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:#ccd6e8;border-bottom:2px solid #ccd6e8}}
+.kc{{background:#fff;padding:16px 14px;text-align:center}}
+.kl{{font-size:9px;color:#6B7A99;text-transform:uppercase;letter-spacing:.7px;font-weight:600;display:flex;align-items:center;gap:4px;justify-content:center}}
+.kli{{width:13px;height:13px;background:#e8edf5;border-radius:50%;font-size:8px;display:inline-flex;align-items:center;justify-content:center;color:#6B7A99}}
+.kv{{font-size:22px;font-weight:800;color:#003366;margin:5px 0 1px}}
+.ks{{font-size:10px;color:#8899bb}}
+.kbar{{height:4px;background:#e8edf5;border-radius:2px;margin-top:7px;overflow:hidden}}
+.kbf{{height:100%;border-radius:2px}}
+/* Layer nav */
+.lnav{{background:#f5f8ff;border-bottom:1px solid #dde4f5;padding:0 30px;display:flex;align-items:center;gap:8px;overflow-x:auto}}
+.lnav-title{{font-size:10px;font-weight:700;color:#6B7A99;text-transform:uppercase;letter-spacing:.5px;margin-right:8px;white-space:nowrap;padding:12px 0}}
+.lt{{padding:10px 12px;font-size:11px;font-weight:600;color:#6B7A99;border-bottom:2px solid transparent;white-space:nowrap;display:inline-flex;align-items:center;gap:4px}}
+.lt.on{{color:#0063DC;border-bottom-color:#0063DC}}
+.lc{{background:#e8edf5;border-radius:8px;font-size:9px;padding:1px 5px;color:#6B7A99}}
+/* Three-column */
+.three-col{{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;border-bottom:1px solid #e4eaf5}}
+.col-hdr{{display:flex;align-items:center;justify-content:space-between;padding:12px 16px 8px;border-bottom:1px solid #e8edf5}}
+.col-hdr-title{{font-size:12px;font-weight:700;color:#003366}}
+/* Tool feed */
+.tool-feed{{border-right:1px solid #e4eaf5;overflow:hidden}}
+.tf-item{{padding:10px 16px;border-bottom:1px solid #f0f3fa;page-break-inside:avoid}}
+.tf-r1{{display:flex;align-items:center;gap:7px;margin-bottom:3px}}
+.tf-name{{font-size:12px;font-weight:600;color:#1a2340;flex:1}}
+.tf-score{{font-size:11px;font-weight:700}}
+.tf-r2{{font-size:10px;color:#6B7A99;padding-left:2px}}
+/* Impact col */
+.impact-col{{border-right:1px solid #e4eaf5;padding:0}}
+.ib-row{{display:flex;align-items:center;gap:8px;padding:8px 16px;border-bottom:1px solid #f0f3fa}}
+.ib-label{{font-size:10px;font-weight:700;color:#1a2340;width:80px;flex-shrink:0}}
+.ib-bar{{flex:1;height:16px;background:#f0f3fa;border-radius:4px;overflow:hidden}}
+.ib-pct{{font-size:9px;color:#6B7A99;width:80px;text-align:right;flex-shrink:0}}
+/* Category health */
+.health-panel{{padding:10px 14px;border-bottom:1px solid #f0f3fa}}
+.hp-row{{display:flex;align-items:center;gap:10px}}
+.hp-ring{{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0}}
+.hp-name{{font-size:12px;font-weight:700;color:#1a2340}}
+.hp-sub{{font-size:10px;color:#6B7A99;margin-top:1px}}
+.hp-sev{{font-size:10px;font-weight:600;margin-top:2px}}
 /* Sections */
 .sec{{padding:26px 40px;border-bottom:1px solid #eef1f8}}
 .pb{{page-break-before:always}}
@@ -685,13 +788,10 @@ tbody tr{{page-break-inside:avoid}}
 <p style="margin-top:8px;opacity:.55;font-size:11px">Generated: {datetime.now().strftime('%d %B %Y, %H:%M')} &nbsp;&bull;&nbsp; CONFIDENTIAL &nbsp;&bull;&nbsp; For Internal Use Only</p>
 </div>
 
-<!-- KPI BAR -->
-<div class="kpi">
-<div class="kc"><div class="kv">{len(tools)}</div><div class="kl">Tools Assessed</div></div>
-<div class="kc"><div class="kv">${total_cost:,.0f}</div><div class="kl">Annual Spend</div></div>
-<div class="kc"><div class="kv">{len(dups)}</div><div class="kl">Overlap Pairs</div></div>
-<div class="kc"><div class="kv">${pot_save:,.0f}</div><div class="kl">Est. Savings</div></div>
-</div>
+<!-- KPI ROW + LAYER NAV + THREE-COL -->
+{kpi_html}
+{layer_nav_html}
+{three_col_html}
 
 <!-- EXECUTIVE SUMMARY -->
 <div class="sec pb">
