@@ -475,19 +475,19 @@ tbody td{{padding:9px 13px;border-bottom:1px solid #f0f3fa}}tbody tr:hover{{back
 @media print{{body{{background:#fff}}.w{{box-shadow:none;max-width:100%}}.rm{{grid-template-columns:repeat(3,1fr)}}}}</style></head>
 <body><div class="w">
 <div class="hdr">
-<div style="display:flex;align-items:center;gap:18px;margin-bottom:18px">
-<div style="background:#fff;border-radius:5px;padding:7px 10px;display:inline-block">
-<svg width="100" height="38" viewBox="0 0 120 46" xmlns="http://www.w3.org/2000/svg">
-<rect x="0" y="0" width="20" height="20" fill="#00338D"/>
-<rect x="24" y="0" width="20" height="20" fill="#00338D"/>
-<rect x="0" y="24" width="20" height="20" fill="#00338D"/>
-<rect x="24" y="24" width="20" height="20" fill="#00338D"/>
-<text x="52" y="33" font-family="Arial Black,Arial,sans-serif" font-size="28" font-weight="900" fill="#00338D" letter-spacing="1">KPMG</text>
+<div style="display:flex;align-items:center;gap:20px;margin-bottom:20px">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 210 135" width="140" height="90" style="border-radius:3px;overflow:hidden;flex-shrink:0">
+<defs><linearGradient id="rkg" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#002FA7"/><stop offset="55%" stop-color="#0052CC"/><stop offset="100%" stop-color="#00A0DC"/></linearGradient></defs>
+<polygon points="26,0 210,0 184,135 0,135" fill="url(#rkg)"/>
+<text x="36" y="100" font-family="Arial Black,Arial,sans-serif" font-size="54" font-weight="900" font-style="italic" fill="#fff" letter-spacing="-1">KPMG</text>
+<rect x="50"  y="14" width="29" height="32" fill="none" stroke="#fff" stroke-width="2.2"/>
+<rect x="83"  y="14" width="29" height="32" fill="none" stroke="#fff" stroke-width="2.2"/>
+<rect x="116" y="14" width="29" height="32" fill="none" stroke="#fff" stroke-width="2.2"/>
+<rect x="149" y="14" width="29" height="32" fill="none" stroke="#fff" stroke-width="2.2"/>
 </svg>
-</div>
-<div style="border-left:1px solid rgba(255,255,255,.3);padding-left:18px">
-<div style="font-size:12px;opacity:.7;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">Advisory Services</div>
-<div style="font-size:15px;font-weight:700;opacity:.9">PlatformAssessor AI</div>
+<div style="border-left:1px solid rgba(255,255,255,.3);padding-left:20px">
+<div style="font-size:11px;opacity:.65;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:4px">Advisory Services</div>
+<div style="font-size:14px;font-weight:600;opacity:.9">PlatformAssessor AI</div>
 </div>
 </div>
 <h1>Technology Rationalization Assessment Report</h1>
