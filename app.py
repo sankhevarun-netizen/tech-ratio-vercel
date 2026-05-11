@@ -8,7 +8,7 @@ SETUP:
   4. Browser opens at http://localhost:8000
 """
 
-import os, json, uuid, io, webbrowser, threading
+import os, json, uuid, io, re, webbrowser, threading
 from typing import Optional, List, Dict, Any
 from collections import defaultdict
 from dotenv import load_dotenv
@@ -321,12 +321,25 @@ def _df(df)->List[Dict]:
 # ═══════════════════════════════════════════════════════════════════════════════
 # AI HELPERS
 # ═══════════════════════════════════════════════════════════════════════════════
-def _extract_json(text:str):
-    t=text.strip()
-    if t.startswith("```"):
-        t=t.split("\n",1)[1] if "\n" in t else t[3:]
-        t=t.rsplit("```",1)[0].strip()
-    return json.loads(t)
+def _extract_json(text: str):
+    t = text.strip()
+    t = re.sub(r'^```[a-zA-Z]*\s*\n?', '', t)
+    t = re.sub(r'\n?```\s*$', '', t)
+    t = t.strip()
+    for i, ch in enumerate(t):
+        if ch in '{[':
+            t = t[i:]
+            break
+    try:
+        return json.loads(t)
+    except json.JSONDecodeError:
+        pass
+    def _fix_nl(m):
+        return m.group(0).replace('\n', '\\n').replace('\r', '')
+    try:
+        return json.loads(re.sub(r'"(?:[^"\\]|\\.)*"', _fix_nl, t, flags=re.DOTALL))
+    except Exception:
+        raise ValueError("JSON parse failed")
 
 async def ai_parse_text(text:str)->List[Dict]:
     resp=await client.messages.create(
@@ -373,7 +386,11 @@ Return ONLY valid JSON (no markdown, no explanation) with these exact keys:
   "expected_outcomes": {{"cost_savings_annual":<float>,"risk_reduction":"<desc>","tool_reduction":"<from X to Y>","strategic_gains":"<value>"}}
 }}"""}])
     try: return _extract_json(resp.content[0].text)
-    except: return {"executive_summary":resp.content[0].text}
+    except:
+        raw = resp.content[0].text
+        m = re.search(r'"executive_summary"\s*:\s*"((?:[^"\\]|\\.)*)"', raw, re.DOTALL)
+        summary = m.group(1).replace('\\n','\n').replace('\\"','"') if m else "Assessment complete — re-run for full structured output."
+        return {"executive_summary": summary}
 
 def build_report(tools:List[Dict],dups:List[Dict],assessment:Dict)->str:
     from datetime import datetime
@@ -585,7 +602,7 @@ def get_html() -> str:
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--navy:#003366;--blue:#0063DC;--sky:#00A3E0;--green:#00A651;--amber:#FFC200;--red:#E31837;--purple:#7B2FBE;--bg:#F0F4FA;--sur:#fff;--bdr:#E0E7F0;--txt:#1A2340;--mut:#6B7A99}
-html,body{height:100%;font-family:'Segoe UI',system-ui,Arial,sans-serif;background:var(--bg);color:var(--txt);font-size:14px}
+html,body{height:100%;font-family:'Helvetica Neue',Helvetica,'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--txt);font-size:14px}
 .app{display:flex;height:100vh;overflow:hidden}
 /* Sidebar */
 .sb{width:230px;background:var(--navy);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
@@ -739,13 +756,18 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
 <!-- SIDEBAR -->
 <aside class="sb">
   <div class="sb-logo">
-    <div class="kpmg-mark">
-      <svg width="52" height="22" viewBox="0 0 52 22" xmlns="http://www.w3.org/2000/svg">
-        <rect width="52" height="22" rx="3" fill="#fff"/>
-        <text x="3" y="16" font-family="Arial Black,Arial" font-size="14" font-weight="900" fill="#00338D" letter-spacing="0.5">KPMG</text>
+    <div class="kpmg-mark" style="flex-shrink:0">
+      <svg width="38" height="38" viewBox="0 0 38 38" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="0" width="17" height="17" fill="#fff"/>
+        <rect x="21" y="0" width="17" height="17" fill="#fff"/>
+        <rect x="0" y="21" width="17" height="17" fill="#fff"/>
+        <rect x="21" y="21" width="17" height="17" fill="#fff"/>
       </svg>
     </div>
-    <div><strong>PlatformAssessor AI</strong><span>Enterprise Advisory</span></div>
+    <div>
+      <strong style="color:#fff;font-size:17px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:1.5px;font-weight:900;display:block;line-height:1.1">KPMG</strong>
+      <span style="color:rgba(255,255,255,.55);font-size:10px;font-weight:500;letter-spacing:.3px">PlatformAssessor AI</span>
+    </div>
   </div>
   <div class="sb-sec">
     <div class="sb-lbl">Main</div>
@@ -1539,9 +1561,22 @@ async function runAssess(){
 
 function renderAssess(){rAssess(ASSESS);rPrev();}
 
+function cleanSummary(text){
+  if(!text)return '';
+  const t=text.trim();
+  if(t.startsWith('```')||t.startsWith('{')){
+    try{
+      let j=t.replace(/^```[a-z]*\n?/i,'').replace(/\n?```\s*$/,'').trim();
+      const o=JSON.parse(j);
+      if(o&&o.executive_summary)return o.executive_summary;
+    }catch(err){}
+  }
+  return text;
+}
+
 function rAssess(a){
   const el=document.getElementById('ar'); let html='';
-  if(a.executive_summary)html+=`<div class="card m4"><div class="ch"><span>&#128203;</span><span class="ct">Executive Summary</span></div><div class="eb">${e(a.executive_summary)}</div></div>`;
+  if(a.executive_summary)html+=`<div class="card m4"><div class="ch"><span>&#128203;</span><span class="ct">Executive Summary</span></div><div class="eb">${e(cleanSummary(a.executive_summary))}</div></div>`;
   const po=a.portfolio_overview;
   if(po){const hc=po.portfolio_health==='Healthy'?'green':po.portfolio_health==='At Risk'?'amber':'red';
     html+=`<div class="card m4"><div class="ch"><span>&#128202;</span><span class="ct">Portfolio Overview</span></div>

@@ -6,7 +6,7 @@ Local dev:  uvicorn api.index:app --reload --port 8000
 Vercel:     vercel deploy
 """
 
-import json, uuid, io, os
+import json, uuid, io, os, re
 from typing import Optional, List, Dict, Any
 from collections import defaultdict
 
@@ -328,12 +328,29 @@ def _df(df)->List[Dict]:
 # ═══════════════════════════════════════════════════════════════════════════
 # AI HELPERS
 # ═══════════════════════════════════════════════════════════════════════════
-def _extract_json(text:str):
-    t=text.strip()
-    if t.startswith("```"):
-        t=t.split("\n",1)[1] if "\n" in t else t[3:]
-        t=t.rsplit("```",1)[0].strip()
-    return json.loads(t)
+def _extract_json(text: str):
+    t = text.strip()
+    # Strip markdown code fences (```json ... ``` or ``` ... ```)
+    t = re.sub(r'^```[a-zA-Z]*\s*\n?', '', t)
+    t = re.sub(r'\n?```\s*$', '', t)
+    t = t.strip()
+    # Find first { or [ in case there's leading text
+    for i, ch in enumerate(t):
+        if ch in '{[':
+            t = t[i:]
+            break
+    # First attempt: direct parse
+    try:
+        return json.loads(t)
+    except json.JSONDecodeError:
+        pass
+    # Second attempt: fix literal newlines inside JSON string values
+    def _fix_nl(m):
+        return m.group(0).replace('\n', '\\n').replace('\r', '')
+    try:
+        return json.loads(re.sub(r'"(?:[^"\\]|\\.)*"', _fix_nl, t, flags=re.DOTALL))
+    except Exception:
+        raise ValueError("JSON parse failed")
 
 async def ai_parse_text(text:str)->List[Dict]:
     resp=await client.messages.create(
@@ -380,7 +397,11 @@ Return ONLY valid JSON (no markdown, no explanation) with these exact keys:
   "expected_outcomes": {{"cost_savings_annual":<float>,"risk_reduction":"<desc>","tool_reduction":"<from X to Y>","strategic_gains":"<value>"}}
 }}"""}])
     try: return _extract_json(resp.content[0].text)
-    except: return {"executive_summary":resp.content[0].text}
+    except:
+        raw = resp.content[0].text
+        m = re.search(r'"executive_summary"\s*:\s*"((?:[^"\\]|\\.)*)"', raw, re.DOTALL)
+        summary = m.group(1).replace('\\n','\n').replace('\\"','"') if m else "Assessment complete — re-run for full structured output."
+        return {"executive_summary": summary}
 
 def build_report(tools:List[Dict],dups:List[Dict],assessment:Dict)->str:
     from datetime import datetime
