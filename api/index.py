@@ -474,7 +474,23 @@ tbody td{{padding:9px 13px;border-bottom:1px solid #f0f3fa}}tbody tr:hover{{back
 .ftr{{background:#1a2340;color:#8899bb;padding:18px 40px;display:flex;justify-content:space-between;font-size:12px}}
 @media print{{body{{background:#fff}}.w{{box-shadow:none;max-width:100%}}.rm{{grid-template-columns:repeat(3,1fr)}}}}</style></head>
 <body><div class="w">
-<div class="hdr"><h1>Technology Rationalization Assessment Report</h1>
+<div class="hdr">
+<div style="display:flex;align-items:center;gap:18px;margin-bottom:18px">
+<div style="background:#fff;border-radius:5px;padding:7px 10px;display:inline-block">
+<svg width="100" height="38" viewBox="0 0 120 46" xmlns="http://www.w3.org/2000/svg">
+<rect x="0" y="0" width="20" height="20" fill="#00338D"/>
+<rect x="24" y="0" width="20" height="20" fill="#00338D"/>
+<rect x="0" y="24" width="20" height="20" fill="#00338D"/>
+<rect x="24" y="24" width="20" height="20" fill="#00338D"/>
+<text x="52" y="33" font-family="Arial Black,Arial,sans-serif" font-size="28" font-weight="900" fill="#00338D" letter-spacing="1">KPMG</text>
+</svg>
+</div>
+<div style="border-left:1px solid rgba(255,255,255,.3);padding-left:18px">
+<div style="font-size:12px;opacity:.7;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">Advisory Services</div>
+<div style="font-size:15px;font-weight:700;opacity:.9">PlatformAssessor AI</div>
+</div>
+</div>
+<h1>Technology Rationalization Assessment Report</h1>
 <p>Enterprise Platform, Application &amp; Tools Assessment · AI-Powered Advisory · 6R Rationalization Framework</p>
 <p style="margin-top:10px;opacity:.6;font-size:12px">Generated: {datetime.now().strftime('%d %B %Y %H:%M')} · CONFIDENTIAL</p></div>
 <div class="kpi">

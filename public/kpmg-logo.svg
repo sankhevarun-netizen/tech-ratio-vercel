@@ -1,0 +1,9 @@
+<svg width="120" height="46" viewBox="0 0 120 46" xmlns="http://www.w3.org/2000/svg">
+  <!-- Four squares 2x2 grid -->
+  <rect x="0"  y="0"  width="20" height="20" fill="#00338D"/>
+  <rect x="24" y="0"  width="20" height="20" fill="#00338D"/>
+  <rect x="0"  y="24" width="20" height="20" fill="#00338D"/>
+  <rect x="24" y="24" width="20" height="20" fill="#00338D"/>
+  <!-- KPMG text -->
+  <text x="52" y="33" font-family="Arial Black,Arial,Helvetica,sans-serif" font-size="28" font-weight="900" fill="#00338D" dominant-baseline="auto" letter-spacing="1">KPMG</text>
+</svg>
