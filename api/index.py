@@ -476,14 +476,15 @@ tbody td{{padding:9px 13px;border-bottom:1px solid #f0f3fa}}tbody tr:hover{{back
 <body><div class="w">
 <div class="hdr">
 <div style="display:flex;align-items:center;gap:20px;margin-bottom:20px">
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 210 135" width="140" height="90" style="border-radius:3px;overflow:hidden;flex-shrink:0">
-<defs><linearGradient id="rkg" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#002FA7"/><stop offset="55%" stop-color="#0052CC"/><stop offset="100%" stop-color="#00A0DC"/></linearGradient></defs>
-<polygon points="26,0 210,0 184,135 0,135" fill="url(#rkg)"/>
-<text x="36" y="100" font-family="Arial Black,Arial,sans-serif" font-size="54" font-weight="900" font-style="italic" fill="#fff" letter-spacing="-1">KPMG</text>
-<rect x="50"  y="14" width="29" height="32" fill="none" stroke="#fff" stroke-width="2.2"/>
-<rect x="83"  y="14" width="29" height="32" fill="none" stroke="#fff" stroke-width="2.2"/>
-<rect x="116" y="14" width="29" height="32" fill="none" stroke="#fff" stroke-width="2.2"/>
-<rect x="149" y="14" width="29" height="32" fill="none" stroke="#fff" stroke-width="2.2"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 482 192" width="180" height="72" style="border-radius:3px;flex-shrink:0">
+<defs><clipPath id="rptclip2"><rect x="4" y="6" width="108" height="97"/><rect x="122" y="6" width="108" height="97"/><rect x="240" y="6" width="108" height="97"/><rect x="358" y="6" width="108" height="97"/></clipPath></defs>
+<rect width="482" height="192" fill="#fff"/>
+<rect x="4"   y="6" width="108" height="97" fill="#00338D"/>
+<rect x="122" y="6" width="108" height="97" fill="#00338D"/>
+<rect x="240" y="6" width="108" height="97" fill="#00338D"/>
+<rect x="358" y="6" width="108" height="97" fill="#00338D"/>
+<text x="2" y="183" font-family="Arial Black,Arial,sans-serif" font-size="120" font-weight="900" font-style="italic" fill="#00338D">KPMG</text>
+<text x="2" y="183" font-family="Arial Black,Arial,sans-serif" font-size="120" font-weight="900" font-style="italic" fill="#fff" clip-path="url(#rptclip2)">KPMG</text>
 </svg>
 <div style="border-left:1px solid rgba(255,255,255,.3);padding-left:20px">
 <div style="font-size:11px;opacity:.65;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:4px">Advisory Services</div>
