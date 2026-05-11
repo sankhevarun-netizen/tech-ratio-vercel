@@ -832,14 +832,39 @@ async def ingest(file: Optional[UploadFile]=File(None), text: Optional[str]=Form
     if not tools:
         raise HTTPException(400, "No tools found in the uploaded data. Check that your file has a header row and tool names.")
     dups  = detect_dups(tools)
-    # Aggregate pain points from all tools
-    pain_points = [t["pain_points"] for t in tools if t.get("pain_points")]
+    total_cost = sum(t.get("annual_cost",0) or 0 for t in tools)
+    # Aggregate explicit pain points from tool data
+    explicit_pain = [t["pain_points"] for t in tools if t.get("pain_points")]
+    # Generate derived pain points from scored results so Phase 4 is always pre-filled
+    auto_pain: List[str] = []
+    eol_tools = [t["name"] for t in tools if t.get("end_of_life")]
+    if eol_tools:
+        auto_pain.append(f"End-of-life / deprecated tools requiring urgent retirement: {', '.join(eol_tools[:4])}")
+    high_risk = [t["name"] for t in tools if (t.get("scores") or {}).get("risk_score", 0) >= 7]
+    if high_risk:
+        auto_pain.append(f"High-risk tools with security or compliance exposure: {', '.join(high_risk[:4])}")
+    retire_replace = [t["name"] for t in tools if t.get("rationalization_action") in ("Retire","Replace")]
+    if retire_replace:
+        auto_pain.append(f"{len(retire_replace)} tools recommended for Retire/Replace: {', '.join(retire_replace[:4])}")
+    if dups:
+        pot = sum(d.get("potential_annual_savings",0) for d in dups)
+        auto_pain.append(f"{len(dups)} overlapping tool pairs detected — consolidation opportunity ~${pot:,.0f}/yr savings")
+    low_adopt = [t["name"] for t in tools if (t.get("scores") or {}).get("adoption_rate",5) < 3 and (t.get("annual_cost") or 0) > 0]
+    if low_adopt:
+        auto_pain.append(f"Low-adoption high-cost tools: {', '.join(low_adopt[:3])}")
+    # Merge: explicit first, then auto (deduplicate)
+    seen: set = set(explicit_pain)
+    pain_points = list(explicit_pain)
+    for p in auto_pain:
+        if p not in seen:
+            pain_points.append(p)
+            seen.add(p)
     detected_budget = _LAST_INGEST_META.get("detected_budget")
     return {"tools":tools,"duplications":dups,
             "pain_points": pain_points,
             "detected_budget": detected_budget,
             "summary":{"total_tools":len(tools),
-                        "total_annual_cost":sum(t.get("annual_cost",0) or 0 for t in tools),
+                        "total_annual_cost": total_cost,
                         "duplications_found":len(dups),
                         "potential_savings":sum(d.get("potential_annual_savings",0) for d in dups)}}
 

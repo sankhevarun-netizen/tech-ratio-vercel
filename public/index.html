@@ -155,6 +155,14 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
 .sum-card{background:var(--bg);border-radius:8px;padding:12px;border:1px solid var(--bdr)}
 .sum-label{font-size:10px;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
 .sum-val{font-size:13px;font-weight:600;color:var(--navy)}
+/* Agent Guide */
+.ag-banner{background:linear-gradient(135deg,#003366 0%,#0063DC 100%);border-radius:10px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:flex-start;gap:12px}
+.ag-ico{font-size:20px;flex-shrink:0;margin-top:1px}
+.ag-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,255,255,.6);margin-bottom:4px}
+.ag-txt{font-size:13px;line-height:1.65;color:rgba(255,255,255,.95)}
+.ag-txt strong{color:#fff}
+.ag-next{margin-top:9px;display:inline-flex;align-items:center;gap:6px;padding:5px 13px;border-radius:6px;font-size:12px;font-weight:600;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;cursor:pointer;transition:all .15s}
+.ag-next:hover{background:rgba(255,255,255,.28)}
 </style>
 </head>
 <body>
@@ -162,7 +170,7 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
 <!-- SIDEBAR -->
 <aside class="sb">
   <div class="sb-logo" style="flex-direction:column;align-items:flex-start;gap:6px;padding:14px 14px 12px">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 482 192" width="118" height="47" style="display:block;border-radius:3px">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 482 192" width="66" height="26" style="display:block;border-radius:3px">
       <defs>
         <clipPath id="kpmgclip">
           <rect x="4"   y="6"  width="108" height="97"/>
@@ -251,6 +259,8 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
 
   <!-- INGEST -- 6-Phase Wizard -->
   <div class="tab" id="tab-ingest">
+    <!-- Agent Guide Banner -->
+    <div id="agentGuide" style="display:none"></div>
     <!-- Phase progress bar -->
     <div class="wiz-header card m4" style="padding:16px 24px">
       <div class="wiz-steps" id="wizSteps">
@@ -677,7 +687,10 @@ async function init(){
 }
 
 function setupNav(){
-  document.querySelectorAll('.nav').forEach(el=>el.addEventListener('click',()=>go(el.dataset.tab)));
+  document.querySelectorAll('.nav').forEach(el=>el.addEventListener('click',()=>{
+    go(el.dataset.tab);
+    if(el.dataset.tab==='ingest') updateAgentGuide(window._INGEST_CTX?'2_done':CUR_PHASE);
+  }));
 }
 function go(tab){
   document.querySelectorAll('.nav').forEach(el=>el.classList.toggle('on',el.dataset.tab===tab));
@@ -707,6 +720,53 @@ function gotoPhase(n){
     if(ws){ws.classList.remove('active','done');if(i<n)ws.classList.add('done');else if(i===n)ws.classList.add('active');}
   }
   if(n===6) buildP6Summary();
+  updateAgentGuide(n);
+}
+
+function updateAgentGuide(key){
+  const el=document.getElementById('agentGuide');
+  if(!el)return;
+  const ctx=window._INGEST_CTX||{};
+  const fmtB=v=>{if(!v)return null;return v>=1e6?'$'+(v/1e6).toFixed(1)+'M':v>=1e3?'$'+(v/1e3).toFixed(0)+'K':'$'+Math.round(v).toLocaleString();};
+  const msgs={
+    1:{ico:'&#127970;',lbl:'Step 1 of 6 &mdash; Organisation Profile',
+       txt:'Enter your organisation name, industry, and geography. This helps the AI tailor every recommendation to your sector and operational context.',
+       next:null},
+    2:{ico:'&#128229;',lbl:'Step 2 of 6 &mdash; Upload Tool Inventory',
+       txt:'<strong>Upload your Excel / CSV tool file</strong> (or paste descriptions in the text box), then click the green <strong>&#9889; Ingest &amp; Score Tools</strong> button. The agent will automatically score each tool, detect overlaps, and extract pain points.',
+       next:null},
+    '2_done':{ico:'&#9989;',lbl:'Step 2 Complete &mdash; Portfolio Ingested &amp; Scored',
+       txt:(()=>{
+         let t=`<strong>${ctx.tools||0} tools</strong> ingested &amp; scored &bull; <strong>${ctx.dups||0} overlap pairs</strong> detected`;
+         if(ctx.painCount) t+=` &bull; <strong>${ctx.painCount} pain point${ctx.painCount===1?'':'s'}</strong> extracted from your file`;
+         const b=fmtB(ctx.budget);
+         if(b) t+=`. Annual technology budget pre-filled as <strong>${b}</strong> (sum of all tool costs &mdash; adjust in Phase 5 if needed)`;
+         t+='. Click <strong>Continue &rarr;</strong> to review the detected findings.';
+         return t;
+       })(),
+       next:{lbl:'Continue to Business Context &rarr;',fn:'gotoPhase(3)'}},
+    3:{ico:'&#128203;',lbl:'Step 3 of 6 &mdash; Business &amp; Compliance Context',
+       txt:'Pain points detected from your file are shown below. Check the compliance frameworks that apply to your organisation and confirm strategic priorities &mdash; these sharpen the AI recommendations.',
+       next:{lbl:'Continue to Technical Context &rarr;',fn:'gotoPhase(4)'}},
+    4:{ico:'&#9881;&#65039;',lbl:'Step 4 of 6 &mdash; Technical &amp; Operational Context',
+       txt:'Technical pain points have been <strong>pre-filled from your tool data</strong> below. Set your cloud adoption level, preferred provider, and rationalization timeline. Review the pre-filled pain points and add any additional context.',
+       next:{lbl:'Continue to Financial Parameters &rarr;',fn:'gotoPhase(5)'}},
+    5:{ico:'&#128176;',lbl:'Step 5 of 6 &mdash; Financial Parameters',
+       txt:(()=>{
+         const b=fmtB(ctx.budget);
+         return b?`Annual technology budget has been pre-set to <strong>${b}</strong> (calculated from your tool costs). Adjust if your actual IT budget differs. Set your target cost-reduction % and migration tolerance.`
+                 :'Enter your annual IT/technology budget and set your target cost-reduction percentage to calibrate ROI projections.';
+       })(),
+       next:{lbl:'Review &amp; Run Assessment &rarr;',fn:'gotoPhase(6)'}},
+    6:{ico:'&#127919;',lbl:'Step 6 &mdash; Ready for AI Assessment',
+       txt:'All inputs are configured. Click <strong>Run Full AI Assessment</strong> below to generate your CIO-ready rationalization report with executive summary, tool scores, roadmap, and PDF export.',
+       next:null},
+  };
+  const m=msgs[key];
+  if(!m){el.style.display='none';return;}
+  const nextBtn=m.next?`<button class="ag-next" onclick="${m.next.fn}">${m.next.lbl}</button>`:'';
+  el.style.display='block';
+  el.innerHTML=`<div class="ag-banner"><div class="ag-ico">${m.ico}</div><div style="flex:1"><div class="ag-lbl">&#129302; Agent Guide &bull; ${m.lbl}</div><div class="ag-txt">${m.txt}</div>${nextBtn}</div></div>`;
 }
 
 function buildP6Summary(){
@@ -744,17 +804,19 @@ async function doIngest(wizardMode=false){
     const nb=document.getElementById('nb'); nb.textContent=TOOLS.length; nb.classList.add('show');
     toast('Ingested '+d.summary.total_tools+' tools successfully','ok');
     updateP2Status(d.summary);
-    // Auto-populate Phase 5 budget if detected in file
-    if(d.detected_budget){
-      const bField=document.getElementById('p5budget');
-      if(bField&&!bField.value) bField.value=d.detected_budget;
-    }
-    // Auto-populate Phase 3 & 4 with pain points / challenges from file
+    // Auto-populate Phase 5 budget: explicit column first, then total tool cost as fallback
+    const budgetVal = d.detected_budget || (d.summary&&d.summary.total_annual_cost ? d.summary.total_annual_cost : 0);
+    const bField=document.getElementById('p5budget');
+    if(bField&&!bField.value&&budgetVal) bField.value=Math.round(budgetVal);
+    // Auto-populate Phase 3 & 4 with pain points extracted + auto-derived from tool analysis
     if(d.pain_points&&d.pain_points.length){
       populateP3Challenges(d.pain_points);
       const pField=document.getElementById('p4pain');
       if(pField&&!pField.value) pField.value=d.pain_points.join('\n');
     }
+    // Store ingest context for agent guide
+    window._INGEST_CTX={tools:d.summary.total_tools,dups:DUPS.length,budget:budgetVal,painCount:d.pain_points?d.pain_points.length:0};
+    updateAgentGuide('2_done');
     if(wizardMode) gotoPhase(3);
     else go('inventory');
   }catch(e){hideLd();toast('Error: '+e.message,'er');}
@@ -1035,8 +1097,18 @@ async function runAssess(){
     if(!r.ok)return toast(d.detail||'Assessment failed','er');
     ASSESS=d.assessment;
     renderAssess();
-    toast('Assessment complete','ok');
+    toast('Assessment complete — view results below or go to Reports for PDF export','ok');
     go('assessment');
+    // Post-assessment guide: prompt user toward Reports
+    setTimeout(()=>{
+      const ar=document.getElementById('ar');
+      if(ar&&!document.getElementById('postAssessGuide')){
+        const g=document.createElement('div');
+        g.id='postAssessGuide';
+        g.innerHTML=`<div class="ag-banner" style="margin-bottom:16px"><div class="ag-ico">&#128196;</div><div style="flex:1"><div class="ag-lbl">&#129302; Agent Guide &bull; Assessment Complete</div><div class="ag-txt">Your AI assessment is ready. Scroll down to review the Executive Summary, tool scores, roadmap, and Before vs After comparison. When ready, go to <strong>Reports</strong> to generate and download the full PDF report.</div><button class="ag-next" onclick="go('reports');dlReport()">&#128196; Go to Reports &amp; Download PDF &rarr;</button></div></div>`;
+        ar.insertBefore(g,ar.firstChild);
+      }
+    },400);
   }catch(ex){hideLd();toast('Error: '+ex.message,'er');}
 }
 
