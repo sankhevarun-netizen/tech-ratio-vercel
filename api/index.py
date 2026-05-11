@@ -560,3 +560,5 @@ async def report(req: ReportReq):
 @app.get("/api/health")
 async def health():
     return {"status":"healthy","model":ANTHROPIC_MODEL,"key_set":bool(ANTHROPIC_API_KEY)}
+from mangum import Mangum
+handler = Mangum(app)
