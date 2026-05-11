@@ -113,6 +113,37 @@ tbody tr:last-child td{border-bottom:none}tbody tr:hover{background:#f8fbff}
 .ld.show{display:flex}
 .sp{width:44px;height:44px;border:4px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .65s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+/* Dashboard KPI cards */
+.dkc{background:#fff;border:1px solid var(--bdr);border-radius:10px;padding:15px 18px}
+.dkl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--mut);margin-bottom:8px;display:flex;align-items:center;gap:5px}
+.dki{width:14px;height:14px;border-radius:50%;border:1px solid var(--bdr);display:inline-flex;align-items:center;justify-content:center;font-size:8px;color:var(--mut);flex-shrink:0}
+.dkv{font-size:30px;font-weight:800;color:var(--navy);line-height:1}
+.dks{font-size:11px;color:var(--mut);margin-top:3px}
+.dkbar{height:4px;background:var(--bg);border-radius:2px;overflow:hidden;margin-top:8px}
+.dkbf{height:100%;border-radius:2px;transition:width .6s ease}
+/* Layer nav tabs */
+.lnt{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:6px;border:1px solid var(--bdr);background:#fff;font-size:12px;font-weight:600;color:var(--mut);cursor:pointer;transition:all .15s;white-space:nowrap}
+.lnt:hover{border-color:var(--navy);color:var(--navy)}
+.lnt.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.lnc{border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700;background:var(--bg);color:var(--navy)}
+.lnt.active .lnc{background:rgba(255,255,255,.2);color:#fff}
+/* Tool list items */
+.dli{padding:10px 16px;border-bottom:1px solid var(--bdr);cursor:pointer;transition:background .12s}
+.dli:hover{background:#f6f9ff}.dli:last-child{border-bottom:none}
+.dli-r1{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.dli-name{font-size:13px;font-weight:600;color:var(--navy);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dli-r2{font-size:11px;color:var(--mut);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.dli-sep{color:var(--bdr)}
+/* Cost breakdown bars */
+.cbr{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.cbl{font-size:11px;color:var(--txt);min-width:80px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cbb{flex:1;height:6px;background:var(--bg);border-radius:3px;overflow:hidden}
+.cbf{height:100%;border-radius:3px;transition:width .5s ease}
+.cbp{font-size:10px;color:var(--mut);min-width:30px;text-align:right}
+/* Topbar time filter */
+.tfb{padding:4px 9px;border-radius:5px;border:none;background:transparent;font-size:11px;font-weight:600;color:var(--mut);cursor:pointer;transition:all .15s}
+.tfb:hover{color:var(--navy)}.tfb.active{background:#fff;color:var(--navy);box-shadow:0 1px 3px rgba(0,0,0,.1)}
 /* Toast */
 .ts2{position:fixed;bottom:22px;right:22px;display:flex;flex-direction:column;gap:9px;z-index:2000}
 .tt2{background:var(--navy);color:#fff;padding:11px 16px;border-radius:9px;font-size:13px;box-shadow:0 4px 20px rgba(0,0,0,.25);display:flex;align-items:center;gap:9px;min-width:260px;animation:si .22s ease}
@@ -212,7 +243,16 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
 <div class="main">
   <div class="topbar">
     <div><div class="tt" id="pt">Dashboard</div><div class="ts">Enterprise Technology Advisory &bull; AI-Powered Tool Rationalization</div></div>
-    <div class="fx g2">
+    <div class="fx ic2" style="gap:10px">
+      <div style="display:flex;gap:3px;background:var(--bg);border:1px solid var(--bdr);border-radius:7px;padding:3px">
+        <button class="tfb" onclick="setTF(this,'7d')">7d</button>
+        <button class="tfb" onclick="setTF(this,'30d')">30d</button>
+        <button class="tfb active" onclick="setTF(this,'all')">All</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;padding:5px 12px;background:#f0faf5;border:1px solid #c3e6cb;border-radius:6px">
+        <div style="width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s ease-in-out infinite"></div>
+        <span style="font-size:12px;font-weight:600;color:var(--green)">Live</span>
+      </div>
       <button class="btn bs1 bsm" onclick="go('ingest')">+ Ingest Data</button>
       <button class="btn bp1 bsm" onclick="go('assessment');runAssess()">&#127919; Run Assessment</button>
     </div>
@@ -221,33 +261,109 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
 
   <!-- DASHBOARD -->
   <div class="tab on" id="tab-dashboard">
-    <div class="kg">
-      <div class="kc"><div class="ki" style="background:#eef4ff">&#128230;</div><div><div class="kv" id="k0">0</div><div class="kl">Tools Assessed</div></div></div>
-      <div class="kc"><div class="ki" style="background:#fff3e0">&#128176;</div><div><div class="kv" id="k1">$0</div><div class="kl">Annual Spend</div></div></div>
-      <div class="kc"><div class="ki" style="background:#ffeaea">&#128257;</div><div><div class="kv" id="k2">0</div><div class="kl">Overlap Pairs</div></div></div>
-      <div class="kc"><div class="ki" style="background:#e8f8ef">&#128161;</div><div><div class="kv" id="k3">$0</div><div class="kl">Est. Savings</div></div></div>
-    </div>
-    <div class="cg">
-      <div class="card"><div class="ch"><span>&#127919;</span><span class="ct">Rationalization Action Distribution</span></div><div class="cw"><canvas id="cd"></canvas></div></div>
-      <div class="card"><div class="ch"><span>&#128200;</span><span class="ct">Top Tools by Score</span></div><div class="cw"><canvas id="cb"></canvas></div></div>
-    </div>
-    <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:14px">
-      <div class="card">
-        <div class="ch"><span>&#128193;</span><span class="ct">Recent Assessments</span></div>
-        <div class="tw"><table><thead><tr><th>Tool</th><th>Category</th><th>Score</th><th>Action</th></tr></thead>
-        <tbody id="dt"><tr><td colspan="4" style="text-align:center;padding:32px;color:var(--mut)">No data &mdash; ingest your portfolio</td></tr></tbody></table></div>
+
+    <!-- KPI Row (6 cards) -->
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:14px">
+      <div class="dkc">
+        <div class="dkl">TOOLS ASSESSED <span class="dki">i</span></div>
+        <div class="dkv" id="k0">0</div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:7px" id="k0badges"></div>
       </div>
-      <div class="card">
-        <div class="ch"><span>&#9888;&#65039;</span><span class="ct">Duplication Alerts</span></div>
-        <div id="dd"><p class="mu2 tx">Ingest tools to detect duplications.</p></div>
+      <div class="dkc">
+        <div class="dkl">ANNUAL SPEND <span class="dki">i</span></div>
+        <div class="dkv" id="k1">$0</div>
+        <div class="dks">technology budget</div>
+        <div class="dkbar"><div class="dkbf" id="k1bar" style="width:60%;background:var(--navy)"></div></div>
+      </div>
+      <div class="dkc">
+        <div class="dkl">OVERLAP PAIRS <span class="dki">i</span></div>
+        <div class="dkv" id="k2">0</div>
+        <div class="dks">consolidation alerts</div>
+      </div>
+      <div class="dkc">
+        <div class="dkl">EST. SAVINGS <span class="dki">i</span></div>
+        <div class="dkv" id="k3">$0</div>
+        <div class="dks">annual potential</div>
+        <div class="dkbar"><div class="dkbf" id="k3bar" style="width:0%;background:var(--green)"></div></div>
+      </div>
+      <div class="dkc">
+        <div class="dkl">RETIRE / EOL <span class="dki">i</span></div>
+        <div class="dkv" id="k4" style="color:var(--red)">0</div>
+        <div class="dks">immediate action needed</div>
+      </div>
+      <div class="dkc">
+        <div class="dkl">PORTFOLIO HEALTH <span class="dki">i</span></div>
+        <div class="dkv" id="k5" style="font-size:18px;margin-top:4px">—</div>
+        <div class="dks" id="k5sub">run AI assessment</div>
       </div>
     </div>
-    <div class="card mt4" style="background:linear-gradient(135deg,#003366,#0063DC);color:#fff;border:none">
+
+    <!-- Layer Navigation (Rationalization filter) -->
+    <div style="background:#fff;border:1px solid var(--bdr);border-radius:10px;padding:11px 16px;margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <span style="font-size:12px;font-weight:700;color:var(--navy);white-space:nowrap;opacity:.7;text-transform:uppercase;letter-spacing:.5px">View</span>
+      <div style="display:flex;gap:6px;flex:1;flex-wrap:wrap">
+        <button class="lnt active" onclick="dashFilter('')">All Tools <span class="lnc" id="lnAll">0</span></button>
+        <button class="lnt" onclick="dashFilter('Retain')">Retain <span class="lnc" id="lnRetain">0</span></button>
+        <button class="lnt" onclick="dashFilter('Rehost')">Rehost <span class="lnc" id="lnRehost">0</span></button>
+        <button class="lnt" onclick="dashFilter('Replatform')">Replatform <span class="lnc" id="lnReplatform">0</span></button>
+        <button class="lnt" onclick="dashFilter('Refactor')">Refactor <span class="lnc" id="lnRefactor">0</span></button>
+        <button class="lnt" onclick="dashFilter('Replace')">Replace <span class="lnc" id="lnReplace">0</span></button>
+        <button class="lnt" onclick="dashFilter('Retire')">Retire <span class="lnc" id="lnRetire">0</span></button>
+      </div>
+      <button class="btn bs1 bsm" onclick="dashFilter('')" style="white-space:nowrap">Reset</button>
+    </div>
+
+    <!-- 3-Column Main Content -->
+    <div style="display:grid;grid-template-columns:1.45fr 1fr 0.85fr;gap:12px;margin-bottom:12px">
+
+      <!-- LEFT: Tool list (like incident feed) -->
+      <div class="card" style="padding:0;overflow:hidden">
+        <div style="padding:13px 16px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:10px">
+          <span style="font-size:13px;font-weight:700;color:var(--navy)">Tool Portfolio</span>
+          <span id="dashTC" style="font-size:12px;color:var(--mut)">0 tools</span>
+          <select id="dashCat" style="margin-left:auto;font-size:11px;padding:4px 8px;border-radius:6px;border:1px solid var(--bdr);background:#fff;color:var(--txt)">
+            <option value="">All categories</option>
+          </select>
+        </div>
+        <div id="dashList" style="max-height:430px;overflow-y:auto">
+          <div style="padding:48px 16px;text-align:center;color:var(--mut);font-size:13px">No tools ingested &mdash; go to <strong>Data Ingest</strong></div>
+        </div>
+      </div>
+
+      <!-- MIDDLE: Rationalization breakdown -->
+      <div class="card">
+        <div class="ch"><span style="font-size:13px;font-weight:700;color:var(--navy)">Rationalization Breakdown</span></div>
+        <div style="height:175px;position:relative"><canvas id="cd"></canvas></div>
+        <div style="margin-top:14px;border-top:1px solid var(--bdr);padding-top:12px">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--mut);margin-bottom:9px">Cost Distribution by Action</div>
+          <div id="costBreak"></div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Score chart + Overlap alerts -->
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="card">
+          <div class="ch"><span style="font-size:13px;font-weight:700;color:var(--navy)">Top Tools by Score</span></div>
+          <div style="height:160px;position:relative"><canvas id="cb"></canvas></div>
+        </div>
+        <div class="card" style="flex:1;padding:0;overflow:hidden">
+          <div style="padding:13px 16px;border-bottom:1px solid var(--bdr)">
+            <span style="font-size:13px;font-weight:700;color:var(--navy)">Overlap Alerts</span>
+          </div>
+          <div id="dd" style="max-height:220px;overflow-y:auto">
+            <div style="padding:24px 16px;text-align:center;color:var(--mut);font-size:13px">No duplications detected</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA Banner -->
+    <div class="card" style="background:linear-gradient(135deg,#003366,#0063DC);color:#fff;border:none">
       <div style="display:flex;align-items:center;gap:18px">
-        <div style="font-size:44px">&#129302;</div>
+        <div style="font-size:38px">&#129302;</div>
         <div style="flex:1">
-          <div style="font-size:16px;font-weight:700;margin-bottom:5px">Tool Rationalization Agent &mdash; Enterprise Technology Advisory</div>
-          <div style="font-size:12px;opacity:.8;line-height:1.6">AI-Powered Tool Assessment &bull; Telecom &amp; Enterprise Optimized &bull; Upload your tool inventory &bull; Get AI-powered scores across 7 dimensions &bull; Generate CIO-ready roadmaps &amp; reports</div>
+          <div style="font-size:14px;font-weight:700;margin-bottom:4px">Tool Rationalization Agent &mdash; Enterprise Technology Advisory</div>
+          <div style="font-size:11px;opacity:.8;line-height:1.6">AI-Powered Assessment &bull; 7 Scoring Dimensions &bull; Upload your inventory &bull; CIO-ready roadmaps &amp; PDF reports</div>
         </div>
         <div class="fx g2">
           <button class="btn bsm" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3)" onclick="go('chat')">Chat with AI</button>
@@ -1004,27 +1120,96 @@ Age Years: 12`;
   toast('Sample data loaded -- click Ingest to process','in');
 }
 
+let DASH_FILTER='';
+function dashFilter(action){
+  DASH_FILTER=action;
+  document.querySelectorAll('.lnt').forEach(b=>{
+    const lbl=b.textContent.trim();
+    b.classList.toggle('active', action===''?lbl.startsWith('All'):lbl.startsWith(action));
+  });
+  renderDashList();
+}
+function setTF(btn){
+  document.querySelectorAll('.tfb').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
 function renderDash(){
   const tc=TOOLS.reduce((s,t)=>s+(t.annual_cost||0),0);
   const ps=DUPS.reduce((s,d)=>s+(d.potential_annual_savings||0),0);
+  const cnt={};TOOLS.forEach(t=>{const a=t.rationalization_action||'TBD';cnt[a]=(cnt[a]||0)+1;});
+  const eol=TOOLS.filter(t=>t.end_of_life||(t.rationalization_action==='Retire')).length;
+  // KPI values
   document.getElementById('k0').textContent=TOOLS.length;
   document.getElementById('k1').textContent='$'+fmt(tc);
   document.getElementById('k2').textContent=DUPS.length;
   document.getElementById('k3').textContent='$'+fmt(ps);
-  const cnt={};TOOLS.forEach(t=>{const a=t.rationalization_action||'TBD';cnt[a]=(cnt[a]||0)+1;});
-  rDonut(cnt); rBar();
-  document.getElementById('dt').innerHTML=TOOLS.slice(0,6).map(t=>`<tr>
-    <td><strong>${e(t.name)}</strong></td><td>${e(t.category)}</td>
-    <td><div class="sb2"><div class="bt2"><div class="bf2" style="width:${(t.composite_score||0)*10}%"></div></div>
-    <span class="bl2 ${sc(t.composite_score)}">${t.composite_score||'--'}</span></div></td>
-    <td>${bdg(t.rationalization_action||'TBD')}</td></tr>`).join('');
+  document.getElementById('k4').textContent=eol;
+  // Action mini-badges on Tools card
+  const ACB={Retain:'color:#155724;background:#d4edda',Replace:'color:#721c24;background:#f8d7da',Retire:'color:#383d41;background:#e2e3e5'};
+  document.getElementById('k0badges').innerHTML=['Retain','Replace','Retire'].filter(a=>cnt[a]).map(a=>`<span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;${ACB[a]}">${a.slice(0,2).toUpperCase()}·${cnt[a]}</span>`).join('');
+  // Savings bar as % of total spend
+  if(tc>0){const b=document.getElementById('k3bar');if(b)b.style.width=Math.min(100,ps/tc*100)+'%';}
+  // Layer nav counts
+  ['All','Retain','Rehost','Replatform','Refactor','Replace','Retire'].forEach(a=>{
+    const el=document.getElementById('ln'+a);
+    if(el) el.textContent=a==='All'?TOOLS.length:(cnt[a]||0);
+  });
+  // Category filter
+  const cats=[...new Set(TOOLS.map(t=>t.category))].sort();
+  const sel=document.getElementById('dashCat');
+  if(sel){sel.innerHTML='<option value="">All categories</option>'+cats.map(c=>`<option>${e(c)}</option>`).join('');sel.onchange=()=>renderDashList();}
+  renderDashList();
+  rDonut(cnt);
+  rBar();
+  renderCostBreak();
+  // Overlap alerts
   document.getElementById('dd').innerHTML=DUPS.length
-    ?DUPS.slice(0,3).map(d=>`<div class="dc"><div class="dp">${d.overlap_percentage}%</div>
-    <div><div style="font-weight:700;color:var(--navy)">${e(d.tool_a)} &#8596; ${e(d.tool_b)}</div>
-    <div style="font-size:12px;color:var(--mut);line-height:1.5">${e(d.rationale)}</div>
-    <div style="font-size:12px;color:var(--green);font-weight:700;margin-top:3px">Est. savings: $${fmt(d.potential_annual_savings||0)}/yr &bull; ${d.priority} Priority</div></div></div>`).join('')
-    :'<p class="mu2 tx">No duplications detected.</p>';
+    ?DUPS.slice(0,6).map(d=>`<div class="dli" style="padding:10px 14px">
+      <div class="dli-r1">
+        <span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;color:#b45309;background:#fef3c7">${d.overlap_percentage}%</span>
+        <span class="dli-name">${e(d.tool_a)} &#8596; ${e(d.tool_b)}</span>
+        <span style="font-size:11px;font-weight:700;color:var(--green);white-space:nowrap">$${fmt(d.potential_annual_savings||0)}/yr</span>
+      </div>
+      <div class="dli-r2"><span>${e(d.category)}</span><span class="dli-sep">·</span><span>${e(d.priority)} Priority</span></div>
+    </div>`).join('')
+    :'<div style="padding:32px 16px;text-align:center;color:var(--mut);font-size:13px">No duplications detected</div>';
   rPrev();
+}
+function renderDashList(){
+  const cat=(document.getElementById('dashCat')||{}).value||'';
+  let tools=TOOLS.filter(t=>(!DASH_FILTER||t.rationalization_action===DASH_FILTER)&&(!cat||t.category===cat));
+  document.getElementById('dashTC').textContent=tools.length+' tool'+(tools.length===1?'':'s');
+  const ACL={Retain:'color:#155724;background:#d4edda',Rehost:'color:#004085;background:#cce5ff',Replatform:'color:#856404;background:#fff3cd',Refactor:'color:#7d3c00;background:#fde8d8',Replace:'color:#721c24;background:#f8d7da',Retire:'color:#383d41;background:#e2e3e5',TBD:'color:#333;background:#eee'};
+  document.getElementById('dashList').innerHTML=tools.length?tools.map(t=>{
+    const ac=t.rationalization_action||'TBD';
+    const s=t.composite_score||0;
+    const sc=s>=7?'var(--green)':s>=5?'var(--amber)':'var(--red)';
+    return `<div class="dli" onclick="go('inventory')">
+      <div class="dli-r1">
+        <span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;${ACL[ac]||ACL.TBD};flex-shrink:0">${ac}</span>
+        <span class="dli-name">${e(t.name)}</span>
+        <span style="font-size:12px;font-weight:800;color:${sc};flex-shrink:0">${s}/10</span>
+      </div>
+      <div class="dli-r2">
+        ${t.vendor?`<span>${e(t.vendor)}</span><span class="dli-sep">·</span>`:''}
+        <span>${e(t.category)}</span>
+        ${t.annual_cost?`<span class="dli-sep">·</span><span>$${fmt(t.annual_cost)}/yr</span>`:''}
+        ${t.user_count?`<span class="dli-sep">·</span><span>${t.user_count} users</span>`:''}
+      </div>
+    </div>`;
+  }).join(''):'<div style="padding:48px 16px;text-align:center;color:var(--mut);font-size:13px">No tools match this filter</div>';
+}
+function renderCostBreak(){
+  const byAction={};
+  TOOLS.forEach(t=>{const a=t.rationalization_action||'TBD';byAction[a]=(byAction[a]||0)+(t.annual_cost||0);});
+  const total=Object.values(byAction).reduce((s,v)=>s+v,0)||1;
+  const CLR={Retain:'#00A651',Rehost:'#0063DC',Replatform:'#FFC200',Refactor:'#FF7700',Replace:'#E31837',Retire:'#6B7A99',TBD:'#aaa'};
+  const sorted=Object.entries(byAction).sort((a,b)=>b[1]-a[1]);
+  document.getElementById('costBreak').innerHTML=sorted.map(([a,v])=>`<div class="cbr">
+    <div class="cbl">${a}</div>
+    <div class="cbb"><div class="cbf" style="width:${(v/total*100).toFixed(1)}%;background:${CLR[a]||'#aaa'}"></div></div>
+    <div class="cbp">${(v/total*100).toFixed(0)}%</div>
+  </div>`).join('');
 }
 
 function rDonut(cnt){
