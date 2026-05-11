@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PlatformAssessor AI</title>
+<title>Tool Rationalization Agent</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -180,7 +180,7 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
       <text x="2" y="183" font-family="Arial Black,Arial,Helvetica,sans-serif" font-size="120" font-weight="900" font-style="italic" fill="#fff" clip-path="url(#kpmgclip)">KPMG</text>
     </svg>
     <div style="padding:0 2px">
-      <span style="color:rgba(255,255,255,.85);font-size:11px;font-weight:600;letter-spacing:.3px;display:block">PlatformAssessor AI</span>
+      <span style="color:rgba(255,255,255,.85);font-size:11px;font-weight:600;letter-spacing:.3px;display:block">Tool Rationalization Agent</span>
       <span style="color:rgba(255,255,255,.4);font-size:10px">Enterprise Advisory</span>
     </div>
   </div>
@@ -203,7 +203,7 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
 <!-- MAIN -->
 <div class="main">
   <div class="topbar">
-    <div><div class="tt" id="pt">Dashboard</div><div class="ts">6R Rationalization &bull; Enterprise Technology Advisory Platform</div></div>
+    <div><div class="tt" id="pt">Dashboard</div><div class="ts">Enterprise Technology Advisory &bull; AI-Powered Tool Rationalization</div></div>
     <div class="fx g2">
       <button class="btn bs1 bsm" onclick="go('ingest')">+ Ingest Data</button>
       <button class="btn bp1 bsm" onclick="go('assessment');runAssess()">&#127919; Run Assessment</button>
@@ -220,7 +220,7 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
       <div class="kc"><div class="ki" style="background:#e8f8ef">&#128161;</div><div><div class="kv" id="k3">$0</div><div class="kl">Est. Savings</div></div></div>
     </div>
     <div class="cg">
-      <div class="card"><div class="ch"><span>&#127919;</span><span class="ct">6R Rationalization Distribution</span></div><div class="cw"><canvas id="cd"></canvas></div></div>
+      <div class="card"><div class="ch"><span>&#127919;</span><span class="ct">Rationalization Action Distribution</span></div><div class="cw"><canvas id="cd"></canvas></div></div>
       <div class="card"><div class="ch"><span>&#128200;</span><span class="ct">Top Tools by Score</span></div><div class="cw"><canvas id="cb"></canvas></div></div>
     </div>
     <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:14px">
@@ -238,8 +238,8 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
       <div style="display:flex;align-items:center;gap:18px">
         <div style="font-size:44px">&#129302;</div>
         <div style="flex:1">
-          <div style="font-size:16px;font-weight:700;margin-bottom:5px">PlatformAssessor AI &mdash; Enterprise Technology Rationalization</div>
-          <div style="font-size:12px;opacity:.8;line-height:1.6">AI-Powered 6R Rationalization Model &bull; Telecom &amp; Enterprise Optimized &bull; Upload your tool inventory &bull; Get AI-powered scores across 7 dimensions &bull; Generate CIO-ready roadmaps &amp; reports</div>
+          <div style="font-size:16px;font-weight:700;margin-bottom:5px">Tool Rationalization Agent &mdash; Enterprise Technology Advisory</div>
+          <div style="font-size:12px;opacity:.8;line-height:1.6">AI-Powered Tool Assessment &bull; Telecom &amp; Enterprise Optimized &bull; Upload your tool inventory &bull; Get AI-powered scores across 7 dimensions &bull; Generate CIO-ready roadmaps &amp; reports</div>
         </div>
         <div class="fx g2">
           <button class="btn bsm" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3)" onclick="go('chat')">Chat with AI</button>
@@ -331,7 +331,7 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
         </div>
         <div>
           <div class="card m4">
-            <div class="ch"><span>&#127991;&#65039;</span><span class="ct">6R Action Framework</span></div>
+            <div class="ch"><span>&#127991;&#65039;</span><span class="ct">Rationalization Framework</span></div>
             <div style="display:flex;flex-direction:column;gap:9px">
               <div class="fx g2 ic2"><span class="b br">Retain</span><span class="tx">Strategic &amp; healthy &mdash; no immediate action required</span></div>
               <div class="fx g2 ic2"><span class="b bh">Rehost</span><span class="tx">Lift-and-shift to cloud infrastructure</span></div>
@@ -494,7 +494,7 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
           <div style="font-size:48px">&#129302;</div>
           <div style="flex:1">
             <div style="font-size:16px;font-weight:700;margin-bottom:6px">Ready for AI Assessment</div>
-            <div style="font-size:12px;opacity:.8;line-height:1.6">The AI will analyse your tool portfolio against all 7 scoring dimensions, apply the 6R framework, identify duplication opportunities, and generate a CIO-ready executive report with a phased roadmap.</div>
+            <div style="font-size:12px;opacity:.8;line-height:1.6">The AI will analyse your tool portfolio against all 7 scoring dimensions, apply the Rationalization framework, identify duplication opportunities, and generate a CIO-ready executive report with a phased roadmap.</div>
           </div>
           <div class="fx g2" style="flex-direction:column">
             <button class="btn" style="background:#00A651;color:#fff;font-size:14px;padding:12px 24px" id="ba2">&#127919; Run Full AI Assessment</button>
@@ -519,7 +519,7 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
     <div class="card m4">
       <div class="ch"><span>&#128193;</span><span class="ct">Tool Portfolio</span></div>
       <div class="tw"><table>
-        <thead><tr><th>Tool Name</th><th>Vendor</th><th>Category</th><th>Deployment</th><th>Annual Cost</th><th>Users</th><th>Score</th><th>Risk</th><th>Confidence</th><th>6R Action</th></tr></thead>
+        <thead><tr><th>Tool Name</th><th>Vendor</th><th>Category</th><th>Deployment</th><th>Annual Cost</th><th>Users</th><th>Score</th><th>Risk</th><th>Confidence</th><th>Action</th></tr></thead>
         <tbody id="ib"><tr><td colspan="10" style="text-align:center;padding:40px;color:var(--mut)">No tools ingested yet &mdash; go to <strong>Data Ingest</strong></td></tr></tbody>
       </table></div>
     </div>
@@ -581,11 +581,11 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
       <div class="cm" id="cm">
         <div class="msg ma">
           <div class="mav">AI</div>
-          <div class="mb2"><strong>PlatformAssessor AI &mdash; Ready</strong><br><br>
-I am your enterprise technology strategy consultant, specialising in Platform, Application &amp; Tools rationalisation using a proven 6R framework optimised for Telecom and large enterprise environments.<br><br>
+          <div class="mb2"><strong>Tool Rationalization Agent &mdash; Ready</strong><br><br>
+I am your enterprise technology strategy consultant, specialising in Application &amp; Tools Rationalisation using a proven framework optimised for Telecom and large enterprise environments.<br><br>
 I can help you:<br>
 &bull; <strong>Assess</strong> your tool portfolio across 7 scoring dimensions<br>
-&bull; <strong>Apply</strong> the 6R model (Retain / Rehost / Replatform / Refactor / Replace / Retire)<br>
+&bull; <strong>Apply</strong> the Rationalization model (Retain / Rehost / Replatform / Refactor / Replace / Retire)<br>
 &bull; <strong>Identify</strong> duplication, redundancy, and consolidation opportunities<br>
 &bull; <strong>Generate</strong> CIO/CTO-ready executive recommendations and roadmaps<br><br>
 Upload your tool inventory in <strong>Data Ingest</strong> for full portfolio analysis, or ask me anything directly.</div>
@@ -620,7 +620,7 @@ Upload your tool inventory in <strong>Data Ingest</strong> for full portfolio an
           <div style="display:flex;flex-direction:column;gap:8px">
             <div class="fx g2"><span>&#9989;</span><span class="tx">Executive Summary (CIO-ready narrative)</span></div>
             <div class="fx g2"><span>&#9989;</span><span class="tx">Portfolio Overview &amp; Health Score</span></div>
-            <div class="fx g2"><span>&#9989;</span><span class="tx">6R Rationalization Action Summary</span></div>
+            <div class="fx g2"><span>&#9989;</span><span class="tx">Rationalization Action Summary</span></div>
             <div class="fx g2"><span>&#9989;</span><span class="tx">Top 5 Priority Recommendations with Impact</span></div>
             <div class="fx g2"><span>&#9989;</span><span class="tx">Full Tool Assessment Table with Scores</span></div>
             <div class="fx g2"><span>&#9989;</span><span class="tx">Duplication &amp; Consolidation Analysis</span></div>
@@ -726,6 +726,16 @@ async function doIngest(wizardMode=false){
     const nb=document.getElementById('nb'); nb.textContent=TOOLS.length; nb.classList.add('show');
     toast('Ingested '+d.summary.total_tools+' tools successfully','ok');
     updateP2Status(d.summary);
+    // Auto-populate Phase 5 budget if detected in file
+    if(d.detected_budget){
+      const bField=document.getElementById('p5budget');
+      if(bField&&!bField.value) bField.value=d.detected_budget;
+    }
+    // Auto-populate Phase 4 pain points if found in file
+    if(d.pain_points&&d.pain_points.length){
+      const pField=document.getElementById('p4pain');
+      if(pField&&!pField.value) pField.value=d.pain_points.join('; ');
+    }
     if(wizardMode) gotoPhase(3);
     else go('inventory');
   }catch(e){hideLd();toast('Error: '+e.message,'er');}
@@ -1027,6 +1037,42 @@ function rAssess(a){
   const oc=a.expected_outcomes||{};
   if(Object.keys(oc).length)html+=`<div class="card m4"><div class="ch"><span>&#9989;</span><span class="ct">Expected Business Outcomes</span></div>
     <div class="tw"><table><tbody>${Object.entries(oc).map(([k,v])=>`<tr><td><strong>${k.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase())}</strong></td><td>${e(String(v))}</td></tr>`).join('')}</tbody></table></div></div>`;
+  // Pain Areas
+  const painAreas=a.portfolio_pain_areas||[];
+  if(painAreas.length)html+=`<div class="card m4"><div class="ch"><span>&#9888;&#65039;</span><span class="ct">Portfolio Pain Areas</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">${painAreas.map(p=>`<div style="background:#fff8f0;border:1px solid #fde8c8;border-left:4px solid var(--amber);border-radius:6px;padding:11px 14px;font-size:13px;color:var(--txt)">${e(p)}</div>`).join('')}</div></div>`;
+  // Duplicate tools
+  const dupTools=a.duplicate_tools||[];
+  if(dupTools.length)html+=`<div class="card m4"><div class="ch"><span>&#128257;</span><span class="ct">Duplicate &amp; Redundant Tools</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">${dupTools.map(d=>`<div style="background:#fff5f5;border:1px solid #fad7d7;border-radius:8px;padding:13px">
+    <div style="font-weight:700;color:var(--navy);margin-bottom:4px">${e(d.tool_a||'')} &#8596; ${e(d.tool_b||'')}</div>
+    <div style="font-size:12px;color:var(--mut);margin-bottom:5px"><b>${e(d.category||'')}</b> &mdash; ${e(d.overlap_reason||'')}</div>
+    <div style="font-size:12px;font-weight:700;color:var(--blue)">&#9654; ${e(d.recommendation||'')}</div></div>`).join('')}</div></div>`;
+  // Per-tool KPMG analysis cards
+  const ta=a.tool_analysis||[];
+  if(ta.length){
+    html+=`<div class="card m4"><div class="ch"><span>&#128203;</span><span class="ct">Per-Tool Analysis &mdash; Consulting View</span></div>`;
+    ta.forEach(t=>{
+      const action=t.recommendation||'';
+      const aC={'Retain':'#00A651','Replace':'#E31837','Retire':'#6B7A99','Rehost':'#0063DC','Replatform':'#FFC200','Refactor':'#FF7700'}[action]||'#0063DC';
+      html+=`<div style="border:1px solid var(--bdr);border-radius:9px;margin-bottom:14px;overflow:hidden">
+      <div style="background:var(--navy);color:#fff;padding:12px 18px;display:flex;align-items:center;gap:14px">
+        <div style="flex:1"><div style="font-size:14px;font-weight:700">${e(t.tool_name||'')}</div><div style="font-size:12px;opacity:.7;margin-top:2px">${e(t.overview||'')}</div></div>
+        <span style="display:inline-block;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:700;background:${aC};color:#fff">${e(action)}</span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:0;border-bottom:1px solid var(--bdr)">${(t.facts||[]).slice(0,5).map(f=>`<div style="padding:9px 14px;border-right:1px solid var(--bdr);min-width:120px"><div style="font-size:10px;font-weight:700;color:var(--mut);text-transform:uppercase;margin-bottom:2px">${e(f.label||'')}</div><div style="font-size:12px;font-weight:600;color:var(--navy)">${e(f.value||'--')}</div></div>`).join('')}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid var(--bdr)">
+        <div style="padding:12px 14px;border-right:1px solid var(--bdr)"><div style="font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;margin-bottom:6px">Strengths</div>${(t.strengths||[]).map(s=>`<div style="font-size:12px;padding:3px 0;border-bottom:1px solid var(--bdr)">&#10003; ${e(s)}</div>`).join('')}</div>
+        <div style="padding:12px 14px;border-right:1px solid var(--bdr)"><div style="font-size:10px;font-weight:700;color:var(--red);text-transform:uppercase;margin-bottom:6px">Challenges</div>${(t.challenges||[]).map(c=>`<div style="font-size:12px;padding:3px 0;border-bottom:1px solid var(--bdr)">&#9888; ${e(c)}</div>`).join('')}</div>
+        <div style="padding:12px 14px"><div style="font-size:10px;font-weight:700;color:var(--amber);text-transform:uppercase;margin-bottom:6px">Gaps</div>${(t.gaps||[]).map(g=>`<div style="font-size:12px;padding:3px 0;border-bottom:1px solid var(--bdr)">&#9654; ${e(g)}</div>`).join('')}</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr">
+        <div style="padding:12px 14px;border-right:1px solid var(--bdr)"><div style="font-size:10px;font-weight:700;color:var(--blue);text-transform:uppercase;margin-bottom:5px">Cost Analysis</div><div style="font-size:12px;color:#444;line-height:1.6">${e(t.cost_analysis||'')}</div></div>
+        <div style="padding:12px 14px"><div style="font-size:10px;font-weight:700;color:var(--purple);text-transform:uppercase;margin-bottom:5px">Benchmarking</div><div style="font-size:12px;color:#444;line-height:1.6">${e(t.benchmarking||'')}</div></div>
+      </div></div>`;
+    });
+    html+=`</div>`;
+  }
   el.innerHTML=html||'<p class="mu2">No assessment data yet.</p>';
 }
 
@@ -1079,15 +1125,19 @@ async function dlReport(){
 
 async function printReport(){
   if(!TOOLS.length)return toast('Ingest data first','er');
-  showLd('Preparing PDF report...');
+  showLd('Generating PDF report...');
   try{
     const r=await fetch(A+'/api/report',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({tools:TOOLS,duplications:DUPS,assessment:ASSESS})});
     const d=await r.json(); hideLd();
+    if(!r.ok)return toast('Report generation failed','er');
+    // Inject a print-trigger script into the report so it auto-prints after render
+    const printScript='<script>window.onload=function(){setTimeout(function(){window.print();},900);}<\/script>';
+    const html=d.html.replace('</body>',printScript+'</body>');
     const w=window.open('','_blank');
-    w.document.write(d.html);
+    w.document.open();
+    w.document.write(html);
     w.document.close();
-    setTimeout(()=>w.print(),800);
   }catch(ex){hideLd();toast('Error: '+ex.message,'er');}
 }
 

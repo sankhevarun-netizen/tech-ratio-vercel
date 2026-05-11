@@ -23,7 +23,7 @@ ANTHROPIC_MODEL   = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-4-6")
 client = anthropic.AsyncAnthropic(api_key=ANTHROPIC_API_KEY)
 
 # ── FastAPI App ────────────────────────────────────────────────────────────
-app = FastAPI(title="PlatformAssessor AI", version="2.0.0")
+app = FastAPI(title="Tool Rationalization Agent", version="2.0.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 
@@ -234,6 +234,14 @@ COL_ALIAS = {
     "years_in_use":"age_years","tool_age":"age_years","implementation_year":"age_years",
     # additional integration aliases
     "number_of_integrations":"integrations","num_integrations":"integrations","api_count":"integrations",
+    # pain point aliases
+    "pain_points":"pain_points","pain_point":"pain_points","challenges":"pain_points",
+    "issues":"pain_points","problems":"pain_points","concerns":"pain_points","notes":"pain_points",
+    "observations":"pain_points","remarks":"pain_points",
+    # org-level IT budget aliases (separate from per-tool annual_cost)
+    "it_budget":"it_budget","technology_budget":"it_budget","tech_budget":"it_budget",
+    "annual_it_budget":"it_budget","total_it_budget":"it_budget","it_spend":"it_budget",
+    "annual_technology_budget":"it_budget","total_technology_budget":"it_budget",
 }
 
 def _norm_cat(raw:str)->str:
@@ -272,6 +280,7 @@ def _b(v:Any)->bool:
     return str(v).lower().strip() in ("true","yes","1","y","eol","deprecated","end of life")
 
 def normalize(d:Dict)->Dict:
+    pain_raw = _s(d.get("pain_points"))
     t={"id":str(uuid.uuid4()),"name":_s(d.get("name") or d.get("tool_name") or "Unknown Tool"),
        "vendor":_s(d.get("vendor")) or None,"category":_norm_cat(_s(d.get("category",""))),
        "description":_s(d.get("description")) or None,"owner":_s(d.get("owner")) or None,
@@ -280,7 +289,8 @@ def normalize(d:Dict)->Dict:
        "deployment":_norm_dep(_s(d.get("deployment",""))),
        "criticality":_norm_crit(d.get("criticality")),
        "integrations":_ni(d.get("integrations")),"age_years":_n(d.get("age_years")),
-       "end_of_life":_b(d.get("end_of_life",False)),"compliance_required":_b(d.get("compliance_required",False))}
+       "end_of_life":_b(d.get("end_of_life",False)),"compliance_required":_b(d.get("compliance_required",False)),
+       "pain_points":pain_raw or None}
     return {k:v for k,v in t.items() if v not in (None,"") or k in ("id","name","category","end_of_life")}
 
 def parse_csv_bytes(b:bytes)->List[Dict]:
@@ -309,15 +319,26 @@ def parse_pdf_bytes(b:bytes)->str:
         return txt[:8000]
     except: return ""
 
+_LAST_INGEST_META: Dict = {}
+
 def _df(df)->List[Dict]:
     import pandas as pd
     df.columns=[c.lower().strip().replace(" ","_").replace("-","_") for c in df.columns]
+    # Extract org-level IT budget before renaming (it_budget col is separate from annual_cost)
+    detected_budget = None
+    for col in df.columns:
+        if COL_ALIAS.get(col) == "it_budget":
+            vals = df[col].dropna()
+            if not vals.empty:
+                detected_budget = _n(vals.iloc[0])
+            break
+    _LAST_INGEST_META["detected_budget"] = detected_budget
     df=df.rename(columns={k:v for k,v in COL_ALIAS.items() if k in df.columns})
     # Fallback: detect name column if not found
     if "name" not in df.columns:
         str_cols = [c for c in df.columns if df[c].dtype == object and c not in
                     ("vendor","category","description","owner","business_unit","deployment",
-                     "criticality","license_type","end_of_life","compliance_required")]
+                     "criticality","license_type","end_of_life","compliance_required","pain_points")]
         if str_cols:
             best = max(str_cols, key=lambda c: df[c].nunique())
             df = df.rename(columns={best: "name"})
@@ -373,11 +394,14 @@ TEXT:\n{text}"""}])
     except: return []
 
 async def ai_assess(tools:List[Dict],dups:List[Dict],industry:str,focus:str)->Dict:
+    # Collect pain points from tool data
+    all_pain = [t["pain_points"] for t in tools if t.get("pain_points")]
+    pain_context = f"\nKNOWN PAIN POINTS FROM DATA:\n" + "\n".join(f"- {p}" for p in all_pain[:20]) if all_pain else ""
     resp=await client.messages.create(
-        model=ANTHROPIC_MODEL,temperature=0.2,max_tokens=6000,
+        model=ANTHROPIC_MODEL,temperature=0.2,max_tokens=8000,
         system=SYSTEM_PROMPT,
         messages=[{"role":"user","content":f"""Perform a comprehensive rationalization assessment.
-Industry: {industry.upper()}{(' | Focus: '+focus) if focus else ''}
+Industry: {industry.upper()}{(' | Focus: '+focus) if focus else ''}{pain_context}
 
 TOOL INVENTORY (pre-scored, first 30):
 {json.dumps(tools[:30],indent=2)[:8000]}
@@ -387,15 +411,20 @@ DUPLICATION ANALYSIS:
 
 Return ONLY valid JSON (no markdown, no explanation) with these exact keys:
 {{
-  "executive_summary": "<3-5 paragraph CIO-ready narrative>",
+  "executive_summary": "<3-5 paragraph CIO-ready narrative covering portfolio health, key findings, pain areas, and strategic direction>",
   "portfolio_overview": {{"total_tools":<int>,"total_annual_cost":<float>,"portfolio_health":"Healthy|At Risk|Critical","health_rationale":"<brief>"}},
+  "portfolio_pain_areas": ["<pain area 1>","<pain area 2>"],
   "rationalization_summary": {{"Retain":<int>,"Rehost":<int>,"Replatform":<int>,"Refactor":<int>,"Replace":<int>,"Retire":<int>}},
+  "duplicate_tools": [{{"tool_a":"<name>","tool_b":"<name>","category":"<cat>","overlap_reason":"<why duplicate>","recommendation":"<action>"}}],
   "top_recommendations": [{{"rank":1,"title":"<title>","description":"<detail>","impact":"<impact>","effort":"Low|Medium|High","priority":"Critical|High|Medium","confidence":"High|Medium|Low","timeline":"0-3 months|3-12 months|12-24 months"}}],
+  "tool_analysis": [{{"tool_name":"<name>","overview":"<1-2 sentence role in landscape>","facts":[{{"label":"Vendor","value":"<v>"}},{{"label":"Annual Cost","value":"<v>"}},{{"label":"Users","value":"<v>"}},{{"label":"Age","value":"<v>"}},{{"label":"Deployment","value":"<v>"}}],"strengths":["<strength1>","<strength2>"],"challenges":["<challenge1>","<challenge2>"],"gaps":["<gap1>"],"cost_analysis":"<cost vs value narrative>","benchmarking":"<vs market alternatives>","recommendation":"Retain|Rehost|Replatform|Refactor|Replace|Retire"}}],
   "consolidation_opportunities": [{{"tools":["A","B"],"category":"<cat>","overlap_pct":<int>,"recommended_action":"<action>","estimated_savings":<float>,"rationale":"<why>"}}],
   "risk_highlights": [{{"risk_type":"Security|Compliance|Vendor|Obsolescence|Operational","severity":"Critical|High|Medium","affected_tools":["<names>"],"description":"<desc>","mitigation":"<action>"}}],
   "roadmap": {{"short_term":["<0-3m action>"],"medium_term":["<3-12m action>"],"long_term":["<12-24m action>"]}},
   "expected_outcomes": {{"cost_savings_annual":<float>,"risk_reduction":"<desc>","tool_reduction":"<from X to Y>","strategic_gains":"<value>"}}
-}}"""}])
+}}
+
+For tool_analysis, include ALL tools (up to 30). Be specific and data-driven for each tool section."""}])
     try: return _extract_json(resp.content[0].text)
     except:
         raw = resp.content[0].text
@@ -435,91 +464,192 @@ def build_report(tools:List[Dict],dups:List[Dict],assessment:Dict)->str:
     rm=assessment.get("roadmap",{})
     oc=assessment.get("expected_outcomes",{})
     risks=assessment.get("risk_highlights",[])
+    pain_areas=assessment.get("portfolio_pain_areas",[])
+    dup_tools=assessment.get("duplicate_tools",[])
+    tool_analysis=assessment.get("tool_analysis",[])
 
-    rec_html="".join(f"""<div style="background:#f8fbff;border:1px solid #e0e8f8;border-left:4px solid #0063DC;border-radius:8px;padding:16px;margin-bottom:10px">
-<div style="display:flex;align-items:center;gap:9px;margin-bottom:7px">
-<div style="width:24px;height:24px;background:#0063DC;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">{r.get('rank','')}</div>
-<strong style="color:#003366;flex:1">{r.get('title','')}</strong>
+    rec_html="".join(f"""<div class="rc">
+<div style="display:flex;align-items:center;gap:9px;margin-bottom:8px">
+<div style="width:22px;height:22px;background:#0063DC;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">{r.get('rank','')}</div>
+<strong style="color:#003366;flex:1;font-size:13px">{r.get('title','')}</strong>
 {bdg(r.get('priority','Medium'))} {bdg(r.get('confidence','Medium'))}</div>
-<p style="font-size:13px;color:#444;line-height:1.6;margin-bottom:5px">{r.get('description','')}</p>
-<p style="font-size:12px;color:#0063DC;font-style:italic">Impact: {r.get('impact','')} · {r.get('timeline','')}</p></div>""" for r in recs[:5])
+<p style="font-size:12px;color:#444;line-height:1.6;margin-bottom:5px">{r.get('description','')}</p>
+<p style="font-size:11px;color:#0063DC;font-style:italic">Impact: {r.get('impact','')} &nbsp;&bull;&nbsp; {r.get('timeline','')}</p></div>""" for r in recs[:5])
 
     def ph_items(key):
         items=rm.get(key,[])
         if isinstance(items,str): items=[items]
         return "".join(f'<li style="padding:6px 0;border-bottom:1px solid rgba(0,0,0,.06)">{x}</li>' for x in items)
 
-    risk_html="".join(f"""<div style="display:flex;gap:12px;background:#fff5f5;border:1px solid #fad7d7;border-radius:9px;padding:14px;margin-bottom:9px">
-<div style="font-size:18px">{'[CRITICAL]' if r.get('severity')=='Critical' else '[HIGH]' if r.get('severity')=='High' else '[MED]'}</div>
-<div><div style="font-weight:700;color:#1a2340">{r.get('risk_type')} -- {r.get('severity')}</div>
-<div style="font-size:13px;color:#666;margin:3px 0">{r.get('description','')}</div>
-<div style="font-size:12px;color:#00A651">Mitigation: {r.get('mitigation','')}</div></div></div>""" for r in risks)
+    sev_col = {"Critical":"#c0392b","High":"#e67e22","Medium":"#f39c12"}
+    risk_html="".join(f"""<div class="rsk">
+<div style="font-size:10px;font-weight:700;color:#fff;background:{sev_col.get(r.get('severity','Medium'),'#888')};padding:3px 8px;border-radius:4px;align-self:flex-start;white-space:nowrap">{r.get('severity','').upper()}</div>
+<div><div style="font-weight:700;color:#1a2340;font-size:13px">{r.get('risk_type','')} Risk</div>
+<div style="font-size:12px;color:#555;margin:4px 0;line-height:1.5">{r.get('description','')}</div>
+<div style="font-size:11px;color:#00A651;font-weight:600">Mitigation: {r.get('mitigation','')}</div></div></div>""" for r in risks)
 
     return f"""<!DOCTYPE html><html lang="en"><head>
-<meta charset="UTF-8"><title>Tech Rationalization Report -- {datetime.now().strftime('%B %Y')}</title>
-<style>*{{margin:0;padding:0;box-sizing:border-box}}body{{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4fa;color:#1a2340;font-size:14px}}
-.w{{max-width:1200px;margin:0 auto;background:#fff;box-shadow:0 0 40px rgba(0,0,0,.1)}}
-.hdr{{background:linear-gradient(135deg,#003366,#0063DC);color:#fff;padding:40px}}
-.hdr h1{{font-size:24px;font-weight:700}}.hdr p{{opacity:.75;font-size:13px;margin-top:4px}}
-.kpi{{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#e0e7f0}}
-.kc{{background:#fff;padding:24px;text-align:center}}.kv{{font-size:28px;font-weight:800;color:#0063DC}}.kl{{font-size:11px;color:#666;text-transform:uppercase;margin-top:4px}}
-.sec{{padding:30px 40px;border-bottom:1px solid #eef1f8}}
-h2{{font-size:17px;font-weight:700;color:#003366;margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid #0063DC}}
-table{{width:100%;border-collapse:collapse;font-size:13px}}
-thead th{{background:#003366;color:#fff;padding:10px 13px;text-align:left;font-size:12px;font-weight:600}}
-tbody td{{padding:9px 13px;border-bottom:1px solid #f0f3fa}}tbody tr:hover{{background:#f8fbff}}
-.exec{{background:#f8fbff;border-left:4px solid #0063DC;padding:20px;border-radius:0 8px 8px 0;font-size:13px;line-height:1.8;white-space:pre-wrap}}
-.rm{{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}}
-.ph{{background:#f8fbff;border-radius:8px;padding:18px}}.ph ul{{list-style:none}}
-.ftr{{background:#1a2340;color:#8899bb;padding:18px 40px;display:flex;justify-content:space-between;font-size:12px}}
-@media print{{body{{background:#fff}}.w{{box-shadow:none;max-width:100%}}.rm{{grid-template-columns:repeat(3,1fr)}}}}</style></head>
+<meta charset="UTF-8"><title>Tool Rationalization Report -- {datetime.now().strftime('%B %Y')}</title>
+<style>
+@page{{size:A4;margin:14mm 14mm 18mm 14mm}}
+*{{margin:0;padding:0;box-sizing:border-box;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important}}
+body{{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:#f0f4fa;color:#1a2340;font-size:13px;line-height:1.5}}
+.w{{max-width:1140px;margin:0 auto;background:#fff;box-shadow:0 0 40px rgba(0,0,0,.1)}}
+/* Cover / Header */
+.hdr{{background:linear-gradient(135deg,#003366 0%,#0063DC 100%);color:#fff;padding:36px 40px 32px}}
+.hdr h1{{font-size:22px;font-weight:700;margin-bottom:5px}}.hdr p{{opacity:.75;font-size:12px;margin-top:3px}}
+/* KPI bar */
+.kpi{{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#ccd6e8}}
+.kc{{background:#fff;padding:20px 16px;text-align:center}}
+.kv{{font-size:24px;font-weight:800;color:#0063DC}}.kl{{font-size:10px;color:#666;text-transform:uppercase;letter-spacing:.5px;margin-top:3px}}
+/* Sections */
+.sec{{padding:26px 40px;border-bottom:1px solid #eef1f8}}
+.pb{{page-break-before:always}}
+h2{{font-size:15px;font-weight:700;color:#003366;margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid #0063DC;page-break-after:avoid}}
+/* Tables */
+table{{width:100%;border-collapse:collapse;font-size:12px}}
+thead{{display:table-header-group}}
+thead th{{background:#003366!important;color:#fff!important;padding:9px 12px;text-align:left;font-size:11px;font-weight:600}}
+tbody td{{padding:8px 12px;border-bottom:1px solid #f0f3fa;vertical-align:top}}
+tbody tr{{page-break-inside:avoid}}
+/* Executive summary */
+.exec{{background:#f8fbff!important;border-left:4px solid #0063DC;padding:18px 20px;border-radius:0 7px 7px 0;font-size:13px;line-height:1.8;white-space:pre-wrap}}
+/* Roadmap */
+.rm{{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;page-break-inside:avoid}}
+.ph{{background:#f8fbff!important;border-radius:7px;padding:16px}}.ph ul{{list-style:none}}
+.ph li{{padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06);font-size:12px}}
+/* Rec cards */
+.rc{{background:#f8fbff!important;border:1px solid #dde8f8;border-left:4px solid #0063DC;border-radius:7px;padding:14px;margin-bottom:9px;page-break-inside:avoid}}
+/* Risk cards */
+.rsk{{display:flex;gap:11px;background:#fff5f5!important;border:1px solid #fad7d7;border-radius:8px;padding:12px;margin-bottom:8px;page-break-inside:avoid}}
+/* Tool analysis cards */
+.tc{{border:1px solid #dde4ef;border-radius:8px;margin-bottom:16px;overflow:hidden;page-break-inside:avoid}}
+.tch{{background:#003366!important;color:#fff!important;padding:12px 18px;display:flex;align-items:center;gap:12px}}
+.tf{{display:flex;flex-wrap:wrap;border-bottom:1px solid #dde4ef;background:#fff!important}}
+.tfi{{padding:9px 13px;border-right:1px solid #dde4ef;min-width:110px}}
+.tg{{display:grid;grid-template-columns:1fr 1fr 1fr}}
+.tgc{{padding:11px 14px;border-right:1px solid #dde4ef}}
+.tgc:last-child{{border-right:none}}
+.tga{{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid #dde4ef}}
+.tga div{{padding:11px 14px;border-right:1px solid #dde4ef}}
+.tga div:last-child{{border-right:none}}
+.tag-label{{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}}
+/* Pain / dup cards */
+.pain-card{{background:#fff8f0!important;border:1px solid #fde8c8;border-left:4px solid #FFC200;border-radius:5px;padding:10px 14px;font-size:12px;page-break-inside:avoid}}
+.dup-card{{background:#fff5f5!important;border:1px solid #fad7d7;border-radius:7px;padding:12px;page-break-inside:avoid}}
+/* Footer */
+.ftr{{background:#1a2340!important;color:#8899bb;padding:16px 40px;display:flex;justify-content:space-between;font-size:11px}}
+/* Grid helpers */
+.g2{{display:grid;grid-template-columns:1fr 1fr;gap:10px}}
+/* Badge */
+.bdg{{display:inline-block;padding:2px 9px;border-radius:10px;font-size:10px;font-weight:700}}
+@media screen{{body{{background:#f0f4fa}}.w{{box-shadow:0 0 40px rgba(0,0,0,.1)}}}}
+@media print{{body{{background:#fff!important}}.w{{max-width:100%;box-shadow:none}}.pb{{page-break-before:always}}.tc{{page-break-inside:avoid}}.rm{{grid-template-columns:repeat(3,1fr)}}}}
+</style></head>
 <body><div class="w">
+
+<!-- COVER HEADER -->
 <div class="hdr">
-<div style="display:flex;align-items:center;gap:20px;margin-bottom:20px">
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 482 192" width="180" height="72" style="border-radius:3px;flex-shrink:0">
+<div style="display:flex;align-items:center;gap:22px;margin-bottom:22px">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 482 192" width="160" height="64" style="border-radius:3px;flex-shrink:0">
 <defs><clipPath id="rptclip2"><rect x="4" y="6" width="108" height="97"/><rect x="122" y="6" width="108" height="97"/><rect x="240" y="6" width="108" height="97"/><rect x="358" y="6" width="108" height="97"/></clipPath></defs>
 <rect width="482" height="192" fill="#fff"/>
-<rect x="4"   y="6" width="108" height="97" fill="#00338D"/>
+<rect x="4" y="6" width="108" height="97" fill="#00338D"/>
 <rect x="122" y="6" width="108" height="97" fill="#00338D"/>
 <rect x="240" y="6" width="108" height="97" fill="#00338D"/>
 <rect x="358" y="6" width="108" height="97" fill="#00338D"/>
 <text x="2" y="183" font-family="Arial Black,Arial,sans-serif" font-size="120" font-weight="900" font-style="italic" fill="#00338D">KPMG</text>
 <text x="2" y="183" font-family="Arial Black,Arial,sans-serif" font-size="120" font-weight="900" font-style="italic" fill="#fff" clip-path="url(#rptclip2)">KPMG</text>
 </svg>
-<div style="border-left:1px solid rgba(255,255,255,.3);padding-left:20px">
-<div style="font-size:11px;opacity:.65;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:4px">Advisory Services</div>
-<div style="font-size:14px;font-weight:600;opacity:.9">PlatformAssessor AI</div>
+<div style="border-left:1px solid rgba(255,255,255,.25);padding-left:20px">
+<div style="font-size:10px;opacity:.6;text-transform:uppercase;letter-spacing:1.4px;margin-bottom:3px">Advisory Services</div>
+<div style="font-size:13px;font-weight:600;opacity:.9">Tool Rationalization Agent</div>
 </div>
 </div>
 <h1>Technology Rationalization Assessment Report</h1>
-<p>Enterprise Platform, Application &amp; Tools Assessment · AI-Powered Advisory · 6R Rationalization Framework</p>
-<p style="margin-top:10px;opacity:.6;font-size:12px">Generated: {datetime.now().strftime('%d %B %Y %H:%M')} · CONFIDENTIAL</p></div>
+<p style="margin-top:5px">Enterprise Application &amp; Tools Assessment &nbsp;&bull;&nbsp; AI-Powered Advisory &nbsp;&bull;&nbsp; Rationalization Framework</p>
+<p style="margin-top:8px;opacity:.55;font-size:11px">Generated: {datetime.now().strftime('%d %B %Y, %H:%M')} &nbsp;&bull;&nbsp; CONFIDENTIAL &nbsp;&bull;&nbsp; For Internal Use Only</p>
+</div>
+
+<!-- KPI BAR -->
 <div class="kpi">
 <div class="kc"><div class="kv">{len(tools)}</div><div class="kl">Tools Assessed</div></div>
 <div class="kc"><div class="kv">${total_cost:,.0f}</div><div class="kl">Annual Spend</div></div>
 <div class="kc"><div class="kv">{len(dups)}</div><div class="kl">Overlap Pairs</div></div>
-<div class="kc"><div class="kv">${pot_save:,.0f}</div><div class="kl">Est. Savings</div></div></div>
-<div class="sec"><h2>Executive Summary</h2><div class="exec">{ex}</div></div>
-<div class="sec"><h2>Rationalization Action Summary</h2>
-<table><thead><tr><th>6R Action</th><th>Count</th><th>% of Portfolio</th></tr></thead>
-<tbody>{act_rows}</tbody></table></div>
-{'<div class="sec"><h2>Top Priority Recommendations</h2>'+rec_html+'</div>' if rec_html else ''}
-{f'''<div class="sec"><h2>Rationalization Roadmap</h2><div class="rm">
-<div class="ph" style="border-top:3px solid #00A651"><p style="font-size:11px;font-weight:700;text-transform:uppercase;color:#00A651;margin-bottom:10px">Phase 1 -- Quick Wins (0-3 Months)</p><ul>{ph_items('short_term')}</ul></div>
-<div class="ph" style="border-top:3px solid #0063DC"><p style="font-size:11px;font-weight:700;text-transform:uppercase;color:#0063DC;margin-bottom:10px">Phase 2 -- Strategic (3-12 Months)</p><ul>{ph_items('medium_term')}</ul></div>
-<div class="ph" style="border-top:3px solid #7B2FBE"><p style="font-size:11px;font-weight:700;text-transform:uppercase;color:#7B2FBE;margin-bottom:10px">Phase 3 -- Transformation (12-24 Months)</p><ul>{ph_items('long_term')}</ul></div>
+<div class="kc"><div class="kv">${pot_save:,.0f}</div><div class="kl">Est. Savings</div></div>
+</div>
+
+<!-- EXECUTIVE SUMMARY -->
+<div class="sec pb">
+<h2>Executive Summary</h2>
+<div class="exec">{ex}</div>
+</div>
+
+<!-- ACTION SUMMARY -->
+<div class="sec">
+<h2>Rationalization Action Summary</h2>
+<table><thead><tr><th>Action</th><th>Count</th><th>% of Portfolio</th></tr></thead>
+<tbody>{act_rows}</tbody></table>
+</div>
+
+<!-- RECOMMENDATIONS -->
+{'<div class="sec pb"><h2>Top Priority Recommendations</h2>'+rec_html+'</div>' if rec_html else ''}
+
+<!-- ROADMAP -->
+{f'''<div class="sec pb"><h2>Rationalization Roadmap</h2><div class="rm">
+<div class="ph" style="border-top:3px solid #00A651"><p style="font-size:10px;font-weight:700;text-transform:uppercase;color:#00A651;margin-bottom:9px;letter-spacing:.5px">Phase 1 &mdash; Quick Wins (0&ndash;3 Months)</p><ul>{ph_items('short_term')}</ul></div>
+<div class="ph" style="border-top:3px solid #0063DC"><p style="font-size:10px;font-weight:700;text-transform:uppercase;color:#0063DC;margin-bottom:9px;letter-spacing:.5px">Phase 2 &mdash; Strategic (3&ndash;12 Months)</p><ul>{ph_items('medium_term')}</ul></div>
+<div class="ph" style="border-top:3px solid #7B2FBE"><p style="font-size:10px;font-weight:700;text-transform:uppercase;color:#7B2FBE;margin-bottom:9px;letter-spacing:.5px">Phase 3 &mdash; Transformation (12&ndash;24 Months)</p><ul>{ph_items('long_term')}</ul></div>
 </div></div>''' if rm else ''}
+
+<!-- RISK HIGHLIGHTS -->
 {f'<div class="sec"><h2>Risk Highlights</h2>'+risk_html+'</div>' if risk_html else ''}
-<div class="sec"><h2>Full Tool Portfolio Assessment</h2>
+
+<!-- PAIN AREAS -->
+{(f'<div class="sec"><h2>Portfolio Pain Areas</h2><div class="g2">'+''.join(f'<div class="pain-card">{pa}</div>' for pa in pain_areas)+'</div></div>') if pain_areas else ''}
+
+<!-- DUPLICATE TOOLS -->
+{(f'<div class="sec"><h2>Duplicate &amp; Redundant Tools</h2><div class="g2">'+''.join(f'<div class="dup-card"><div style="font-weight:700;color:#003366;margin-bottom:4px;font-size:13px">{d.get("tool_a","")} &harr; {d.get("tool_b","")}</div><div style="font-size:11px;color:#666;margin-bottom:5px"><b>{d.get("category","")}</b> &mdash; {d.get("overlap_reason","")}</div><div style="font-size:11px;font-weight:700;color:#0063DC">&#9654; {d.get("recommendation","")}</div></div>' for d in dup_tools[:10])+'</div></div>') if dup_tools else ''}
+
+<!-- PER-TOOL KPMG ANALYSIS -->
+{(f'<div class="sec pb"><h2>Per-Tool Analysis &mdash; Consulting View</h2>'+''.join(f'''<div class="tc">
+<div class="tch">
+<div style="flex:1"><div style="font-size:14px;font-weight:700">{ta.get("tool_name","")}</div><div style="font-size:11px;opacity:.7;margin-top:2px">{ta.get("overview","")}</div></div>
+<span class="bdg" style="background:rgba(255,255,255,.18);color:#fff;font-size:11px;padding:3px 12px">{ta.get("recommendation","")}</span>
+</div>
+<div class="tf">{"".join(f'<div class="tfi"><div class="tag-label" style="color:#888">{f.get("label","")}</div><div style="font-size:12px;font-weight:600;color:#003366">{f.get("value","--")}</div></div>' for f in (ta.get("facts") or [])[:5])}</div>
+<div class="tg">
+<div class="tgc"><div class="tag-label" style="color:#00A651">&#10003; Strengths</div>{"".join(f'<div style="font-size:11px;color:#333;padding:3px 0;border-bottom:1px solid #f0f0f0">{s}</div>' for s in (ta.get("strengths") or []))}</div>
+<div class="tgc"><div class="tag-label" style="color:#E31837">&#9888; Challenges</div>{"".join(f'<div style="font-size:11px;color:#333;padding:3px 0;border-bottom:1px solid #f0f0f0">{c}</div>' for c in (ta.get("challenges") or []))}</div>
+<div class="tgc" style="border-right:none"><div class="tag-label" style="color:#b08000">&#9654; Gaps</div>{"".join(f'<div style="font-size:11px;color:#333;padding:3px 0;border-bottom:1px solid #f0f0f0">{g}</div>' for g in (ta.get("gaps") or []))}</div>
+</div>
+<div class="tga">
+<div><div class="tag-label" style="color:#0063DC">Cost Analysis</div><div style="font-size:11px;color:#444;line-height:1.6">{ta.get("cost_analysis","")}</div></div>
+<div><div class="tag-label" style="color:#7B2FBE">Benchmarking</div><div style="font-size:11px;color:#444;line-height:1.6">{ta.get("benchmarking","")}</div></div>
+</div>
+</div>''' for ta in tool_analysis)+'</div>') if tool_analysis else ''}
+
+<!-- FULL PORTFOLIO TABLE -->
+<div class="sec pb">
+<h2>Full Tool Portfolio Assessment</h2>
 <table><thead><tr><th>Tool</th><th>Vendor</th><th>Category</th><th>Annual Cost</th><th>Users</th><th>Score</th><th>Risk</th><th>Action</th></tr></thead>
-<tbody>{tool_rows}</tbody></table></div>
+<tbody>{tool_rows}</tbody></table>
+</div>
+
+<!-- DUPLICATION TABLE -->
 {f'''<div class="sec"><h2>Duplication &amp; Consolidation Opportunities</h2>
 <table><thead><tr><th>Category</th><th>Tool A</th><th>Tool B</th><th>Overlap</th><th>Retain</th><th>Est. Savings</th><th>Priority</th></tr></thead>
 <tbody>{dup_rows}</tbody></table></div>''' if dups else ''}
+
+<!-- OUTCOMES -->
 {f'''<div class="sec"><h2>Expected Business Outcomes</h2>
-<table><tbody>{"".join(f"<tr><td><b>{k.replace('_',' ').title()}</b></td><td>{v}</td></tr>" for k,v in oc.items())}</tbody></table></div>''' if oc else ''}
-<div class="ftr"><span>Tech Rationalization AI Agent · Enterprise Technology Strategy Advisory</span>
-<span>CONFIDENTIAL · {datetime.now().strftime('%Y')}</span></div></div></body></html>"""
+<table><tbody>{"".join(f"<tr><td style='width:40%;font-weight:600'>{k.replace('_',' ').title()}</td><td>{v}</td></tr>" for k,v in oc.items())}</tbody></table></div>''' if oc else ''}
+
+<div class="ftr">
+<span>Tool Rationalization Agent &nbsp;&bull;&nbsp; Enterprise Technology Strategy Advisory</span>
+<span>CONFIDENTIAL &nbsp;&bull;&nbsp; {datetime.now().strftime('%Y')}</span>
+</div>
+</div></body></html>"""
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -586,7 +716,12 @@ async def ingest(file: Optional[UploadFile]=File(None), text: Optional[str]=Form
     if not tools:
         raise HTTPException(400, "No tools found in the uploaded data. Check that your file has a header row and tool names.")
     dups  = detect_dups(tools)
+    # Aggregate pain points from all tools
+    pain_points = [t["pain_points"] for t in tools if t.get("pain_points")]
+    detected_budget = _LAST_INGEST_META.get("detected_budget")
     return {"tools":tools,"duplications":dups,
+            "pain_points": pain_points,
+            "detected_budget": detected_budget,
             "summary":{"total_tools":len(tools),
                         "total_annual_cost":sum(t.get("annual_cost",0) or 0 for t in tools),
                         "duplications_found":len(dups),
