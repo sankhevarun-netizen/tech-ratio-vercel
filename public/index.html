@@ -256,27 +256,20 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
 <div class="app">
 <!-- SIDEBAR -->
 <aside class="sb">
-  <div class="sb-logo" style="flex-direction:column;align-items:flex-start;gap:6px;padding:14px 14px 12px">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 482 192" width="24" height="10" style="display:block;border-radius:3px">
-      <defs>
-        <clipPath id="kpmgclip">
-          <rect x="4"   y="6"  width="108" height="97"/>
-          <rect x="122" y="6"  width="108" height="97"/>
-          <rect x="240" y="6"  width="108" height="97"/>
-          <rect x="358" y="6"  width="108" height="97"/>
-        </clipPath>
-      </defs>
-      <rect width="482" height="192" fill="#fff"/>
-      <rect x="4"   y="6"  width="108" height="97" fill="#00338D"/>
-      <rect x="122" y="6"  width="108" height="97" fill="#00338D"/>
-      <rect x="240" y="6"  width="108" height="97" fill="#00338D"/>
-      <rect x="358" y="6"  width="108" height="97" fill="#00338D"/>
-      <text x="2" y="183" font-family="Arial Black,Arial,Helvetica,sans-serif" font-size="120" font-weight="900" font-style="italic" fill="#00338D">KPMG</text>
-      <text x="2" y="183" font-family="Arial Black,Arial,Helvetica,sans-serif" font-size="120" font-weight="900" font-style="italic" fill="#fff" clip-path="url(#kpmgclip)">KPMG</text>
+  <div class="sb-logo" style="flex-direction:column;align-items:flex-start;gap:7px;padding:14px 14px 12px">
+    <!-- KPMG logo: 4-square grid + italic text, white on dark sidebar -->
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 68" width="88" height="27" style="display:block">
+      <!-- 4 squares 2x2 -->
+      <rect x="0"  y="0"  width="28" height="28" rx="1" fill="rgba(255,255,255,0.9)"/>
+      <rect x="32" y="0"  width="28" height="28" rx="1" fill="rgba(255,255,255,0.9)"/>
+      <rect x="0"  y="32" width="28" height="28" rx="1" fill="rgba(255,255,255,0.9)"/>
+      <rect x="32" y="32" width="28" height="28" rx="1" fill="rgba(255,255,255,0.9)"/>
+      <!-- KPMG text -->
+      <text x="70" y="50" font-family="Arial Black,Arial,sans-serif" font-size="46" font-weight="900" font-style="italic" fill="rgba(255,255,255,0.9)" letter-spacing="-1">KPMG</text>
     </svg>
     <div style="padding:0 2px">
-      <span style="color:rgba(255,255,255,.85);font-size:11px;font-weight:600;letter-spacing:.3px;display:block">Tool Rationalization Agent</span>
-      <span style="color:rgba(255,255,255,.4);font-size:10px">Enterprise Advisory</span>
+      <span style="color:rgba(255,255,255,.75);font-size:10px;font-weight:600;letter-spacing:.3px;display:block">Tool Rationalization Agent</span>
+      <span style="color:rgba(255,255,255,.35);font-size:9px">Enterprise Advisory</span>
     </div>
   </div>
   <div class="sb-sec">
