@@ -582,6 +582,35 @@ def build_report(tools:List[Dict],dups:List[Dict],assessment:Dict)->str:
         if isinstance(items,str): items=[items]
         return "".join(f'<li style="padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06);font-size:12px">{x}</li>' for x in items)
 
+    def _ph_list(key):
+        items=rm.get(key,[])
+        return [items] if isinstance(items,str) else items
+
+    _PCFG=[
+        ("#00A651","#f0faf5","#b8e6d0","Phase 1","Quick Wins","0 – 3 Months","short_term"),
+        ("#0063DC","#eef5ff","#b8d4f8","Phase 2","Strategic Delivery","3 – 12 Months","medium_term"),
+        ("#7B2FBE","#f7f0ff","#d8b8f8","Phase 3","Transformation","12 – 24 Months","long_term"),
+    ]
+    def _phase_col(idx,col,bg,bdr,lbl,title,timeframe,key):
+        items=_ph_list(key)
+        steps="".join(
+            f'<div class="rdmap-item"><div class="rdmap-step" style="background:{col}">{j+1}</div>'
+            f'<div class="rdmap-text">{item}</div></div>'
+            for j,item in enumerate(items)
+        ) or '<div style="font-size:11px;color:#999;padding:8px 0">No items listed</div>'
+        return (
+            f'<div class="rdmap-col">'
+            f'<div class="rdmap-top"><div class="rdmap-node" style="background:{col};box-shadow:0 0 0 5px {col}2a">{idx}</div></div>'
+            f'<div class="rdmap-lbl" style="color:{col}">{lbl}</div>'
+            f'<div class="rdmap-title">{title}</div>'
+            f'<div class="rdmap-time">{timeframe}</div>'
+            f'<div class="rdmap-card" style="background:{bg}!important;border-color:{bdr};border-top:3px solid {col}">'
+            f'{steps}</div></div>'
+        )
+    rdmap_cols="".join(_phase_col(i+1,*cfg) for i,cfg in enumerate(_PCFG))
+    rdmap_html=(f'<div class="rdmap"><div class="rdmap-track"><div class="rdmap-line"></div>'
+                f'<div class="rdmap-phases">{rdmap_cols}</div></div></div>') if rm else ""
+
     sev_col = {"Critical":"#c0392b","High":"#e67e22","Medium":"#f39c12"}
     risk_html="".join(f"""<div class="rsk">
 <div style="font-size:10px;font-weight:700;color:#fff;background:{sev_col.get(r.get('severity','Medium'),'#888')};padding:3px 8px;border-radius:4px;align-self:flex-start;white-space:nowrap">{r.get('severity','').upper()}</div>
@@ -708,9 +737,21 @@ thead th{{background:#003366!important;color:#fff!important;padding:9px 12px;tex
 tbody td{{padding:8px 12px;border-bottom:1px solid #f0f3fa;vertical-align:top}}
 tbody tr{{page-break-inside:avoid}}
 .exec{{background:#f8fbff!important;border-left:4px solid #0063DC;padding:18px 20px;border-radius:0 7px 7px 0;font-size:13px;line-height:1.8;white-space:pre-wrap}}
-.rm{{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;page-break-inside:avoid}}
-.ph{{background:#f8fbff!important;border-radius:7px;padding:16px}}.ph ul{{list-style:none}}
-.ph li{{padding:5px 0;border-bottom:1px solid rgba(0,0,0,.06);font-size:12px}}
+.rdmap{{padding:8px 0 4px}}
+.rdmap-track{{position:relative;padding-top:22px}}
+.rdmap-line{{position:absolute;top:43px;left:17%;right:17%;height:4px;background:linear-gradient(90deg,#00A651 0%,#0063DC 50%,#7B2FBE 100%);border-radius:2px;z-index:0}}
+.rdmap-phases{{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;position:relative;z-index:1}}
+.rdmap-col{{display:flex;flex-direction:column;align-items:center}}
+.rdmap-top{{display:flex;align-items:center;justify-content:center;margin-bottom:10px}}
+.rdmap-node{{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:#fff;page-break-inside:avoid}}
+.rdmap-lbl{{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:3px;margin-top:2px}}
+.rdmap-title{{font-size:14px;font-weight:800;color:#1a2340;margin-bottom:4px;text-align:center}}
+.rdmap-time{{font-size:10px;color:#6B7A99;margin-bottom:12px;background:#eef2f8!important;padding:3px 12px;border-radius:20px;font-weight:700;letter-spacing:.3px}}
+.rdmap-card{{border:1px solid;border-radius:8px;padding:14px 16px;width:100%;page-break-inside:avoid}}
+.rdmap-item{{display:flex;gap:9px;align-items:flex-start;padding:9px 0;border-bottom:1px solid rgba(0,0,0,.07)}}
+.rdmap-item:last-child{{border-bottom:none}}
+.rdmap-step{{width:22px;height:22px;border-radius:50%;color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}}
+.rdmap-text{{font-size:12px;color:#333;line-height:1.6}}
 .rc{{background:#f8fbff!important;border:1px solid #dde8f8;border-left:4px solid #0063DC;border-radius:7px;padding:14px;margin-bottom:9px;page-break-inside:avoid}}
 .rsk{{display:flex;gap:11px;background:#fff5f5!important;border:1px solid #fad7d7;border-radius:8px;padding:12px;margin-bottom:8px;page-break-inside:avoid}}
 .tc{{border:1px solid #dde4ef;border-radius:8px;margin-bottom:16px;overflow:hidden;page-break-inside:avoid}}
@@ -765,11 +806,7 @@ tbody tr{{page-break-inside:avoid}}
 <table><thead><tr><th>Action</th><th>Count</th><th>% of Portfolio</th></tr></thead>
 <tbody>{act_rows}</tbody></table></div>
 {'<div class="sec pb"><h2>Top Priority Recommendations</h2>'+rec_html+'</div>' if rec_html else ''}
-{f'''<div class="sec pb"><h2>Rationalization Roadmap</h2><div class="rm">
-<div class="ph" style="border-top:3px solid #00A651"><p style="font-size:10px;font-weight:700;text-transform:uppercase;color:#00A651;margin-bottom:9px;letter-spacing:.5px">Phase 1 &mdash; Quick Wins (0&ndash;3 Months)</p><ul>{ph_items('short_term')}</ul></div>
-<div class="ph" style="border-top:3px solid #0063DC"><p style="font-size:10px;font-weight:700;text-transform:uppercase;color:#0063DC;margin-bottom:9px;letter-spacing:.5px">Phase 2 &mdash; Strategic (3&ndash;12 Months)</p><ul>{ph_items('medium_term')}</ul></div>
-<div class="ph" style="border-top:3px solid #7B2FBE"><p style="font-size:10px;font-weight:700;text-transform:uppercase;color:#7B2FBE;margin-bottom:9px;letter-spacing:.5px">Phase 3 &mdash; Transformation (12&ndash;24 Months)</p><ul>{ph_items('long_term')}</ul></div>
-</div></div>''' if rm else ''}
+{f'<div class="sec pb"><h2>Implementation &amp; Rollout Plan Roadmap</h2>{rdmap_html}</div>' if rdmap_html else ''}
 {f'<div class="sec"><h2>Risk Highlights</h2>'+risk_html+'</div>' if risk_html else ''}
 {(f'<div class="sec"><h2>Portfolio Pain Areas</h2><div class="g2">'+''.join(f'<div class="pain-card">{pa}</div>' for pa in pain_areas)+'</div></div>') if pain_areas else ''}
 {(f'<div class="sec"><h2>Duplicate &amp; Redundant Tools</h2><div class="g2">'+''.join(f'<div class="dup-card"><div style="font-weight:700;color:#003366;margin-bottom:4px;font-size:13px">{d.get("tool_a","")} &harr; {d.get("tool_b","")}</div><div style="font-size:11px;color:#666;margin-bottom:5px"><b>{d.get("category","")}</b> &mdash; {d.get("overlap_reason","")}</div><div style="font-size:11px;font-weight:700;color:#0063DC">&#9654; {d.get("recommendation","")}</div></div>' for d in dup_tools[:10])+'</div></div>') if dup_tools else ''}
