@@ -412,12 +412,12 @@ DUPLICATION ANALYSIS:
 Return ONLY valid JSON (no markdown, no explanation) with these exact keys:
 {{
   "executive_summary": {{
-    "tool_ecosystem": "1 short paragraph (3-4 sentences max) focused on rationalization context: total tool count, key categories, deployment mix, vendor concentration, and the 2-3 most critical challenges driving the need for rationalization. Be specific with numbers.",
-    "overlapping_tools": "1 short paragraph identifying duplicate/redundant tools by name. For each overlap: state the two tools, the category, combined annual cost, and which to consolidate. End with total estimated savings from eliminating overlaps. Keep it factual and direct.",
-    "benchmarking": "1 short paragraph comparing the portfolio against market standards. Call out tools that are overpriced vs market rate, tools below industry maturity, and any end-of-life tools. Reference specific tool names and cost or maturity gaps where data supports it.",
-    "kpis_success_factors": "1 short paragraph contrasting current state vs post-rationalization targets. Cover: tool count (current vs target), annual spend (current vs projected), risk level, duplicate pairs to eliminate, and cloud adoption improvement. Use 'Current X → Target Y' phrasing inline.",
-    "recommendations": "1 short paragraph with specific, actionable rationalization decisions. Name which tools to Retain, which to Replace (with the recommended replacement), which to Retire, and which to Consolidate. Tie each decision to a business or cost rationale. Be decisive.",
-    "rollout_roadmap": "1 short paragraph outlining the phased rationalization plan. Phase 1 (0-3m): immediate retirements and quick wins. Phase 2 (3-12m): replacements and migrations. Phase 3 (12-24m): platform consolidation and transformation. Note key dependencies between phases."
+    "tool_ecosystem": "Bullet-point list of 4-6 key findings about the current tool ecosystem. Each bullet starts with '- '. Cover: total tool count by category, on-prem vs cloud split, vendor concentration, critical challenges, EOL/legacy exposure. Use specific numbers. Example format: '- 28 tools assessed across 8 categories (APM, Security, ITSM...)\\n- 43% on-premises creating migration debt...'",
+    "overlapping_tools": "Bullet-point list of each duplicate/overlap pair. Each bullet starts with '- '. Format each bullet as: '- [Tool A] vs [Tool B] ([Category]) — combined cost $X/yr → Consolidate on [Tool] saving $Y/yr'. End with a total savings bullet. Example: '- Splunk vs ELK (Logging) — combined $225K/yr → Consolidate on ELK saving $180K/yr'",
+    "benchmarking": "Bullet-point list of 4-6 benchmarking observations. Each bullet starts with '- '. Compare each flagged tool against market rate or maturity standard. Format: '- [Tool]: $X/user vs market $Y/user — [overpriced/underperforming/EOL]. Recommendation: [action].'",
+    "kpis_success_factors": "Bullet-point list of 5-7 KPI comparisons. Each bullet starts with '- '. Use 'Current X → Target Y' format inline. Cover: tool count, annual spend, duplicate pairs, EOL tools, risk level, cloud adoption %, avg portfolio score. Example: '- Tool count: Current 28 → Target 18 (35% reduction)'",
+    "recommendations": "Bullet-point list of 6-8 specific platform decisions. Each bullet starts with '- [Action]:'. Group by action type. Format: '- Retain: [Tool] — [rationale]', '- Replace: [Tool A] with [Tool B] — [cost/risk rationale]', '- Retire: [Tool] — [reason]. Estimated savings: $X/yr'",
+    "rollout_roadmap": "Structured phase-wise bullet list with dependencies. Format:\\nPhase 1 — Quick Wins (0-3 Months):\\n- [action with dependency note]\\n- [action]\\nPhase 2 — Strategic Delivery (3-12 Months):\\n- [action] (Depends on: Phase 1 [item])\\n- [action]\\nPhase 3 — Transformation (12-24 Months):\\n- [action] (Depends on: Phase 2 [item])\\n- [action]"
   }},
   "portfolio_overview": {{"total_tools":<int>,"total_annual_cost":<float>,"portfolio_health":"Healthy|At Risk|Critical","health_rationale":"<brief>"}},
   "before_after_comparison": {{
@@ -564,21 +564,111 @@ def build_report(tools:List[Dict],dups:List[Dict],assessment:Dict)->str:
     else:
         bac_html = ""
 
+    # Helper: convert bullet-point text to HTML list
+    def _bullets_to_html(text: str) -> str:
+        if not text:
+            return ""
+        lines = text.strip().split("\n")
+        html_parts = []
+        in_ul = False
+        for line in lines:
+            stripped = line.strip()
+            if stripped.startswith("- "):
+                if not in_ul:
+                    html_parts.append('<ul style="margin:0;padding-left:18px;list-style:none">')
+                    in_ul = True
+                item = stripped[2:]
+                html_parts.append(
+                    f'<li style="padding:5px 0;border-bottom:1px solid rgba(0,0,0,.05);font-size:12px;'
+                    f'line-height:1.65;color:#1a2340;display:flex;gap:8px;align-items:flex-start">'
+                    f'<span style="color:#0063DC;font-weight:700;flex-shrink:0;margin-top:1px">&#8227;</span>'
+                    f'<span>{item}</span></li>'
+                )
+            else:
+                if in_ul:
+                    html_parts.append("</ul>")
+                    in_ul = False
+                if stripped:
+                    html_parts.append(f'<p style="font-size:12px;font-weight:700;color:#003366;margin:10px 0 4px">{stripped}</p>')
+        if in_ul:
+            html_parts.append("</ul>")
+        return "".join(html_parts)
+
+    # Helper: render rollout_roadmap with phase sections highlighted
+    def _roadmap_panel(text: str) -> str:
+        if not text:
+            return ""
+        PHASE_COLORS = {"Phase 1": "#00A651", "Phase 2": "#0063DC", "Phase 3": "#7B2FBE"}
+        PHASE_BG     = {"Phase 1": "#f0faf5",  "Phase 2": "#eef5ff",  "Phase 3": "#f7f0ff"}
+        PHASE_ICONS  = {"Phase 1": "1", "Phase 2": "2", "Phase 3": "3"}
+        lines = text.strip().split("\n")
+        html_parts = []
+        current_phase = None
+        phase_items = []
+
+        def _flush_phase():
+            nonlocal current_phase, phase_items
+            if current_phase is None:
+                return
+            col = PHASE_COLORS.get(current_phase, "#0063DC")
+            bg  = PHASE_BG.get(current_phase, "#f8f9ff")
+            ico = PHASE_ICONS.get(current_phase, "?")
+            items_html = "".join(
+                f'<li style="padding:5px 0;border-bottom:1px solid rgba(0,0,0,.05);font-size:12px;'
+                f'line-height:1.6;color:#333;display:flex;gap:8px;align-items:flex-start">'
+                f'<span style="width:6px;height:6px;border-radius:50%;background:{col};flex-shrink:0;margin-top:5px"></span>'
+                f'<span>{item}</span></li>'
+                for item in phase_items
+            )
+            html_parts.append(
+                f'<div style="background:{bg}!important;border:1px solid rgba(0,0,0,.08);border-top:3px solid {col};'
+                f'border-radius:8px;padding:14px;margin-bottom:10px">'
+                f'<div style="display:flex;align-items:center;gap:9px;margin-bottom:9px">'
+                f'<div style="width:26px;height:26px;border-radius:50%;background:{col};color:#fff;'
+                f'display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0">{ico}</div>'
+                f'<div style="font-size:12px;font-weight:700;color:{col}">{current_phase}</div></div>'
+                f'<ul style="margin:0;padding:0;list-style:none">{items_html}</ul></div>'
+            )
+            phase_items = []
+            current_phase = None
+
+        for line in lines:
+            stripped = line.strip()
+            matched = False
+            for ph in PHASE_COLORS:
+                if stripped.lower().startswith(ph.lower()):
+                    _flush_phase()
+                    current_phase = ph
+                    matched = True
+                    break
+            if not matched:
+                if stripped.startswith("- "):
+                    phase_items.append(stripped[2:])
+                elif stripped and current_phase is None:
+                    html_parts.append(f'<p style="font-size:12px;color:#555;margin-bottom:6px">{stripped}</p>')
+        _flush_phase()
+        return "".join(html_parts)
+
     # Pre-build 6-panel executive summary HTML
-    def _ex_panel(bg, border, label_color, icon, label, content):
+    def _ex_panel(bg, border, label_color, label, content, is_roadmap=False):
+        if not content:
+            return ""
+        body = _roadmap_panel(content) if is_roadmap else _bullets_to_html(content)
+        if not body:
+            body = f'<div style="font-size:12px;line-height:1.8;color:#1a2340;white-space:pre-wrap">{content}</div>'
         return (
             f'<div style="background:{bg}!important;border-left:4px solid {border};border-radius:0 8px 8px 0;padding:14px 18px">'
-            f'<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:{label_color};margin-bottom:8px">{icon}&nbsp; {label}</div>'
-            f'<div style="font-size:13px;line-height:1.8;color:#1a2340;white-space:pre-wrap">{content}</div></div>'
-        ) if content else ""
+            f'<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:{label_color};margin-bottom:10px">{label}</div>'
+            f'{body}</div>'
+        )
     ex_struct_html = (
         f'<div style="display:flex;flex-direction:column;gap:12px">'
-        + _ex_panel("#f0f4fa","#003366","#003366","&#127970;","Current State of Tool Ecosystem & Challenges",ex_eco)
-        + _ex_panel("#fff5f5","#E31837","#c0392b","&#128257;","Overlapping Tools — Cost Reduction Opportunities",ex_ovlp)
-        + _ex_panel("#f5f0ff","#7B2FBE","#7B2FBE","&#128200;","Benchmarking Analysis vs Market",ex_bench)
-        + _ex_panel("#fff8f0","#FFC200","#b08000","&#127919;","Current KPIs vs To-Be Success Factors",ex_kpis)
-        + _ex_panel("#f0faf5","#00A651","#00A651","&#9989;","Recommendations — Choosing the Right Platform",ex_rec)
-        + _ex_panel("#f8fbff","#0063DC","#0063DC","&#128506;","Implementation &amp; Rollout Plan Roadmap",ex_road)
+        + _ex_panel("#f0f4fa","#003366","#003366","Current State of Tool Ecosystem &amp; Challenges",ex_eco)
+        + _ex_panel("#fff5f5","#E31837","#c0392b","Overlapping Tools — Cost Reduction Opportunities",ex_ovlp)
+        + _ex_panel("#f5f0ff","#7B2FBE","#7B2FBE","Benchmarking Analysis vs Market",ex_bench)
+        + _ex_panel("#fff8f0","#FFC200","#b08000","Current KPIs vs To-Be Success Factors",ex_kpis)
+        + _ex_panel("#f0faf5","#00A651","#00A651","Recommendations — Choosing the Right Platform",ex_rec)
+        + _ex_panel("#f8fbff","#0063DC","#0063DC","Implementation &amp; Rollout Plan Roadmap (with Dependencies)",ex_road,is_roadmap=True)
         + '</div>'
     ) if ex is None else f'<div class="exec">{ex}</div>'
 

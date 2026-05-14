@@ -229,6 +229,13 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
 /* CTA button — KPMG Blue */
 .ws-cta{width:100%;padding:14px;background:#00338D;border:none;border-radius:8px;font-size:14px;font-weight:700;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s;letter-spacing:.3px}
 .ws-cta:hover{background:#002277}
+/* Infrastructure toggle buttons */
+.infra-btn{flex:1;padding:14px 10px;border:2px solid var(--bdr);border-radius:9px;background:#fff;cursor:pointer;font-size:13px;font-weight:700;color:var(--mut);transition:all .2s;text-align:center;line-height:1}
+.infra-btn:hover{border-color:var(--blue);color:var(--navy)}
+.infra-btn.active-infra{border-color:var(--blue);background:#eef4ff;color:var(--blue)}
+/* Chat report update banner */
+.chat-report-bar{background:linear-gradient(135deg,#003366,#0063DC);border-radius:9px;padding:11px 16px;display:flex;align-items:center;gap:12px;margin-top:10px;display:none}
+.chat-report-bar.show{display:flex}
 </style>
 </head>
 <body>
@@ -327,18 +334,18 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
   </div>
   <div class="sb-sec">
     <div class="sb-lbl">Main</div>
-    <div class="nav on" data-tab="dashboard"><span class="ni">&#128202;</span><span>Dashboard</span></div>
-    <div class="nav" data-tab="ingest"><span class="ni">&#128229;</span><span>Data Ingest</span></div>
+    <div class="nav on" data-tab="dashboard"><span>Dashboard</span></div>
+    <div class="nav" data-tab="ingest"><span>Data Ingest</span></div>
   </div>
   <div class="sb-sec">
     <div class="sb-lbl">Analysis</div>
-    <div class="nav" data-tab="inventory"><span class="ni">&#128193;</span><span>Tool Inventory</span><span class="nb" id="nb">0</span></div>
-    <div class="nav" data-tab="assessment"><span class="ni">&#127919;</span><span>AI Assessment</span></div>
-    <div class="nav" data-tab="chat"><span class="ni">&#128172;</span><span>AI Advisor</span></div>
+    <div class="nav" data-tab="inventory"><span>Tool Inventory</span><span class="nb" id="nb">0</span></div>
+    <div class="nav" data-tab="assessment"><span>AI Assessment</span></div>
+    <div class="nav" data-tab="chat"><span>AI Advisor</span></div>
   </div>
   <div class="sb-sec">
     <div class="sb-lbl">Output</div>
-    <div class="nav" data-tab="reports"><span class="ni">&#128196;</span><span>Reports</span></div>
+    <div class="nav" data-tab="reports"><span>Reports</span></div>
   </div>
 </aside>
 <!-- MAIN -->
@@ -352,7 +359,7 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
         <button class="tfb active" onclick="setTF(this,'all')">All</button>
       </div>
       <button class="btn bs1 bsm" onclick="go('ingest')">+ Ingest Data</button>
-      <button class="btn bp1 bsm" onclick="go('assessment');runAssess()">&#127919; Run Assessment</button>
+      <button class="btn bp1 bsm" onclick="go('assessment');runAssess()">Run Assessment</button>
     </div>
   </div>
   <div class="cnt">
@@ -458,7 +465,6 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
     <!-- CTA Banner -->
     <div class="card" style="background:linear-gradient(135deg,#003366,#0063DC);color:#fff;border:none">
       <div style="display:flex;align-items:center;gap:18px">
-        <div style="font-size:38px">&#129302;</div>
         <div style="flex:1">
           <div style="font-size:14px;font-weight:700;margin-bottom:4px">Tool Rationalization Agent &mdash; Enterprise Technology Advisory</div>
           <div style="font-size:11px;opacity:.8;line-height:1.6">AI-Powered Assessment &bull; 7 Scoring Dimensions &bull; Upload your inventory &bull; CIO-ready roadmaps &amp; PDF reports</div>
@@ -495,7 +501,7 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
     <!-- Phase 1: Organisation Profile -->
     <div class="phase-pane" id="ph1">
       <div class="card">
-        <div class="ch"><span>&#127970;</span><span class="ct">Phase 1 &mdash; Organisation Profile</span></div>
+        <div class="ch"><span class="ct">Phase 1 &mdash; Organisation Profile</span></div>
         <p class="tx mu2 m4">Provide context about your organisation so the AI can tailor its assessment framework.</p>
         <div class="fg4">
           <div class="fg"><label class="fl2">Organisation / Company Name</label><input type="text" id="p1org" class="fi2" placeholder="e.g., Airtel, Tanla Platforms..."></div>
@@ -530,10 +536,9 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
         <div>
           <div class="card m4">
-            <div class="ch"><span>&#128229;</span><span class="ct">Phase 2 &mdash; Upload Tool Inventory</span></div>
+            <div class="ch"><span class="ct">Phase 2 &mdash; Upload Tool Inventory</span></div>
             <p class="tx mu2 m4">Upload a CSV, Excel, JSON or PDF file with your tool portfolio. Supported column names: Tool Name, Vendor, Category, Annual Cost, Users, Criticality, Deployment, Age, Integrations, End of Life.</p>
             <div class="uz" id="uz">
-              <div class="ui2">&#9729;&#65039;</div>
               <h3 style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:6px">Drop file here or click to browse</h3>
               <p id="un" style="color:var(--mut);font-size:13px">CSV, Excel, JSON, PDF supported</p>
               <div style="display:flex;gap:6px;justify-content:center;margin-top:12px">
@@ -546,16 +551,29 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
             </div>
           </div>
           <div class="card">
-            <div class="ch"><span>&#9999;&#65039;</span><span class="ct">Or Paste Free Text Description</span></div>
+            <div class="ch"><span class="ct">Or Paste Free Text Description</span></div>
             <textarea id="ti" rows="6" placeholder="Describe tools in plain text. Example:&#10;&#10;Tool: Splunk Enterprise&#10;Vendor: Splunk&#10;Category: Logging&#10;Annual Cost: 180000&#10;Users: 150&#10;Criticality: High&#10;Deployment: On-Prem"></textarea>
-            <div class="mt4"><button class="btn bp1 wf" id="bi" style="padding:12px 16px;font-size:14px;background:var(--green)">&#9889; Ingest &amp; Score Tools</button></div>
-            <div class="fx g2 mt4" style="justify-content:flex-end"><button class="btn bs1 bsm" id="bsmp">Load Sample Data</button></div>
+            <!-- Live tool count indicator -->
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:7px;padding:7px 10px;background:#f8faff;border:1px solid var(--bdr);border-radius:7px">
+              <div style="font-size:12px;color:var(--mut)">
+                <strong id="toolCountNum" style="color:var(--red)">0 tools</strong> detected
+                <span style="color:var(--mut);margin-left:4px">(minimum <strong>10 tools</strong> required for a comprehensive assessment)</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px">
+                <div style="width:80px;height:4px;background:var(--bdr);border-radius:2px;overflow:hidden">
+                  <div id="toolCountBar" style="height:100%;width:0%;background:var(--red);border-radius:2px;transition:width .25s,background .25s"></div>
+                </div>
+                <span id="toolCountPct" style="font-size:11px;font-weight:700;color:var(--red)">0/10</span>
+              </div>
+            </div>
+            <div class="mt4"><button class="btn bp1 wf" id="bi" style="padding:12px 16px;font-size:14px;background:var(--green)">Ingest &amp; Score Tools</button></div>
+            <div class="fx g2 mt4" style="justify-content:flex-end"><button class="btn bs1 bsm" id="bsmp">Load Sample Data (12 tools)</button></div>
             <p class="tx mu2" style="margin-top:8px;text-align:center">After uploading a file or pasting text above, click <strong>Ingest &amp; Score Tools</strong> to process your inventory.</p>
           </div>
         </div>
         <div>
           <div class="card m4">
-            <div class="ch"><span>&#127991;&#65039;</span><span class="ct">Rationalization Framework</span></div>
+            <div class="ch"><span class="ct">Rationalization Framework</span></div>
             <div style="display:flex;flex-direction:column;gap:9px">
               <div class="fx g2 ic2"><span class="b br">Retain</span><span class="tx">Strategic &amp; healthy &mdash; no immediate action required</span></div>
               <div class="fx g2 ic2"><span class="b bh">Rehost</span><span class="tx">Lift-and-shift to cloud infrastructure</span></div>
@@ -567,7 +585,6 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
           </div>
           <div class="card" id="p2status" style="border:2px dashed var(--bdr);background:#fafbff">
             <div class="es" style="padding:32px 16px">
-              <div class="ei">&#128229;</div>
               <h3>Awaiting Tool Data</h3>
               <p>Upload a file or paste tool descriptions above, then click <strong>Ingest &amp; Score Tools</strong>.</p>
             </div>
@@ -580,7 +597,7 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
     <!-- Phase 3: Business Context -->
     <div class="phase-pane" id="ph3" style="display:none">
       <div class="card">
-        <div class="ch"><span>&#128203;</span><span class="ct">Phase 3 &mdash; Business &amp; Compliance Context</span></div>
+        <div class="ch"><span class="ct">Phase 3 &mdash; Business &amp; Compliance Context</span></div>
         <p class="tx mu2 m4">Help the AI understand your compliance obligations and strategic priorities for a more targeted assessment.</p>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
           <div>
@@ -608,6 +625,22 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
             </div>
           </div>
         </div>
+        <!-- Infrastructure Environment Toggles -->
+        <div style="margin-top:22px;padding-top:18px;border-top:1px solid var(--bdr)">
+          <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Infrastructure Environment</div>
+          <p style="font-size:12px;color:var(--mut);margin-bottom:12px;line-height:1.6">Select your primary infrastructure type. This helps the AI calibrate Rehost and Replatform recommendations appropriately.</p>
+          <div style="display:flex;gap:10px">
+            <button id="infraBtnOnPrem" class="infra-btn active-infra" onclick="setInfra('onprem')">
+              On Premises<br><span style="font-size:11px;font-weight:400;opacity:.75">Self-hosted / Data Centre</span>
+            </button>
+            <button id="infraBtnCloud" class="infra-btn" onclick="setInfra('cloud')">
+              On Cloud<br><span style="font-size:11px;font-weight:400;opacity:.75">Public / Private Cloud</span>
+            </button>
+            <button id="infraBtnHybrid" class="infra-btn" onclick="setInfra('hybrid')">
+              Hybrid<br><span style="font-size:11px;font-weight:400;opacity:.75">Mix of On-Prem &amp; Cloud</span>
+            </button>
+          </div>
+        </div>
         <div class="fg4" style="margin-top:18px">
           <div class="fg" style="grid-column:1/-1"><label class="fl2">Specific Focus Area (Optional)</label><input type="text" id="p3focus" class="fi2" placeholder="e.g., Observability stack rationalisation, Security tool overlap, BSS/OSS modernisation..."></div>
         </div>
@@ -615,7 +648,6 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
         <div id="p3detected" style="display:none;margin-top:16px">
           <div style="background:#f0faf5;border:1px solid #b8e6d0;border-left:4px solid var(--green);border-radius:8px;padding:14px 18px">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-              <span style="font-size:16px">&#9989;</span>
               <span style="font-size:12px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.5px">Pain Points &amp; Challenges Detected from Uploaded File</span>
             </div>
             <div id="p3detectedList" style="display:flex;flex-direction:column;gap:6px"></div>
@@ -636,7 +668,7 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
     <!-- Phase 4: Technical Context -->
     <div class="phase-pane" id="ph4" style="display:none">
       <div class="card">
-        <div class="ch"><span>&#9881;&#65039;</span><span class="ct">Phase 4 &mdash; Technical &amp; Operational Context</span></div>
+        <div class="ch"><span class="ct">Phase 4 &mdash; Technical &amp; Operational Context</span></div>
         <p class="tx mu2 m4">Provide your current infrastructure posture to calibrate Rehost and Replatform recommendations.</p>
         <div class="fg4">
           <div class="fg">
@@ -689,7 +721,7 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
     <!-- Phase 5: Financial Parameters -->
     <div class="phase-pane" id="ph5" style="display:none">
       <div class="card">
-        <div class="ch"><span>&#128176;</span><span class="ct">Phase 5 &mdash; Financial Parameters</span></div>
+        <div class="ch"><span class="ct">Phase 5 &mdash; Financial Parameters</span></div>
         <p class="tx mu2 m4">Financial constraints help calibrate ROI projections and prioritise recommendations by economic impact.</p>
         <div class="fg4">
           <div class="fg">
@@ -730,16 +762,15 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
     <!-- Phase 6: Review & Run Assessment -->
     <div class="phase-pane" id="ph6" style="display:none">
       <div class="card m4">
-        <div class="ch"><span>&#127919;</span><span class="ct">Phase 6 &mdash; Review &amp; Run AI Assessment</span></div>
+        <div class="ch"><span class="ct">Phase 6 &mdash; Review &amp; Run AI Assessment</span></div>
         <div id="p6summary" style="margin-bottom:18px"></div>
         <div style="background:linear-gradient(135deg,#003366,#0063DC);border-radius:10px;padding:24px;color:#fff;display:flex;align-items:center;gap:20px">
-          <div style="font-size:48px">&#129302;</div>
           <div style="flex:1">
             <div style="font-size:16px;font-weight:700;margin-bottom:6px" id="p6readyTitle">Ready for AI Assessment</div>
             <div style="font-size:12px;opacity:.8;line-height:1.6">The AI will analyse your tool portfolio against all 7 scoring dimensions, apply the Rationalization framework, identify duplication opportunities, and generate a CIO-ready executive report with a phased roadmap.</div>
           </div>
           <div class="fx g2" style="flex-direction:column">
-            <button class="btn" style="background:#00A651;color:#fff;font-size:14px;padding:12px 24px" id="ba2">&#127919; Run Full AI Assessment</button>
+            <button class="btn" style="background:#00A651;color:#fff;font-size:14px;padding:12px 24px" id="ba2">Run Full AI Assessment</button>
             <button class="btn" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);font-size:12px" onclick="go('inventory')">View Tool Inventory</button>
           </div>
         </div>
@@ -761,14 +792,14 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
       </select>
     </div>
     <div class="card m4">
-      <div class="ch"><span>&#128193;</span><span class="ct">Tool Portfolio</span></div>
+      <div class="ch"><span class="ct">Tool Portfolio</span></div>
       <div class="tw"><table>
         <thead><tr><th>Tool Name</th><th>Vendor</th><th>Category</th><th>Deployment</th><th>Annual Cost</th><th>Users</th><th>Score</th><th>Risk</th><th>Confidence</th><th>Action</th></tr></thead>
         <tbody id="ib"><tr><td colspan="10" style="text-align:center;padding:40px;color:var(--mut)">No tools ingested yet &mdash; go to <strong>Data Ingest</strong></td></tr></tbody>
       </table></div>
     </div>
     <div class="card">
-      <div class="ch"><span>&#128257;</span><span class="ct">Duplication &amp; Consolidation Opportunities</span></div>
+      <div class="ch"><span class="ct">Duplication &amp; Consolidation Opportunities</span></div>
       <div class="tw"><table>
         <thead><tr><th>Category</th><th>Tool A</th><th>Tool B</th><th>Overlap</th><th>Retain Candidate</th><th>Est. Savings/yr</th><th>Priority</th></tr></thead>
         <tbody id="db2"><tr><td colspan="7" style="text-align:center;padding:28px;color:var(--mut)">No duplications detected.</td></tr></tbody>
@@ -779,7 +810,7 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
   <!-- ASSESSMENT -->
   <div class="tab" id="tab-assessment">
     <div class="card m4">
-      <div class="ch"><span>&#9881;&#65039;</span><span class="ct">Assessment Configuration</span></div>
+      <div class="ch"><span class="ct">Assessment Configuration</span></div>
       <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:14px;align-items:end">
         <div>
           <label style="display:block;font-size:11px;font-weight:700;margin-bottom:5px;color:var(--mut)">INDUSTRY CONTEXT</label>
@@ -795,12 +826,11 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
           <label style="display:block;font-size:11px;font-weight:700;margin-bottom:5px;color:var(--mut)">FOCUS AREA (OPTIONAL)</label>
           <input type="text" id="af" placeholder="e.g., Observability stack, Security tools&hellip;" style="width:100%">
         </div>
-        <button class="btn bp1" id="ba">&#127919; Run AI Assessment</button>
+        <button class="btn bp1" id="ba">Run AI Assessment</button>
       </div>
     </div>
     <div id="ar">
       <div class="es">
-        <div class="ei">&#129302;</div>
         <h3>No Assessment Yet</h3>
         <p>Ingest your tool inventory, then click <strong>Run AI Assessment</strong> to get AI-powered recommendations.</p>
         <div class="fx g2 mt4" style="justify-content:center">
@@ -839,6 +869,14 @@ Upload your tool inventory in <strong>Data Ingest</strong> for full portfolio an
         <textarea class="ci" id="cin" rows="2" placeholder="Ask anything &mdash; 'Which tools should we retire?', 'Identify APM stack duplication', 'Create telecom CMP rationalization roadmap'&hellip;"></textarea>
         <button class="btn bp1" id="bsnd" style="align-self:flex-end;height:46px">Send</button>
       </div>
+      <!-- Report update banner — shown after assessment done -->
+      <div id="chatReportBar" style="display:none;background:linear-gradient(135deg,#003366,#0063DC);border-radius:9px;padding:11px 16px;display:none;align-items:center;gap:12px;margin-top:10px">
+        <div style="flex:1;color:#fff">
+          <div style="font-size:12px;font-weight:700;margin-bottom:2px">Apply conversation to your report</div>
+          <div style="font-size:11px;opacity:.8">The AI Advisor has generated insights — click to re-run the assessment with this additional context and preview an updated report in Phase 6.</div>
+        </div>
+        <button class="btn" style="background:#FFC200;color:#1a2340;font-weight:700;font-size:12px;padding:8px 14px;white-space:nowrap;flex-shrink:0" onclick="applyChat2Report()">Update Report &amp; Preview in Phase 6</button>
+      </div>
     </div>
   </div>
 
@@ -847,35 +885,34 @@ Upload your tool inventory in <strong>Data Ingest</strong> for full portfolio an
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
       <div>
         <div class="card m4">
-          <div class="ch"><span>&#128196;</span><span class="ct">Generate Executive Report</span></div>
+          <div class="ch"><span class="ct">Generate Executive Report</span></div>
           <p class="tx mu2 m4" style="line-height:1.6">Generates a comprehensive HTML report for CIO/CTO presentation. Includes full portfolio assessment, AI recommendations, roadmap, risk analysis, and ROI outcomes.</p>
           <div class="card" style="border:2px solid var(--blue);margin-bottom:0">
             <div class="fx g2 ic2 m4">
-              <span style="font-size:22px">&#128203;</span>
               <div><div style="font-weight:700">Executive Summary Report</div><div class="tx mu2">Full assessment &bull; Recommendations &bull; Roadmap &bull; ROI</div></div>
             </div>
-            <button class="btn bp1 wf" id="brpt">&#11015; Download HTML Report</button>
-            <button class="btn bs1 wf" style="margin-top:8px" id="bpdf">&#128438; Print / Save as PDF</button>
+            <button class="btn bp1 wf" id="brpt">Download HTML Report</button>
+            <button class="btn bs1 wf" style="margin-top:8px" id="bpdf">Print / Save as PDF</button>
             <p class="tx mu2" style="margin-top:8px">Use your browser's Print dialog and select "Save as PDF" for a PDF copy.</p>
           </div>
         </div>
         <div class="card">
-          <div class="ch"><span>&#9989;</span><span class="ct">Report Includes</span></div>
+          <div class="ch"><span class="ct">Report Includes</span></div>
           <div style="display:flex;flex-direction:column;gap:8px">
-            <div class="fx g2"><span>&#9989;</span><span class="tx">Executive Summary (CIO-ready narrative)</span></div>
-            <div class="fx g2"><span>&#9989;</span><span class="tx">Portfolio Overview &amp; Health Score</span></div>
-            <div class="fx g2"><span>&#9989;</span><span class="tx">Rationalization Action Summary</span></div>
-            <div class="fx g2"><span>&#9989;</span><span class="tx">Top 5 Priority Recommendations with Impact</span></div>
-            <div class="fx g2"><span>&#9989;</span><span class="tx">Full Tool Assessment Table with Scores</span></div>
-            <div class="fx g2"><span>&#9989;</span><span class="tx">Duplication &amp; Consolidation Analysis</span></div>
-            <div class="fx g2"><span>&#9989;</span><span class="tx">3-Phase Rationalization Roadmap</span></div>
-            <div class="fx g2"><span>&#9989;</span><span class="tx">Risk Highlights &amp; Mitigations</span></div>
-            <div class="fx g2"><span>&#9989;</span><span class="tx">Expected Business Outcomes &amp; ROI</span></div>
+            <div class="fx g2"><span class="tx">Executive Summary (CIO-ready narrative)</span></div>
+            <div class="fx g2"><span class="tx">Portfolio Overview &amp; Health Score</span></div>
+            <div class="fx g2"><span class="tx">Rationalization Action Summary</span></div>
+            <div class="fx g2"><span class="tx">Top 5 Priority Recommendations with Impact</span></div>
+            <div class="fx g2"><span class="tx">Full Tool Assessment Table with Scores</span></div>
+            <div class="fx g2"><span class="tx">Duplication &amp; Consolidation Analysis</span></div>
+            <div class="fx g2"><span class="tx">3-Phase Rationalization Roadmap</span></div>
+            <div class="fx g2"><span class="tx">Risk Highlights &amp; Mitigations</span></div>
+            <div class="fx g2"><span class="tx">Expected Business Outcomes &amp; ROI</span></div>
           </div>
         </div>
       </div>
       <div class="card">
-        <div class="ch"><span>&#128065;&#65039;</span><span class="ct">Portfolio Snapshot</span></div>
+        <div class="ch"><span class="ct">Portfolio Snapshot</span></div>
         <div id="rp"><p class="mu2 tx">Ingest data to see portfolio snapshot.</p></div>
       </div>
     </div>
@@ -892,6 +929,8 @@ Upload your tool inventory in <strong>Data Ingest</strong> for full portfolio an
 'use strict';
 let TOOLS=[], DUPS=[], HIST=[], ASSESS={};
 let cD=null, cB=null;
+let INFRA_TYPE='onprem';
+let _CHAT_EXTRA_CTX='';
 const A='';
 
 async function init(){
@@ -923,6 +962,19 @@ function setupIngest(){
   fi.onchange=()=>{if(fi.files[0])document.getElementById('un').textContent='Selected: '+fi.files[0].name+' — click Ingest below';};
   document.getElementById('bi').onclick=()=>doIngest('btn');
   document.getElementById('bsmp').onclick=loadSample;
+  // Live tool counter for free-text textarea
+  const tiEl=document.getElementById('ti');
+  if(tiEl) tiEl.oninput=function(){
+    const cnt=(this.value.match(/^Tool:/gim)||[]).length;
+    const pct=Math.min(100,cnt/10*100);
+    const col=cnt>=10?'var(--green)':cnt>=5?'var(--amber)':'var(--red)';
+    const num=document.getElementById('toolCountNum');
+    const bar=document.getElementById('toolCountBar');
+    const pctEl=document.getElementById('toolCountPct');
+    if(num){num.textContent=cnt+' tool'+(cnt!==1?'s':'')+' detected';num.style.color=col;}
+    if(bar){bar.style.width=pct+'%';bar.style.background=col;}
+    if(pctEl){pctEl.textContent=cnt+'/10';pctEl.style.color=col;}
+  };
   gotoPhase(1);
 }
 
@@ -945,13 +997,13 @@ function updateAgentGuide(key){
   const ctx=window._INGEST_CTX||{};
   const fmtB=v=>{if(!v)return null;return v>=1e6?'$'+(v/1e6).toFixed(1)+'M':v>=1e3?'$'+(v/1e3).toFixed(0)+'K':'$'+Math.round(v).toLocaleString();};
   const msgs={
-    1:{ico:'&#127970;',lbl:'Step 1 of 6 &mdash; Organisation Profile',
+    1:{ico:'',lbl:'Step 1 of 6 &mdash; Organisation Profile',
        txt:'Enter your organisation name, industry, and geography. This helps the AI tailor every recommendation to your sector and operational context.',
        next:null},
-    2:{ico:'&#128229;',lbl:'Step 2 of 6 &mdash; Upload Tool Inventory',
-       txt:'<strong>Upload your Excel / CSV tool file</strong> (or paste descriptions in the text box), then click the green <strong>&#9889; Ingest &amp; Score Tools</strong> button. The agent will automatically score each tool, detect overlaps, and extract pain points.',
+    2:{ico:'',lbl:'Step 2 of 6 &mdash; Upload Tool Inventory',
+       txt:'<strong>Upload your Excel / CSV tool file</strong> (or paste descriptions in the text box), then click the green <strong>Ingest &amp; Score Tools</strong> button. The agent will automatically score each tool, detect overlaps, and extract pain points.',
        next:null},
-    '2_done':{ico:'&#9989;',lbl:'Step 2 Complete &mdash; Portfolio Ingested &amp; Scored',
+    '2_done':{ico:'',lbl:'Step 2 Complete &mdash; Portfolio Ingested &amp; Scored',
        txt:(()=>{
          let t=`<strong>${ctx.tools||0} tools</strong> ingested &amp; scored &bull; <strong>${ctx.dups||0} overlap pairs</strong> detected`;
          if(ctx.painCount) t+=` &bull; <strong>${ctx.painCount} pain point${ctx.painCount===1?'':'s'}</strong> extracted from your file`;
@@ -961,20 +1013,20 @@ function updateAgentGuide(key){
          return t;
        })(),
        next:{lbl:'Continue to Business Context &rarr;',fn:'gotoPhase(3)'}},
-    3:{ico:'&#128203;',lbl:'Step 3 of 6 &mdash; Business &amp; Compliance Context',
+    3:{ico:'',lbl:'Step 3 of 6 &mdash; Business &amp; Compliance Context',
        txt:'Pain points detected from your file are shown below. Check the compliance frameworks that apply to your organisation and confirm strategic priorities &mdash; these sharpen the AI recommendations.',
        next:{lbl:'Continue to Technical Context &rarr;',fn:'gotoPhase(4)'}},
-    4:{ico:'&#9881;&#65039;',lbl:'Step 4 of 6 &mdash; Technical &amp; Operational Context',
+    4:{ico:'',lbl:'Step 4 of 6 &mdash; Technical &amp; Operational Context',
        txt:'Technical pain points have been <strong>pre-filled from your tool data</strong> below. Set your cloud adoption level, preferred provider, and rationalization timeline. Review the pre-filled pain points and add any additional context.',
        next:{lbl:'Continue to Financial Parameters &rarr;',fn:'gotoPhase(5)'}},
-    5:{ico:'&#128176;',lbl:'Step 5 of 6 &mdash; Financial Parameters',
+    5:{ico:'',lbl:'Step 5 of 6 &mdash; Financial Parameters',
        txt:(()=>{
          const b=fmtB(ctx.budget);
          return b?`Annual technology budget has been pre-set to <strong>${b}</strong> (calculated from your tool costs). Adjust if your actual IT budget differs. Set your target cost-reduction % and migration tolerance.`
                  :'Enter your annual IT/technology budget and set your target cost-reduction percentage to calibrate ROI projections.';
        })(),
        next:{lbl:'Review &amp; Run Assessment &rarr;',fn:'gotoPhase(6)'}},
-    6:{ico:'&#127919;',lbl:'Step 6 &mdash; Ready for AI Assessment',
+    6:{ico:'',lbl:'Step 6 &mdash; Ready for AI Assessment',
        txt:'All inputs are configured. Click <strong>Run Full AI Assessment</strong> below to generate your CIO-ready rationalization report with executive summary, tool scores, roadmap, and PDF export.',
        next:null},
   };
@@ -982,7 +1034,7 @@ function updateAgentGuide(key){
   if(!m){el.style.display='none';return;}
   const nextBtn=m.next?`<button class="ag-next" onclick="${m.next.fn}">${m.next.lbl}</button>`:'';
   el.style.display='block';
-  el.innerHTML=`<div class="ag-banner"><div class="ag-ico">${m.ico}</div><div style="flex:1"><div class="ag-lbl">&#129302; Agent Guide &bull; ${m.lbl}</div><div class="ag-txt">${m.txt}</div>${nextBtn}</div></div>`;
+  el.innerHTML=`<div class="ag-banner">${m.ico?`<div class="ag-ico">${m.ico}</div>`:''}<div style="flex:1"><div class="ag-lbl">Agent Guide &mdash; ${m.lbl}</div><div class="ag-txt">${m.txt}</div>${nextBtn}</div></div>`;
 }
 
 function buildP6Summary(){
@@ -1007,6 +1059,14 @@ function buildP6Summary(){
 async function doIngest(wizardMode=false){
   const file=document.getElementById('fi').files[0], text=document.getElementById('ti').value.trim();
   if(!file&&!text)return toast('Please upload a file or enter tool descriptions','er');
+  // Validate minimum 10 tools when using free text (not file upload)
+  if(!file&&wizardMode==='btn'){
+    const cnt=(text.match(/^Tool:/gim)||[]).length;
+    if(cnt<10){
+      toast(`Only ${cnt} tool${cnt!==1?'s':''} detected in your text. Minimum 10 tools required for a comprehensive assessment. Click "Load Sample Data (12 tools)" to fill in a sample, or add more tools manually.`,'er');
+      return;
+    }
+  }
   showLd('Ingesting and scoring tools with AI...');
   const form=new FormData();
   if(file)form.append('file',file);
@@ -1055,7 +1115,6 @@ function updateP2Status(summary){
   el.style.border='2px solid var(--green)';
   el.style.background='#f0faf5';
   el.innerHTML=`<div style="text-align:center;padding:24px 16px">
-    <div style="font-size:40px;margin-bottom:10px">&#9989;</div>
     <h3 style="color:var(--green);font-size:16px;margin-bottom:8px">${summary?summary.total_tools:TOOLS.length} Tools Ingested &amp; Scored</h3>
     <p style="color:var(--mut);font-size:13px;margin-bottom:6px">${DUPS.length} overlap pairs detected</p>
     <p style="color:var(--green);font-size:12px;font-weight:700">Portfolio scored &mdash; ready for AI assessment</p>
@@ -1383,7 +1442,9 @@ async function runAssess(){
   const org=(document.getElementById('p1org')||{}).value||'';
   const pain=(document.getElementById('p4pain')||{}).value||'';
   const bizChallenges=(document.getElementById('p3challenges')||{}).value||'';
-  const focusParts=[baseFocus,compliance.length?'Compliance: '+compliance.join(', '):'',priorities.length?'Priorities: '+priorities.join(', '):'',bizChallenges?'Business challenges: '+bizChallenges:'',pain?'Technical pain points: '+pain:'',org?'Organisation: '+org:''].filter(Boolean);
+  const infraLabel=INFRA_TYPE==='onprem'?'Infrastructure: On-Premises / Data Centre — prioritise cloud migration and Rehost recommendations':INFRA_TYPE==='cloud'?'Infrastructure: Cloud-Native — prioritise Replatform and SaaS consolidation recommendations':'Infrastructure: Hybrid — balance on-prem and cloud rationalization recommendations';
+  const chatCtx=_CHAT_EXTRA_CTX?'Additional advisor context:\n'+_CHAT_EXTRA_CTX:'';
+  const focusParts=[baseFocus,compliance.length?'Compliance: '+compliance.join(', '):'',priorities.length?'Priorities: '+priorities.join(', '):'',bizChallenges?'Business challenges: '+bizChallenges:'',pain?'Technical pain points: '+pain:'',org?'Organisation: '+org:'',infraLabel,chatCtx].filter(Boolean);
   const focus=focusParts.join(' | ');
   showLd('Running AI assessment...');
   try{
@@ -1397,7 +1458,8 @@ async function runAssess(){
     const fromPhase6=CUR_PHASE===6&&document.getElementById('tab-ingest').classList.contains('on');
     if(fromPhase6){
       renderP6Preview();
-      toast('Assessment complete! Preview below — go to Reports to download the full report','ok');
+      toast('Assessment complete — full report preview loading below...','ok');
+      renderP6FullReport();
     } else {
       toast('Assessment complete — view results below or go to Reports for PDF export','ok');
       go('assessment');
@@ -1407,7 +1469,7 @@ async function runAssess(){
         if(ar&&!document.getElementById('postAssessGuide')){
           const g=document.createElement('div');
           g.id='postAssessGuide';
-          g.innerHTML=`<div class="ag-banner" style="margin-bottom:16px"><div class="ag-ico">&#128196;</div><div style="flex:1"><div class="ag-lbl">&#129302; Agent Guide &bull; Assessment Complete</div><div class="ag-txt">Your AI assessment is ready. Scroll down to review the Executive Summary, tool scores, roadmap, and Before vs After comparison. When ready, go to <strong>Reports</strong> to generate and download the full PDF report.</div><button class="ag-next" onclick="go('reports');dlReport()">&#128196; Go to Reports &amp; Download PDF &rarr;</button></div></div>`;
+          g.innerHTML=`<div class="ag-banner" style="margin-bottom:16px"><div style="flex:1"><div class="ag-lbl">Agent Guide &mdash; Assessment Complete</div><div class="ag-txt">Your AI assessment is ready. Scroll down to review the Executive Summary, tool scores, roadmap, and Before vs After comparison. When ready, go to <strong>Reports</strong> to generate and download the full PDF report.</div><button class="ag-next" onclick="go('reports');dlReport()">Go to Reports &amp; Download PDF</button></div></div>`;
           ar.insertBefore(g,ar.firstChild);
         }
       },400);
@@ -1434,32 +1496,33 @@ function rAssess(a){
   const el=document.getElementById('ar'); let html='';
   const exSum=a.executive_summary;
   if(exSum){
-    const exP=(bg,border,lc,icon,label,content)=>content?`<div style="background:${bg};border-left:4px solid ${border};border-radius:0 8px 8px 0;padding:14px 18px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:${lc};margin-bottom:8px">${icon}&nbsp; ${label}</div><div style="font-size:13px;line-height:1.8;color:var(--txt);white-space:pre-wrap">${e(content)}</div></div>`:'';
+    const bull2html=(txt)=>{if(!txt)return '';const lines=txt.split('\n');let out='',inUl=false;lines.forEach(l=>{const s=l.trim();if(s.startsWith('- ')){if(!inUl){out+='<ul style="margin:4px 0 0;padding-left:0;list-style:none">';inUl=true;}out+=`<li style="padding:4px 0;border-bottom:1px solid rgba(0,0,0,.05);font-size:12px;line-height:1.6;display:flex;gap:8px"><span style="color:var(--blue);font-weight:700;flex-shrink:0">&#8227;</span><span>${e(s.slice(2))}</span></li>`;}else{if(inUl){out+='</ul>';inUl=false;}if(s)out+=`<p style="font-size:11px;font-weight:700;color:var(--navy);margin:8px 0 4px">${e(s)}</p>`;}});if(inUl)out+='</ul>';return out;};
+    const exP=(bg,border,lc,label,content)=>content?`<div style="background:${bg};border-left:4px solid ${border};border-radius:0 8px 8px 0;padding:14px 18px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:${lc};margin-bottom:10px">${e(label)}</div>${bull2html(content)||`<div style="font-size:12px;line-height:1.8;color:var(--txt);white-space:pre-wrap">${e(content)}</div>`}</div>`:'';
     if(typeof exSum==='object'){
-      html+=`<div class="card m4"><div class="ch"><span>&#128203;</span><span class="ct">Executive Summary</span></div>
+      html+=`<div class="card m4"><div class="ch"><span class="ct">Executive Summary</span></div>
       <div style="display:flex;flex-direction:column;gap:11px">
-      ${exP('#f0f4fa','#003366','#003366','&#127970;','Current State of Tool Ecosystem &amp; Challenges',exSum.tool_ecosystem)}
-      ${exP('#fff5f5','#E31837','#c0392b','&#128257;','Overlapping Tools — Cost Reduction Opportunities',exSum.overlapping_tools)}
-      ${exP('#f5f0ff','#7B2FBE','#7B2FBE','&#128200;','Benchmarking Analysis vs Market',exSum.benchmarking)}
-      ${exP('#fff8f0','#FFC200','#b08000','&#127919;','Current KPIs vs To-Be Success Factors',exSum.kpis_success_factors)}
-      ${exP('#f0faf5','#00A651','#00A651','&#9989;','Recommendations — Choosing the Right Platform',exSum.recommendations)}
-      ${exP('#f8fbff','#0063DC','#0063DC','&#128506;','Implementation &amp; Rollout Plan Roadmap',exSum.rollout_roadmap)}
+      ${exP('#f0f4fa','#003366','#003366','Current State of Tool Ecosystem & Challenges',exSum.tool_ecosystem)}
+      ${exP('#fff5f5','#E31837','#c0392b','Overlapping Tools — Cost Reduction Opportunities',exSum.overlapping_tools)}
+      ${exP('#f5f0ff','#7B2FBE','#7B2FBE','Benchmarking Analysis vs Market',exSum.benchmarking)}
+      ${exP('#fff8f0','#FFC200','#b08000','Current KPIs vs To-Be Success Factors',exSum.kpis_success_factors)}
+      ${exP('#f0faf5','#00A651','#00A651','Recommendations — Choosing the Right Platform',exSum.recommendations)}
+      ${exP('#f8fbff','#0063DC','#0063DC','Implementation & Rollout Plan Roadmap',exSum.rollout_roadmap)}
       </div></div>`;
     } else {
-      html+=`<div class="card m4"><div class="ch"><span>&#128203;</span><span class="ct">Executive Summary</span></div><div class="eb">${e(cleanSummary(String(exSum)))}</div></div>`;
+      html+=`<div class="card m4"><div class="ch"><span class="ct">Executive Summary</span></div><div class="eb">${e(cleanSummary(String(exSum)))}</div></div>`;
     }
   }
   // Before vs After Comparison
   const bac=a.before_after_comparison;
   if(bac&&(bac.current_state||bac.future_state)){
     const cs=bac.current_state||{}, fs=bac.future_state||{};
-    const issueRows=(cs.key_issues||[]).map(x=>`<div style="display:flex;gap:7px;align-items:flex-start;font-size:12px;padding:5px 0;border-bottom:1px solid rgba(227,24,55,.08)"><span style="color:var(--red);flex-shrink:0;font-weight:700">&#9888;</span><span style="color:#333">${e(x)}</span></div>`).join('');
-    const impRows=(fs.improvements||[]).map(x=>`<div style="display:flex;gap:7px;align-items:flex-start;font-size:12px;padding:5px 0;border-bottom:1px solid rgba(0,166,81,.08)"><span style="color:var(--green);flex-shrink:0;font-weight:700">&#10003;</span><span style="color:#333">${e(x)}</span></div>`).join('');
+    const issueRows=(cs.key_issues||[]).map(x=>`<div style="display:flex;gap:7px;align-items:flex-start;font-size:12px;padding:5px 0;border-bottom:1px solid rgba(227,24,55,.08)"><span style="width:6px;height:6px;border-radius:50%;background:var(--red);flex-shrink:0;margin-top:5px"></span><span style="color:#333">${e(x)}</span></div>`).join('');
+    const impRows=(fs.improvements||[]).map(x=>`<div style="display:flex;gap:7px;align-items:flex-start;font-size:12px;padding:5px 0;border-bottom:1px solid rgba(0,166,81,.08)"><span style="width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0;margin-top:5px"></span><span style="color:#333">${e(x)}</span></div>`).join('');
     const fmtC=n=>{if(!n&&n!==0)return '--';return n>=1e6?'$'+(n/1e6).toFixed(1)+'M':n>=1e3?'$'+(n/1e3).toFixed(1)+'K':'$'+Math.round(n).toLocaleString();};
-    html+=`<div class="card m4"><div class="ch"><span>&#128260;</span><span class="ct">Before vs After: Rationalization Impact</span></div>
+    html+=`<div class="card m4"><div class="ch"><span class="ct">Before vs After: Rationalization Impact</span></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
     <div style="background:#fff5f5;border:1px solid #fad7d7;border-top:4px solid var(--red);border-radius:8px;padding:18px">
-      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--red);margin-bottom:12px">&#128198; Current State (AS-IS)</div>
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--red);margin-bottom:12px">Current State (AS-IS)</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
         <div style="background:#fff;padding:10px;border-radius:6px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--navy)">${cs.tool_count??'--'}</div><div style="font-size:10px;color:var(--mut);text-transform:uppercase;margin-top:2px">Tools</div></div>
         <div style="background:#fff;padding:10px;border-radius:6px;text-align:center"><div style="font-size:15px;font-weight:800;color:var(--navy)">${fmtC(cs.annual_cost)}</div><div style="font-size:10px;color:var(--mut);text-transform:uppercase;margin-top:2px">Annual Cost</div></div>
@@ -1470,7 +1533,7 @@ function rAssess(a){
       ${issueRows||'<div style="font-size:12px;color:var(--mut)">No issues listed</div>'}
     </div>
     <div style="background:#f0faf5;border:1px solid #b8e6d0;border-top:4px solid var(--green);border-radius:8px;padding:18px">
-      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--green);margin-bottom:12px">&#9989; Future State (Post-Rationalization)</div>
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--green);margin-bottom:12px">Future State (Post-Rationalization)</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
         <div style="background:#fff;padding:10px;border-radius:6px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--green)">${fs.projected_tool_count??'--'}</div><div style="font-size:10px;color:var(--mut);text-transform:uppercase;margin-top:2px">Tools (Est.)</div></div>
         <div style="background:#fff;padding:10px;border-radius:6px;text-align:center"><div style="font-size:15px;font-weight:800;color:var(--green)">${fmtC(fs.projected_annual_cost)}</div><div style="font-size:10px;color:var(--mut);text-transform:uppercase;margin-top:2px">Annual Cost (Est.)</div></div>
@@ -1484,14 +1547,14 @@ function rAssess(a){
   }
   const po=a.portfolio_overview;
   if(po){const hc=po.portfolio_health==='Healthy'?'green':po.portfolio_health==='At Risk'?'amber':'red';
-    html+=`<div class="card m4"><div class="ch"><span>&#128202;</span><span class="ct">Portfolio Overview</span></div>
+    html+=`<div class="card m4"><div class="ch"><span class="ct">Portfolio Overview</span></div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
     <div><div style="font-size:22px;font-weight:800;color:var(--blue)">${po.total_tools||0}</div><div class="tx mu2">Total Tools</div></div>
     <div><div style="font-size:22px;font-weight:800;color:var(--blue)">$${fmt(po.total_annual_cost||0)}</div><div class="tx mu2">Annual Spend</div></div>
     <div><div style="font-size:22px;font-weight:800;color:var(--${hc})">${po.portfolio_health||'--'}</div><div class="tx mu2">Portfolio Health</div></div>
     </div>${po.health_rationale?`<p class="tx mu2 mt4">${e(po.health_rationale)}</p>`:''}</div>`;}
   const recs=a.top_recommendations||[];
-  if(recs.length)html+=`<div class="card m4"><div class="ch"><span>&#127919;</span><span class="ct">Top Priority Recommendations</span></div>
+  if(recs.length)html+=`<div class="card m4"><div class="ch"><span class="ct">Top Priority Recommendations</span></div>
     ${recs.slice(0,5).map(r=>`<div class="rc"><div class="rh">
     <div class="rr">${r.rank||'#'}</div><div style="font-weight:700;color:var(--navy);flex:1">${e(r.title||'')}</div>
     ${bdg(r.priority||'Medium')} ${bdg(r.confidence||'Medium')}</div>
@@ -1501,37 +1564,37 @@ function rAssess(a){
   if(rm.short_term||rm.medium_term||rm.long_term){
     const ph=(key)=>{const items=Array.isArray(rm[key])?rm[key]:[rm[key]].filter(Boolean);
       return items.map(i=>`<div class="pi"><div class="pd"></div><div>${e(String(i))}</div></div>`).join('');};
-    html+=`<div class="card m4"><div class="ch"><span>&#128508;&#65039;</span><span class="ct">Rationalization Roadmap</span></div>
+    html+=`<div class="card m4"><div class="ch"><span class="ct">Rationalization Roadmap</span></div>
     <div class="rmc">
     <div class="ph p1"><div class="pht">Phase 1 &mdash; Quick Wins (0&ndash;3 Months)</div>${ph('short_term')}</div>
     <div class="ph p2"><div class="pht">Phase 2 &mdash; Strategic (3&ndash;12 Months)</div>${ph('medium_term')}</div>
     <div class="ph p3"><div class="pht">Phase 3 &mdash; Transformation (12&ndash;24 Months)</div>${ph('long_term')}</div>
     </div></div>`;}
   const risks=a.risk_highlights||[];
-  if(risks.length)html+=`<div class="card m4"><div class="ch"><span>&#9888;&#65039;</span><span class="ct">Risk Highlights</span></div>
+  if(risks.length)html+=`<div class="card m4"><div class="ch"><span class="ct">Risk Highlights</span></div>
     ${risks.map(r=>`<div class="dc" style="background:#fff5f5;border-color:#fad7d7">
-    <div style="font-size:18px">${r.severity==='Critical'?'[CRIT]':r.severity==='High'?'[HIGH]':'[MED]'}</div>
+    <div style="font-size:11px;font-weight:800;padding:3px 8px;border-radius:4px;background:${r.severity==='Critical'?'#c0392b':r.severity==='High'?'#e67e22':'#f39c12'};color:#fff;flex-shrink:0;align-self:flex-start">${r.severity==='Critical'?'CRITICAL':r.severity==='High'?'HIGH':'MEDIUM'}</div>
     <div><div style="font-weight:700;color:var(--navy)">${r.risk_type} &mdash; ${r.severity}</div>
     <div style="font-size:13px;color:#666;margin:3px 0">${e(r.description||'')}</div>
     <div style="font-size:12px;color:var(--green)">Mitigation: ${e(r.mitigation||'')}</div></div></div>`).join('')}</div>`;
   const oc=a.expected_outcomes||{};
-  if(Object.keys(oc).length)html+=`<div class="card m4"><div class="ch"><span>&#9989;</span><span class="ct">Expected Business Outcomes</span></div>
+  if(Object.keys(oc).length)html+=`<div class="card m4"><div class="ch"><span class="ct">Expected Business Outcomes</span></div>
     <div class="tw"><table><tbody>${Object.entries(oc).map(([k,v])=>`<tr><td><strong>${k.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase())}</strong></td><td>${e(String(v))}</td></tr>`).join('')}</tbody></table></div></div>`;
   // Pain Areas
   const painAreas=a.portfolio_pain_areas||[];
-  if(painAreas.length)html+=`<div class="card m4"><div class="ch"><span>&#9888;&#65039;</span><span class="ct">Portfolio Pain Areas</span></div>
+  if(painAreas.length)html+=`<div class="card m4"><div class="ch"><span class="ct">Portfolio Pain Areas</span></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">${painAreas.map(p=>`<div style="background:#fff8f0;border:1px solid #fde8c8;border-left:4px solid var(--amber);border-radius:6px;padding:11px 14px;font-size:13px;color:var(--txt)">${e(p)}</div>`).join('')}</div></div>`;
   // Duplicate tools
   const dupTools=a.duplicate_tools||[];
-  if(dupTools.length)html+=`<div class="card m4"><div class="ch"><span>&#128257;</span><span class="ct">Duplicate &amp; Redundant Tools</span></div>
+  if(dupTools.length)html+=`<div class="card m4"><div class="ch"><span class="ct">Duplicate &amp; Redundant Tools</span></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">${dupTools.map(d=>`<div style="background:#fff5f5;border:1px solid #fad7d7;border-radius:8px;padding:13px">
     <div style="font-weight:700;color:var(--navy);margin-bottom:4px">${e(d.tool_a||'')} &#8596; ${e(d.tool_b||'')}</div>
     <div style="font-size:12px;color:var(--mut);margin-bottom:5px"><b>${e(d.category||'')}</b> &mdash; ${e(d.overlap_reason||'')}</div>
-    <div style="font-size:12px;font-weight:700;color:var(--blue)">&#9654; ${e(d.recommendation||'')}</div></div>`).join('')}</div></div>`;
+    <div style="font-size:12px;font-weight:700;color:var(--blue)">${e(d.recommendation||'')}</div></div>`).join('')}</div></div>`;
   // Per-tool consulting analysis cards
   const ta=a.tool_analysis||[];
   if(ta.length){
-    html+=`<div class="card m4"><div class="ch"><span>&#128203;</span><span class="ct">Per-Tool Analysis &mdash; Consulting View</span></div>`;
+    html+=`<div class="card m4"><div class="ch"><span class="ct">Per-Tool Analysis &mdash; Consulting View</span></div>`;
     ta.forEach(t=>{
       const action=t.recommendation||'';
       const aC={'Retain':'#00A651','Replace':'#E31837','Retire':'#6B7A99','Rehost':'#0063DC','Replatform':'#FFC200','Refactor':'#FF7700'}[action]||'#0063DC';
@@ -1542,9 +1605,9 @@ function rAssess(a){
       </div>
       <div style="display:flex;flex-wrap:wrap;gap:0;border-bottom:1px solid var(--bdr)">${(t.facts||[]).slice(0,5).map(f=>`<div style="padding:9px 14px;border-right:1px solid var(--bdr);min-width:120px"><div style="font-size:10px;font-weight:700;color:var(--mut);text-transform:uppercase;margin-bottom:2px">${e(f.label||'')}</div><div style="font-size:12px;font-weight:600;color:var(--navy)">${e(f.value||'--')}</div></div>`).join('')}</div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid var(--bdr)">
-        <div style="padding:12px 14px;border-right:1px solid var(--bdr)"><div style="font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;margin-bottom:6px">Strengths</div>${(t.strengths||[]).map(s=>`<div style="font-size:12px;padding:3px 0;border-bottom:1px solid var(--bdr)">&#10003; ${e(s)}</div>`).join('')}</div>
-        <div style="padding:12px 14px;border-right:1px solid var(--bdr)"><div style="font-size:10px;font-weight:700;color:var(--red);text-transform:uppercase;margin-bottom:6px">Challenges</div>${(t.challenges||[]).map(c=>`<div style="font-size:12px;padding:3px 0;border-bottom:1px solid var(--bdr)">&#9888; ${e(c)}</div>`).join('')}</div>
-        <div style="padding:12px 14px"><div style="font-size:10px;font-weight:700;color:var(--amber);text-transform:uppercase;margin-bottom:6px">Gaps</div>${(t.gaps||[]).map(g=>`<div style="font-size:12px;padding:3px 0;border-bottom:1px solid var(--bdr)">&#9654; ${e(g)}</div>`).join('')}</div>
+        <div style="padding:12px 14px;border-right:1px solid var(--bdr)"><div style="font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;margin-bottom:6px">Strengths</div>${(t.strengths||[]).map(s=>`<div style="font-size:12px;padding:3px 0;border-bottom:1px solid var(--bdr)">${e(s)}</div>`).join('')}</div>
+        <div style="padding:12px 14px;border-right:1px solid var(--bdr)"><div style="font-size:10px;font-weight:700;color:var(--red);text-transform:uppercase;margin-bottom:6px">Challenges</div>${(t.challenges||[]).map(c=>`<div style="font-size:12px;padding:3px 0;border-bottom:1px solid var(--bdr)">${e(c)}</div>`).join('')}</div>
+        <div style="padding:12px 14px"><div style="font-size:10px;font-weight:700;color:var(--amber);text-transform:uppercase;margin-bottom:6px">Gaps</div>${(t.gaps||[]).map(g=>`<div style="font-size:12px;padding:3px 0;border-bottom:1px solid var(--bdr)">${e(g)}</div>`).join('')}</div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr">
         <div style="padding:12px 14px;border-right:1px solid var(--bdr)"><div style="font-size:10px;font-weight:700;color:var(--blue);text-transform:uppercase;margin-bottom:5px">Cost Analysis</div><div style="font-size:12px;color:#444;line-height:1.6">${e(t.cost_analysis||'')}</div></div>
@@ -1572,6 +1635,11 @@ async function sendChat(){
     const d=await r.json(); typ.remove();
     const rep=d.reply||'Sorry, I could not generate a response.';
     addMsg('assistant',rep); HIST.push({role:'assistant',content:rep});
+    // Show report update banner if an assessment has already been run
+    if(TOOLS.length&&Object.keys(ASSESS).length){
+      const bar=document.getElementById('chatReportBar');
+      if(bar) bar.style.display='flex';
+    }
   }catch(ex){typ.remove();addMsg('assistant','Error: '+ex.message);}
 }
 function addMsg(role,content,isTyping=false){
@@ -1642,7 +1710,7 @@ function hideLd(){document.getElementById('ld').classList.remove('show');}
 function toast(msg,type='in'){
   const c=document.getElementById('ts2'); const t=document.createElement('div');
   t.className='tt2 '+type;
-  t.innerHTML=`<span>${{ok:'&#10003;',er:'&#10007;',in:'&#8505;'}[type]||'&#8505;'}</span><span>${e(msg)}</span>`;
+  t.innerHTML=`<span style="font-size:10px;font-weight:800;opacity:.7">${{ok:'OK',er:'ERR',in:'INFO'}[type]||'INFO'}</span><span>${e(msg)}</span>`;
   c.appendChild(t); setTimeout(()=>t.remove(),4000);
 }
 function renderP6Preview(){
@@ -1691,7 +1759,7 @@ function renderP6Preview(){
   const bacHTML=(cs.tool_count||fs.projected_tool_count)?`
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
       <div style="background:#fff5f5;border:1px solid #fad7d7;border-top:3px solid var(--red);border-radius:8px;padding:14px">
-        <div style="font-size:10px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.8px;margin-bottom:9px">&#128198; Current State (AS-IS)</div>
+        <div style="font-size:10px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.8px;margin-bottom:9px">Current State (AS-IS)</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
           <div style="background:#fff;padding:8px;border-radius:6px;text-align:center"><div style="font-size:18px;font-weight:800;color:var(--navy)">${cs.tool_count??'--'}</div><div style="font-size:10px;color:var(--mut)">Tools</div></div>
           <div style="background:#fff;padding:8px;border-radius:6px;text-align:center"><div style="font-size:13px;font-weight:800;color:var(--navy)">${fmtC(cs.annual_cost)}</div><div style="font-size:10px;color:var(--mut)">Annual Cost</div></div>
@@ -1700,7 +1768,7 @@ function renderP6Preview(){
         </div>
       </div>
       <div style="background:#f0faf5;border:1px solid #b8e6d0;border-top:3px solid var(--green);border-radius:8px;padding:14px">
-        <div style="font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.8px;margin-bottom:9px">&#9989; Future State (Post-Rationalization)</div>
+        <div style="font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.8px;margin-bottom:9px">Future State (Post-Rationalization)</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
           <div style="background:#fff;padding:8px;border-radius:6px;text-align:center"><div style="font-size:18px;font-weight:800;color:var(--green)">${fs.projected_tool_count??'--'}</div><div style="font-size:10px;color:var(--mut)">Tools (Target)</div></div>
           <div style="background:#fff;padding:8px;border-radius:6px;text-align:center"><div style="font-size:13px;font-weight:800;color:var(--green)">${fmtC(fs.projected_annual_cost)}</div><div style="font-size:10px;color:var(--mut)">Cost (Est.)</div></div>
@@ -1714,14 +1782,13 @@ function renderP6Preview(){
   el.innerHTML=`
     <!-- Success banner -->
     <div style="background:linear-gradient(135deg,#00A651,#008f46);border-radius:10px;padding:16px 22px;color:#fff;display:flex;align-items:center;gap:16px;margin-bottom:14px">
-      <div style="font-size:34px">&#9989;</div>
       <div style="flex:1">
-        <div style="font-size:15px;font-weight:700;margin-bottom:3px">Assessment Complete!</div>
-        <div style="font-size:12px;opacity:.85;line-height:1.5">Your CIO-ready rationalization report is ready. Preview key findings below, then download the full report from <strong>Reports</strong> in the left sidebar.</div>
+        <div style="font-size:15px;font-weight:700;margin-bottom:3px">Assessment Complete</div>
+        <div style="font-size:12px;opacity:.85;line-height:1.5">Your CIO-ready rationalization report is ready. Key findings are summarised below — the full interactive report is loading in the preview section underneath.</div>
       </div>
       <div style="display:flex;flex-direction:column;gap:7px">
-        <button class="btn" style="background:#fff;color:#00A651;font-size:12px;font-weight:700;padding:8px 16px;white-space:nowrap" onclick="go('reports')">&#128196; Go to Reports &amp; Download &rarr;</button>
-        <button class="btn" style="background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.35);font-size:11px;white-space:nowrap" onclick="go('assessment')">View Full AI Assessment &rarr;</button>
+        <button class="btn" style="background:#fff;color:#00A651;font-size:12px;font-weight:700;padding:8px 16px;white-space:nowrap" onclick="go('reports')">Go to Reports &amp; Download</button>
+        <button class="btn" style="background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.35);font-size:11px;white-space:nowrap" onclick="go('assessment')">View Full AI Assessment</button>
       </div>
     </div>
 
@@ -1752,16 +1819,16 @@ function renderP6Preview(){
     <!-- 3-column preview grid -->
     <div style="display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:12px;margin-bottom:14px">
       <div class="card" style="padding:16px">
-        <div class="ch" style="margin-bottom:10px"><span>&#128203;</span><span class="ct" style="font-size:13px">Executive Summary</span></div>
+        <div class="ch" style="margin-bottom:10px"><span class="ct" style="font-size:13px">Executive Summary</span></div>
         ${execHTML}
-        ${exSum&&typeof exSum==='object'&&exSum.recommendations?`<div style="margin-top:10px;background:#f0faf5;border-left:3px solid var(--green);border-radius:0 7px 7px 0;padding:10px 13px;font-size:12px;line-height:1.6;color:var(--txt)"><div style="font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;margin-bottom:5px">&#9989; Recommendations</div>${e(exSum.recommendations)}</div>`:''}
+        ${exSum&&typeof exSum==='object'&&exSum.recommendations?`<div style="margin-top:10px;background:#f0faf5;border-left:3px solid var(--green);border-radius:0 7px 7px 0;padding:10px 13px;font-size:12px;line-height:1.6;color:var(--txt)"><div style="font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;margin-bottom:5px">Recommendations</div>${e(exSum.recommendations)}</div>`:''}
       </div>
       <div class="card" style="padding:16px">
-        <div class="ch" style="margin-bottom:10px"><span>&#127991;</span><span class="ct" style="font-size:13px">Rationalization Actions</span></div>
+        <div class="ch" style="margin-bottom:10px"><span class="ct" style="font-size:13px">Rationalization Actions</span></div>
         ${actHTML}
       </div>
       <div class="card" style="padding:16px">
-        <div class="ch" style="margin-bottom:10px"><span>&#127919;</span><span class="ct" style="font-size:13px">Top Recommendations</span></div>
+        <div class="ch" style="margin-bottom:10px"><span class="ct" style="font-size:13px">Top Recommendations</span></div>
         ${recsHTML}
       </div>
     </div>
@@ -1771,26 +1838,89 @@ function renderP6Preview(){
 
     <!-- Download CTA -->
     <div style="background:linear-gradient(135deg,#003366,#0063DC);border-radius:10px;padding:20px 24px;display:flex;align-items:center;gap:18px">
-      <div style="font-size:36px">&#128196;</div>
       <div style="flex:1;color:#fff">
         <div style="font-size:14px;font-weight:700;margin-bottom:5px">Download Your Full Report</div>
         <div style="font-size:12px;opacity:.8;line-height:1.6">Click <strong>Reports</strong> in the left sidebar to download the complete executive HTML report including Executive Summary, all tool scores, per-tool consulting analysis, 3-phase roadmap, risk highlights, and ROI outcomes. Use browser Print &rarr; Save as PDF for a PDF copy.</div>
       </div>
       <div style="display:flex;flex-direction:column;gap:8px;flex-shrink:0">
-        <button class="btn" style="background:#FFC200;color:#1a2340;font-weight:700;font-size:13px;padding:11px 20px;white-space:nowrap" onclick="go('reports');setTimeout(dlReport,200)">&#11015; Download Report Now</button>
-        <button class="btn" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);font-size:12px;white-space:nowrap" onclick="go('reports')">&#128196; Open Reports Section &rarr;</button>
+        <button class="btn" style="background:#FFC200;color:#1a2340;font-weight:700;font-size:13px;padding:11px 20px;white-space:nowrap" onclick="go('reports');setTimeout(dlReport,200)">Download Report Now</button>
+        <button class="btn" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);font-size:12px;white-space:nowrap" onclick="go('reports')">Open Reports Section</button>
       </div>
     </div>
   `;
 
   // Update Phase 6 run button state
   const ba2=document.getElementById('ba2');
-  if(ba2){ba2.innerHTML='&#127919; Re-run Assessment';ba2.style.background='rgba(255,255,255,.2)';ba2.style.border='1px solid rgba(255,255,255,.4)';}
+  if(ba2){ba2.innerHTML='Re-run Assessment';ba2.style.background='rgba(255,255,255,.2)';ba2.style.border='1px solid rgba(255,255,255,.4)';}
   const title=document.getElementById('p6readyTitle');
   if(title) title.textContent='Assessment Complete — Preview Below';
 
   // Smooth scroll to preview
   setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'start'}),100);
+}
+
+function setInfra(type){
+  INFRA_TYPE=type;
+  ['onprem','cloud','hybrid'].forEach(t=>{
+    const id={onprem:'infraBtnOnPrem',cloud:'infraBtnCloud',hybrid:'infraBtnHybrid'}[t];
+    const el=document.getElementById(id);
+    if(el) el.classList.toggle('active-infra',t===type);
+  });
+}
+
+async function applyChat2Report(){
+  if(!TOOLS.length)return toast('Ingest tools first before updating the report','er');
+  // Combine last 8 chat turns as extra context for the AI assessment
+  _CHAT_EXTRA_CTX=HIST.slice(-8).map(h=>(h.role==='user'?'Client question':'AI Advisor answer')+': '+h.content).join('\n');
+  toast('Re-running assessment with your conversation context — preview will load in Phase 6','in');
+  // Navigate to Phase 6 wizard
+  go('ingest');
+  gotoPhase(6);
+  // Run assessment — this will detect CUR_PHASE===6 and call renderP6FullReport()
+  await runAssess();
+  // Clear so next assessment doesn't include stale chat
+  _CHAT_EXTRA_CTX='';
+}
+
+async function renderP6FullReport(){
+  const container=document.getElementById('p6result');
+  if(!container)return;
+  // Append a loading placeholder for the iframe section
+  let iframeWrap=document.getElementById('p6reportFrame');
+  if(!iframeWrap){
+    iframeWrap=document.createElement('div');
+    iframeWrap.id='p6reportFrame';
+    container.after(iframeWrap);
+  }
+  iframeWrap.innerHTML=`<div class="card" style="padding:16px;margin-bottom:16px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div style="font-size:14px;font-weight:700;color:var(--navy)">Full Report Preview</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn bs1 bsm" onclick="go('reports')">Go to Reports</button>
+        <button class="btn bp1 bsm" onclick="go('reports');setTimeout(dlReport,200)">Download Report</button>
+      </div>
+    </div>
+    <div style="text-align:center;padding:32px;color:var(--mut);font-size:13px">Generating full report...</div>
+  </div>`;
+  iframeWrap.scrollIntoView({behavior:'smooth',block:'start'});
+  try{
+    const r=await fetch(A+'/api/report',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({tools:TOOLS,duplications:DUPS,assessment:ASSESS})});
+    const d=await r.json();
+    if(!r.ok){iframeWrap.innerHTML='';return;}
+    const blob=new Blob([d.html],{type:'text/html'});
+    const url=URL.createObjectURL(blob);
+    iframeWrap.innerHTML=`<div class="card" style="padding:16px;margin-bottom:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div style="font-size:14px;font-weight:700;color:var(--navy)">Full Report Preview</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn bs1 bsm" onclick="go('reports')">Go to Reports</button>
+          <button class="btn bp1 bsm" onclick="go('reports');setTimeout(dlReport,200)">Download Report</button>
+        </div>
+      </div>
+      <iframe src="${url}" style="width:100%;height:720px;border:1px solid var(--bdr);border-radius:8px"></iframe>
+    </div>`;
+  }catch(ex){if(iframeWrap)iframeWrap.innerHTML='';}
 }
 
 document.addEventListener('DOMContentLoaded',init);
