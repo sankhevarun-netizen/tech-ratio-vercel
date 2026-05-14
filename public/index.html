@@ -277,31 +277,203 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
       <p class="ws-desc">This agent mirrors a <strong>senior consulting workshop</strong>. We move through <strong>6 structured assessment phases</strong>, each building on the last — from data ingestion through to a CIO-ready report.</p>
       <p class="ws-desc">You will receive a tailored rationalization report covering the 6R model, cost savings analysis, risk highlights, per-tool consulting analysis, and a phased roadmap.</p>
 
-      <!-- 6-phase stage grid -->
-      <div class="ws-stages">
-        <div class="ws-stage">
-          <div class="ws-stage-ico">&#127970;</div>
-          <div class="ws-stage-lbl">Organisation</div>
+      <!-- Animated circular flow diagram -->
+      <style>
+        @keyframes spin-slow{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+        @keyframes pulse-ring{0%,100%{opacity:.35;r:86}50%{opacity:.7;r:92}}
+        @keyframes dash-flow-a{from{stroke-dashoffset:220}to{stroke-dashoffset:0}}
+        @keyframes dash-flow-b{from{stroke-dashoffset:260}to{stroke-dashoffset:0}}
+        @keyframes dash-flow-c{from{stroke-dashoffset:300}to{stroke-dashoffset:0}}
+        @keyframes node-glow{0%,100%{filter:drop-shadow(0 0 6px currentColor)}50%{filter:drop-shadow(0 0 14px currentColor)}}
+        .ws-flow-wrap{margin:18px 0 14px;display:flex;flex-direction:column;align-items:center;gap:12px}
+        .ws-flow-svg{width:100%;max-width:560px;height:auto;display:block;margin:0 auto}
+        .ws-flow-legend{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+        .ws-flow-leg{display:flex;align-items:center;gap:6px;font-size:11px;color:#64748b;font-weight:600}
+        .ws-flow-leg-bar{width:20px;height:4px;border-radius:2px}
+        .ws-flow-ctas{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;max-width:480px}
+        .ws-flow-cta{background:#f0f4ff;border:1px solid #c7d4f5;border-radius:8px;padding:8px 6px;text-align:center;font-size:10.5px;font-weight:700;color:#1E49E2;cursor:pointer;transition:background .18s,border-color .18s}
+        .ws-flow-cta:hover{background:#e0eaff;border-color:#1E49E2}
+      </style>
+      <div class="ws-flow-wrap">
+        <svg class="ws-flow-svg" viewBox="0 0 680 680" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <!-- Glow filters -->
+            <filter id="gp" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="8" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <filter id="gt" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="8" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <filter id="ga" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="8" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <filter id="gc" x="-60%" y="-60%" width="220%" height="220%">
+              <feGaussianBlur stdDeviation="12" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <!-- Arrow markers -->
+            <marker id="arr-p" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+              <polygon points="0 0, 7 3.5, 0 7" fill="#7F77DD" opacity=".9"/>
+            </marker>
+            <marker id="arr-t" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+              <polygon points="0 0, 7 3.5, 0 7" fill="#1D9E75" opacity=".9"/>
+            </marker>
+            <marker id="arr-a" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+              <polygon points="0 0, 7 3.5, 0 7" fill="#EF9F27" opacity=".9"/>
+            </marker>
+            <!-- Radial gradients for nodes -->
+            <radialGradient id="ng1" cx="40%" cy="35%" r="60%">
+              <stop offset="0%" stop-color="#7F77DD"/>
+              <stop offset="100%" stop-color="#12103A"/>
+            </radialGradient>
+            <radialGradient id="ng2" cx="40%" cy="35%" r="60%">
+              <stop offset="0%" stop-color="#7F77DD"/>
+              <stop offset="100%" stop-color="#12103A"/>
+            </radialGradient>
+            <radialGradient id="ng3" cx="40%" cy="35%" r="60%">
+              <stop offset="0%" stop-color="#1D9E75"/>
+              <stop offset="100%" stop-color="#0A1F18"/>
+            </radialGradient>
+            <radialGradient id="ng4" cx="40%" cy="35%" r="60%">
+              <stop offset="0%" stop-color="#1D9E75"/>
+              <stop offset="100%" stop-color="#0A1F18"/>
+            </radialGradient>
+            <radialGradient id="ng5" cx="40%" cy="35%" r="60%">
+              <stop offset="0%" stop-color="#EF9F27"/>
+              <stop offset="100%" stop-color="#1A1100"/>
+            </radialGradient>
+            <radialGradient id="ng6" cx="40%" cy="35%" r="60%">
+              <stop offset="0%" stop-color="#EF9F27"/>
+              <stop offset="100%" stop-color="#1A1100"/>
+            </radialGradient>
+            <radialGradient id="core-grad" cx="40%" cy="35%" r="65%">
+              <stop offset="0%" stop-color="#2A2060"/>
+              <stop offset="100%" stop-color="#07061A"/>
+            </radialGradient>
+            <radialGradient id="bg-grad" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#0D1B3E" stop-opacity=".18"/>
+              <stop offset="100%" stop-color="#0D1B3E" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+
+          <!-- Background radial wash -->
+          <circle cx="340" cy="340" r="300" fill="url(#bg-grad)"/>
+
+          <!-- Orbit ring -->
+          <circle cx="340" cy="340" r="224" fill="none" stroke="#1E49E2" stroke-width="1" stroke-opacity=".12" stroke-dasharray="6 5"/>
+
+          <!-- ── Flow arcs: node centers lie exactly on r=224 orbit; arcs trace the orbit ring clockwise ── -->
+          <!-- Arc P1(340,116)→P2(534,228) purple -->
+          <path d="M 340 116 A 224 224 0 0 1 534 228" fill="none" stroke="#534AB7" stroke-width="3" stroke-opacity=".22" filter="url(#gp)"/>
+          <path d="M 340 116 A 224 224 0 0 1 534 228" fill="none" stroke="#7F77DD" stroke-width="2.5" stroke-opacity=".9" stroke-dasharray="16 12" style="animation:dash-flow-a 2.2s linear infinite"/>
+          <!-- Arc P2(534,228)→P3(534,452) teal -->
+          <path d="M 534 228 A 224 224 0 0 1 534 452" fill="none" stroke="#0F6E56" stroke-width="3" stroke-opacity=".22" filter="url(#gt)"/>
+          <path d="M 534 228 A 224 224 0 0 1 534 452" fill="none" stroke="#1D9E75" stroke-width="2.5" stroke-opacity=".9" stroke-dasharray="16 12" style="animation:dash-flow-b 2.8s linear infinite"/>
+          <!-- Arc P3(534,452)→P4(340,564) teal -->
+          <path d="M 534 452 A 224 224 0 0 1 340 564" fill="none" stroke="#0F6E56" stroke-width="3" stroke-opacity=".22" filter="url(#gt)"/>
+          <path d="M 534 452 A 224 224 0 0 1 340 564" fill="none" stroke="#1D9E75" stroke-width="2.5" stroke-opacity=".9" stroke-dasharray="16 12" style="animation:dash-flow-a 2.2s linear infinite 0.4s"/>
+          <!-- Arc P4(340,564)→P5(146,452) amber -->
+          <path d="M 340 564 A 224 224 0 0 1 146 452" fill="none" stroke="#854F0B" stroke-width="3" stroke-opacity=".22" filter="url(#ga)"/>
+          <path d="M 340 564 A 224 224 0 0 1 146 452" fill="none" stroke="#EF9F27" stroke-width="2.5" stroke-opacity=".9" stroke-dasharray="16 12" style="animation:dash-flow-c 3.4s linear infinite"/>
+          <!-- Arc P5(146,452)→P6(146,228) amber -->
+          <path d="M 146 452 A 224 224 0 0 1 146 228" fill="none" stroke="#854F0B" stroke-width="3" stroke-opacity=".22" filter="url(#ga)"/>
+          <path d="M 146 452 A 224 224 0 0 1 146 228" fill="none" stroke="#EF9F27" stroke-width="2.5" stroke-opacity=".9" stroke-dasharray="16 12" style="animation:dash-flow-b 2.8s linear infinite 0.6s"/>
+          <!-- Arc P6(146,228)→P1(340,116) purple (completing the loop) -->
+          <path d="M 146 228 A 224 224 0 0 1 340 116" fill="none" stroke="#534AB7" stroke-width="3" stroke-opacity=".22" filter="url(#gp)"/>
+          <path d="M 146 228 A 224 224 0 0 1 340 116" fill="none" stroke="#7F77DD" stroke-width="2.5" stroke-opacity=".9" stroke-dasharray="16 12" style="animation:dash-flow-a 2.2s linear infinite 1s"/>
+
+          <!-- ── Central AI Core ── -->
+          <!-- Spinning outer ring -->
+          <circle cx="340" cy="340" r="94" fill="none" stroke="#534AB7" stroke-width="1" stroke-opacity=".3" stroke-dasharray="4 8" style="transform-origin:340px 340px;animation:spin-slow 20s linear infinite"/>
+          <!-- Pulsing ring -->
+          <circle cx="340" cy="340" r="86" fill="none" stroke="#1E49E2" stroke-width="1.5" stroke-opacity=".4" style="transform-origin:340px 340px;animation:pulse-ring 3s ease-in-out infinite"/>
+          <!-- Core body -->
+          <circle cx="340" cy="340" r="78" fill="url(#core-grad)" filter="url(#gc)"/>
+          <circle cx="340" cy="340" r="78" fill="none" stroke="#534AB7" stroke-width="1.5" stroke-opacity=".6"/>
+          <!-- Hex pattern dots (decorative) -->
+          <g opacity=".25" fill="#7F77DD">
+            <circle cx="340" cy="308" r="2.5"/><circle cx="356" cy="317" r="2.5"/><circle cx="356" cy="335" r="2.5"/>
+            <circle cx="340" cy="344" r="2.5"/><circle cx="324" cy="335" r="2.5"/><circle cx="324" cy="317" r="2.5"/>
+            <circle cx="340" cy="326" r="3"/>
+          </g>
+          <!-- Core labels -->
+          <text x="340" y="355" text-anchor="middle" font-size="13" font-weight="800" fill="#fff" font-family="'Segoe UI',sans-serif" letter-spacing=".5">AI Agent</text>
+          <text x="340" y="371" text-anchor="middle" font-size="9" fill="#7F77DD" font-family="'Segoe UI',sans-serif" letter-spacing="1.5" font-weight="600">TECH RATIO</text>
+
+          <!-- ── Phase nodes ── -->
+          <!-- Node positions: 6 nodes at r=224, starting from top (270°) going clockwise -->
+          <!-- Phase 6 (top-left, 270°+(-60°)=210°? Let's use:
+               Phase 1: -90°→top = (340, 116)
+               Phase 2: -30°→top-right = (340+224·cos(-30°), 340+224·sin(-30°)) = (534, 228)
+               Phase 3: 30°→bottom-right = (534, 452)
+               Phase 4: 90°→bottom = (340, 564)
+               Phase 5: 150°→bottom-left = (146, 452)
+               Phase 6: 210°→top-left = (146, 228) -->
+
+          <!-- Phase 1: top (340, 116) — purple — Discover -->
+          <circle cx="340" cy="116" r="52" fill="url(#ng1)" filter="url(#gp)"/>
+          <circle cx="340" cy="116" r="52" fill="none" stroke="#7F77DD" stroke-width="2" stroke-opacity=".7"/>
+          <circle cx="340" cy="116" r="44" fill="none" stroke="#534AB7" stroke-width="1" stroke-opacity=".4" stroke-dasharray="3 5"/>
+          <text x="340" y="107" text-anchor="middle" font-size="11" font-weight="800" fill="#fff" font-family="'Segoe UI',sans-serif">Phase 1</text>
+          <text x="340" y="121" text-anchor="middle" font-size="9.5" fill="#C5C2F0" font-family="'Segoe UI',sans-serif" font-weight="600">Organisation</text>
+          <text x="340" y="133" text-anchor="middle" font-size="8" fill="#7F77DD" font-family="'Segoe UI',sans-serif" letter-spacing="1" font-weight="700">DISCOVER</text>
+
+          <!-- Phase 2: top-right (534, 228) — purple — Analyse -->
+          <circle cx="534" cy="228" r="52" fill="url(#ng2)" filter="url(#gp)"/>
+          <circle cx="534" cy="228" r="52" fill="none" stroke="#7F77DD" stroke-width="2" stroke-opacity=".7"/>
+          <circle cx="534" cy="228" r="44" fill="none" stroke="#534AB7" stroke-width="1" stroke-opacity=".4" stroke-dasharray="3 5"/>
+          <text x="534" y="219" text-anchor="middle" font-size="11" font-weight="800" fill="#fff" font-family="'Segoe UI',sans-serif">Phase 2</text>
+          <text x="534" y="233" text-anchor="middle" font-size="9.5" fill="#C5C2F0" font-family="'Segoe UI',sans-serif" font-weight="600">Tool Inventory</text>
+          <text x="534" y="245" text-anchor="middle" font-size="8" fill="#7F77DD" font-family="'Segoe UI',sans-serif" letter-spacing="1" font-weight="700">ANALYSE</text>
+
+          <!-- Phase 3: bottom-right (534, 452) — teal — Measure -->
+          <circle cx="534" cy="452" r="52" fill="url(#ng3)" filter="url(#gt)"/>
+          <circle cx="534" cy="452" r="52" fill="none" stroke="#1D9E75" stroke-width="2" stroke-opacity=".7"/>
+          <circle cx="534" cy="452" r="44" fill="none" stroke="#0F6E56" stroke-width="1" stroke-opacity=".4" stroke-dasharray="3 5"/>
+          <text x="534" y="443" text-anchor="middle" font-size="11" font-weight="800" fill="#fff" font-family="'Segoe UI',sans-serif">Phase 3</text>
+          <text x="534" y="457" text-anchor="middle" font-size="9" fill="#A8EDD6" font-family="'Segoe UI',sans-serif" font-weight="600">Business Context</text>
+          <text x="534" y="469" text-anchor="middle" font-size="8" fill="#1D9E75" font-family="'Segoe UI',sans-serif" letter-spacing="1" font-weight="700">MEASURE</text>
+
+          <!-- Phase 4: bottom (340, 564) — teal — Decide -->
+          <circle cx="340" cy="564" r="52" fill="url(#ng4)" filter="url(#gt)"/>
+          <circle cx="340" cy="564" r="52" fill="none" stroke="#1D9E75" stroke-width="2" stroke-opacity=".7"/>
+          <circle cx="340" cy="564" r="44" fill="none" stroke="#0F6E56" stroke-width="1" stroke-opacity=".4" stroke-dasharray="3 5"/>
+          <text x="340" y="555" text-anchor="middle" font-size="11" font-weight="800" fill="#fff" font-family="'Segoe UI',sans-serif">Phase 4</text>
+          <text x="340" y="569" text-anchor="middle" font-size="9" fill="#A8EDD6" font-family="'Segoe UI',sans-serif" font-weight="600">Technical Context</text>
+          <text x="340" y="581" text-anchor="middle" font-size="8" fill="#1D9E75" font-family="'Segoe UI',sans-serif" letter-spacing="1" font-weight="700">DECIDE</text>
+
+          <!-- Phase 5: bottom-left (146, 452) — amber — Execute -->
+          <circle cx="146" cy="452" r="52" fill="url(#ng5)" filter="url(#ga)"/>
+          <circle cx="146" cy="452" r="52" fill="none" stroke="#EF9F27" stroke-width="2" stroke-opacity=".7"/>
+          <circle cx="146" cy="452" r="44" fill="none" stroke="#854F0B" stroke-width="1" stroke-opacity=".4" stroke-dasharray="3 5"/>
+          <text x="146" y="443" text-anchor="middle" font-size="11" font-weight="800" fill="#fff" font-family="'Segoe UI',sans-serif">Phase 5</text>
+          <text x="146" y="457" text-anchor="middle" font-size="9" fill="#FDDFA5" font-family="'Segoe UI',sans-serif" font-weight="600">Financial Params</text>
+          <text x="146" y="469" text-anchor="middle" font-size="8" fill="#EF9F27" font-family="'Segoe UI',sans-serif" letter-spacing="1" font-weight="700">EXECUTE</text>
+
+          <!-- Phase 6: top-left (146, 228) — amber — Iterate -->
+          <circle cx="146" cy="228" r="52" fill="url(#ng6)" filter="url(#ga)"/>
+          <circle cx="146" cy="228" r="52" fill="none" stroke="#EF9F27" stroke-width="2" stroke-opacity=".7"/>
+          <circle cx="146" cy="228" r="44" fill="none" stroke="#854F0B" stroke-width="1" stroke-opacity=".4" stroke-dasharray="3 5"/>
+          <text x="146" y="219" text-anchor="middle" font-size="11" font-weight="800" fill="#fff" font-family="'Segoe UI',sans-serif">Phase 6</text>
+          <text x="146" y="233" text-anchor="middle" font-size="9" fill="#FDDFA5" font-family="'Segoe UI',sans-serif" font-weight="600">Assess &amp; Report</text>
+          <text x="146" y="245" text-anchor="middle" font-size="8" fill="#EF9F27" font-family="'Segoe UI',sans-serif" letter-spacing="1" font-weight="700">ITERATE</text>
+        </svg>
+
+        <!-- Legend -->
+        <div class="ws-flow-legend">
+          <div class="ws-flow-leg"><div class="ws-flow-leg-bar" style="background:linear-gradient(90deg,#534AB7,#7F77DD)"></div>Discovery &amp; Inventory</div>
+          <div class="ws-flow-leg"><div class="ws-flow-leg-bar" style="background:linear-gradient(90deg,#0F6E56,#1D9E75)"></div>Context &amp; Analysis</div>
+          <div class="ws-flow-leg"><div class="ws-flow-leg-bar" style="background:linear-gradient(90deg,#854F0B,#EF9F27)"></div>Financials &amp; Roadmap</div>
         </div>
-        <div class="ws-stage">
-          <div class="ws-stage-ico">&#128229;</div>
-          <div class="ws-stage-lbl">Tool Inventory</div>
-        </div>
-        <div class="ws-stage">
-          <div class="ws-stage-ico">&#128203;</div>
-          <div class="ws-stage-lbl">Business Context</div>
-        </div>
-        <div class="ws-stage">
-          <div class="ws-stage-ico">&#9881;&#65039;</div>
-          <div class="ws-stage-lbl">Technical Context</div>
-        </div>
-        <div class="ws-stage">
-          <div class="ws-stage-ico">&#128176;</div>
-          <div class="ws-stage-lbl">Financial Params</div>
-        </div>
-        <div class="ws-stage">
-          <div class="ws-stage-ico">&#128196;</div>
-          <div class="ws-stage-lbl">Assess &amp; Report</div>
+
+        <!-- CTA buttons -->
+        <div class="ws-flow-ctas">
+          <div class="ws-flow-cta" onclick="document.getElementById('welcomeScreen').style.display='none';go('ingest');">Start Engagement &rarr;</div>
+          <div class="ws-flow-cta" onclick="document.getElementById('welcomeScreen').style.display='none';go('ingest');">Prep Checklist &rarr;</div>
+          <div class="ws-flow-cta" onclick="document.getElementById('welcomeScreen').style.display='none';go('ingest');">Expected Outcomes &rarr;</div>
         </div>
       </div>
 
