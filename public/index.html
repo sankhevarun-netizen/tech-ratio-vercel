@@ -194,82 +194,135 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
 .ag-txt strong{color:#fff}
 .ag-next{margin-top:9px;display:inline-flex;align-items:center;gap:6px;padding:5px 13px;border-radius:6px;font-size:12px;font-weight:600;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;cursor:pointer;transition:all .15s}
 .ag-next:hover{background:rgba(255,255,255,.28)}
-/* Welcome screen */
-.ws-overlay{position:fixed;inset:0;z-index:9999;background:linear-gradient(180deg,#06101f 0%,#091528 60%,#050e1c 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;overflow-y:auto;padding:30px 20px}
-.ws-badge{display:flex;align-items:center;gap:8px;background:#111f38;border:1px solid #1e3252;border-radius:30px;padding:7px 18px;margin-bottom:26px}
-.ws-badge-dot{width:8px;height:8px;border-radius:50%;background:#00A651;animation:pulse 2s ease-in-out infinite;flex-shrink:0}
-.ws-badge-txt{font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:#5e8fc0}
-.ws-title{font-size:48px;font-weight:900;color:#fff;text-align:center;line-height:1.1;margin-bottom:8px}
-.ws-sub1{font-size:32px;font-weight:700;color:#00c8ff;text-align:center;margin-bottom:14px}
-.ws-sub2{font-size:14px;color:#4e6e95;text-align:center;max-width:500px;line-height:1.7;margin-bottom:30px}
-.ws-card{background:#0d1c32;border:1px solid #1a2e4e;border-radius:16px;padding:30px 32px;max-width:680px;width:100%}
-.ws-welcome{font-size:10px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:#00c8ff;margin-bottom:10px}
-.ws-heading{font-size:21px;font-weight:800;color:#fff;margin-bottom:12px}
-.ws-desc{font-size:13px;color:#6a8fb5;line-height:1.75;margin-bottom:8px}
-.ws-desc strong{color:#a8c4e0}
+/* Welcome screen — KPMG light theme */
+.ws-overlay{position:fixed;inset:0;z-index:9999;background:#f0f3f8;display:flex;flex-direction:column;align-items:stretch;overflow-y:auto}
+/* Dark navy top bar — mirrors kpmg.com header */
+.ws-topbar{background:#0C233C;padding:0 48px;height:56px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.ws-topbar-right{font-size:11px;color:rgba(255,255,255,.4);letter-spacing:.5px}
+/* Hero area — white strip */
+.ws-hero{background:#fff;border-bottom:1px solid #dce6f0;padding:52px 24px 44px;display:flex;flex-direction:column;align-items:center}
+/* Badge pill */
+.ws-badge{display:flex;align-items:center;gap:8px;background:#eef3fa;border:1px solid #c5d5ec;border-radius:30px;padding:6px 16px;margin-bottom:22px}
+.ws-badge-dot{width:7px;height:7px;border-radius:50%;background:#00A651;animation:pulse 2s ease-in-out infinite;flex-shrink:0}
+.ws-badge-txt{font-size:10px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:#00338D}
+.ws-title{font-size:44px;font-weight:900;color:#0C233C;text-align:center;line-height:1.1;margin-bottom:6px}
+.ws-sub1{font-size:26px;font-weight:700;color:#00338D;text-align:center;margin-bottom:10px}
+.ws-sub2{font-size:14px;color:#5a6e8a;text-align:center;max-width:560px;line-height:1.75;margin-bottom:0}
+/* Card area */
+.ws-body{flex:1;display:flex;justify-content:center;align-items:flex-start;padding:32px 24px 40px;background:#f0f3f8}
+.ws-card{background:#fff;border:1px solid #dce6f0;border-radius:12px;padding:30px 34px;max-width:700px;width:100%;box-shadow:0 4px 28px rgba(0,51,141,.08)}
+.ws-welcome{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#00338D;margin-bottom:10px}
+.ws-heading{font-size:20px;font-weight:800;color:#0C233C;margin-bottom:12px;line-height:1.3}
+.ws-desc{font-size:13px;color:#5a6e8a;line-height:1.8;margin-bottom:8px}
+.ws-desc strong{color:#0C233C}
+/* 6-stage grid */
 .ws-stages{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:20px 0}
-@media(min-width:640px){.ws-stages{grid-template-columns:repeat(3,1fr)}}
-.ws-stage{background:#101f36;border:1px solid #1a2e4e;border-radius:10px;padding:18px 10px;text-align:center;transition:border-color .15s}
-.ws-stage:hover{border-color:#0063DC}
-.ws-stage-ico{font-size:26px;margin-bottom:8px}
-.ws-stage-lbl{font-size:12px;font-weight:700;color:#d0e4f7}
-.ws-footer{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
-.ws-footer-l{font-size:12px;color:#344d6a}
-.ws-footer-l strong{color:#5e8fb5}
-.ws-footer-r{font-size:12px;color:#344d6a}
-.ws-cta{width:100%;padding:15px;background:linear-gradient(90deg,#0049a8,#0063DC 50%,#00a3e0);border:none;border-radius:10px;font-size:15px;font-weight:700;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:filter .15s;letter-spacing:.3px}
-.ws-cta:hover{filter:brightness(1.1)}
+.ws-stage{background:#f4f7fc;border:1px solid #dce6f0;border-radius:8px;padding:16px 10px;text-align:center;transition:border-color .15s,background .15s}
+.ws-stage:hover{border-color:#00338D;background:#eef3fa}
+.ws-stage-ico{font-size:24px;margin-bottom:7px}
+.ws-stage-lbl{font-size:11px;font-weight:700;color:#0C233C;text-transform:uppercase;letter-spacing:.4px}
+/* Footer strip inside card */
+.ws-footer{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding:12px 0;border-top:1px solid #e8edf5;border-bottom:1px solid #e8edf5}
+.ws-footer-l{font-size:12px;color:#8899bb}
+.ws-footer-l strong{color:#0C233C}
+.ws-footer-r{font-size:12px;color:#8899bb}
+/* CTA button — KPMG Blue */
+.ws-cta{width:100%;padding:14px;background:#00338D;border:none;border-radius:8px;font-size:14px;font-weight:700;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s;letter-spacing:.3px}
+.ws-cta:hover{background:#002277}
 </style>
 </head>
 <body>
 
 <!-- WELCOME SCREEN -->
 <div class="ws-overlay" id="welcomeScreen">
-  <div class="ws-badge">
-    <span class="ws-badge-dot"></span>
-    <span class="ws-badge-txt">Enterprise AI Assessment</span>
-  </div>
-  <div class="ws-title">Technology Rationalization</div>
-  <div class="ws-sub1">&amp; Portfolio Assessment</div>
-  <div class="ws-sub2">A structured decision-support agent that assesses your technology portfolio and produces an actionable AI-powered rationalization roadmap.</div>
-  <div class="ws-card">
-    <div class="ws-welcome">Welcome</div>
-    <div class="ws-heading">Ready to rationalize your technology portfolio?</div>
-    <p class="ws-desc">This agent mirrors a <strong>senior consulting workshop</strong>. We'll move through <strong>6 assessment phases</strong>, each building on the last.</p>
-    <p class="ws-desc">At the end, you'll receive a tailored rationalization report covering the 6R model, cost savings analysis, risk highlights, and a full PDF download.</p>
-    <div class="ws-stages">
-      <div class="ws-stage"><div class="ws-stage-ico">&#127919;</div><div class="ws-stage-lbl">Scope</div></div>
-      <div class="ws-stage"><div class="ws-stage-ico">&#128229;</div><div class="ws-stage-lbl">Upload Tools</div></div>
-      <div class="ws-stage"><div class="ws-stage-ico">&#128202;</div><div class="ws-stage-lbl">Dashboard</div></div>
-      <div class="ws-stage"><div class="ws-stage-ico">&#9881;</div><div class="ws-stage-lbl">Assessment</div></div>
-      <div class="ws-stage"><div class="ws-stage-ico">&#128161;</div><div class="ws-stage-lbl">Pain Points</div></div>
-      <div class="ws-stage"><div class="ws-stage-ico">&#128196;</div><div class="ws-stage-lbl">Report</div></div>
+
+  <!-- Dark navy top bar -->
+  <div class="ws-topbar">
+    <div style="display:flex;align-items:center;gap:14px">
+      <div style="width:34px;height:34px;background:linear-gradient(135deg,#1E49E2,#00338D);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff;flex-shrink:0">TR</div>
+      <div>
+        <div style="font-size:9px;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:2px">Advisory Services</div>
+        <div style="font-size:12px;font-weight:600;color:rgba(255,255,255,.9)">Tool Rationalization Agent</div>
+      </div>
     </div>
-    <div class="ws-footer">
-      <span class="ws-footer-l">Estimated time: <strong>5–8 minutes</strong></span>
-      <span class="ws-footer-r">6 phases &middot; AI-powered rationalization</span>
-    </div>
-    <button class="ws-cta" onclick="document.getElementById('welcomeScreen').style.display='none';go('ingest');">Begin Assessment &nbsp;&rarr;</button>
+    <div class="ws-topbar-right">Enterprise AI Assessment Platform</div>
   </div>
+
+  <!-- White hero strip -->
+  <div class="ws-hero">
+    <div class="ws-badge">
+      <span class="ws-badge-dot"></span>
+      <span class="ws-badge-txt">Enterprise AI Assessment</span>
+    </div>
+    <div class="ws-title">Technology Rationalization</div>
+    <div class="ws-sub1">&amp; Portfolio Assessment</div>
+    <div class="ws-sub2">A structured decision-support agent that assesses your technology portfolio and produces an actionable AI-powered rationalization roadmap — aligned with enterprise consulting frameworks.</div>
+  </div>
+
+  <!-- Light grey body with card -->
+  <div class="ws-body">
+    <div class="ws-card">
+      <!-- Thin KPMG-blue top accent bar -->
+      <div style="height:3px;background:linear-gradient(90deg,#00338D,#1E49E2);border-radius:3px 3px 0 0;margin:-30px -34px 22px"></div>
+
+      <div class="ws-welcome">&#9642;&nbsp; Welcome</div>
+      <div class="ws-heading">Ready to rationalize your technology portfolio?</div>
+      <p class="ws-desc">This agent mirrors a <strong>senior consulting workshop</strong>. We move through <strong>6 structured assessment phases</strong>, each building on the last — from data ingestion through to a CIO-ready report.</p>
+      <p class="ws-desc">You will receive a tailored rationalization report covering the 6R model, cost savings analysis, risk highlights, per-tool consulting analysis, and a phased roadmap.</p>
+
+      <!-- 6-phase stage grid -->
+      <div class="ws-stages">
+        <div class="ws-stage">
+          <div class="ws-stage-ico">&#127970;</div>
+          <div class="ws-stage-lbl">Organisation</div>
+        </div>
+        <div class="ws-stage">
+          <div class="ws-stage-ico">&#128229;</div>
+          <div class="ws-stage-lbl">Tool Inventory</div>
+        </div>
+        <div class="ws-stage">
+          <div class="ws-stage-ico">&#128203;</div>
+          <div class="ws-stage-lbl">Business Context</div>
+        </div>
+        <div class="ws-stage">
+          <div class="ws-stage-ico">&#9881;&#65039;</div>
+          <div class="ws-stage-lbl">Technical Context</div>
+        </div>
+        <div class="ws-stage">
+          <div class="ws-stage-ico">&#128176;</div>
+          <div class="ws-stage-lbl">Financial Params</div>
+        </div>
+        <div class="ws-stage">
+          <div class="ws-stage-ico">&#128196;</div>
+          <div class="ws-stage-lbl">Assess &amp; Report</div>
+        </div>
+      </div>
+
+      <div class="ws-footer">
+        <span class="ws-footer-l">Estimated time: <strong>5 – 8 minutes</strong></span>
+        <span class="ws-footer-r">6 phases &nbsp;&middot;&nbsp; AI-powered &nbsp;&middot;&nbsp; Enterprise framework</span>
+      </div>
+
+      <button class="ws-cta" onclick="document.getElementById('welcomeScreen').style.display='none';go('ingest');">
+        Begin Assessment &nbsp;&rarr;
+      </button>
+
+      <p style="text-align:center;font-size:10px;color:#aab4c8;margin-top:14px;line-height:1.5">
+        Tool Rationalization Agent &nbsp;&bull;&nbsp; Enterprise Technology Advisory &nbsp;&bull;&nbsp; For Internal Use Only
+      </p>
+    </div>
+  </div>
+
 </div>
 
 <div class="app">
 <!-- SIDEBAR -->
 <aside class="sb">
-  <div class="sb-logo" style="flex-direction:column;align-items:flex-start;gap:7px;padding:14px 14px 12px">
-    <!-- KPMG logo: 4-square grid + italic text, white on dark sidebar -->
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 68" width="56" height="17" style="display:block">
-      <!-- 4 squares 2x2 -->
-      <rect x="0"  y="0"  width="28" height="28" rx="1" fill="rgba(255,255,255,0.9)"/>
-      <rect x="32" y="0"  width="28" height="28" rx="1" fill="rgba(255,255,255,0.9)"/>
-      <rect x="0"  y="32" width="28" height="28" rx="1" fill="rgba(255,255,255,0.9)"/>
-      <rect x="32" y="32" width="28" height="28" rx="1" fill="rgba(255,255,255,0.9)"/>
-      <!-- KPMG text -->
-      <text x="70" y="50" font-family="Arial Black,Arial,sans-serif" font-size="46" font-weight="900" font-style="italic" fill="rgba(255,255,255,0.9)" letter-spacing="-1">KPMG</text>
-    </svg>
-    <div style="padding:0 2px">
-      <span style="color:rgba(255,255,255,.75);font-size:10px;font-weight:600;letter-spacing:.3px;display:block">Tool Rationalization Agent</span>
-      <span style="color:rgba(255,255,255,.35);font-size:9px">Enterprise Advisory</span>
+  <div class="sb-logo" style="align-items:center;gap:10px;padding:14px 14px 12px">
+    <div style="width:36px;height:36px;background:linear-gradient(135deg,#1E49E2,#00338D);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;color:#fff;flex-shrink:0;letter-spacing:-1px">TR</div>
+    <div>
+      <span style="color:rgba(255,255,255,.85);font-size:12px;font-weight:700;display:block;line-height:1.2">Tool Rationalization</span>
+      <span style="color:rgba(255,255,255,.35);font-size:10px">Enterprise Advisory</span>
     </div>
   </div>
   <div class="sb-sec">
@@ -297,10 +350,6 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
         <button class="tfb" onclick="setTF(this,'7d')">7d</button>
         <button class="tfb" onclick="setTF(this,'30d')">30d</button>
         <button class="tfb active" onclick="setTF(this,'all')">All</button>
-      </div>
-      <div style="display:flex;align-items:center;gap:6px;padding:5px 12px;background:#f0faf5;border:1px solid #c3e6cb;border-radius:6px">
-        <div style="width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s ease-in-out infinite"></div>
-        <span style="font-size:12px;font-weight:600;color:var(--green)">Live</span>
       </div>
       <button class="btn bs1 bsm" onclick="go('ingest')">+ Ingest Data</button>
       <button class="btn bp1 bsm" onclick="go('assessment');runAssess()">&#127919; Run Assessment</button>
@@ -1479,7 +1528,7 @@ function rAssess(a){
     <div style="font-weight:700;color:var(--navy);margin-bottom:4px">${e(d.tool_a||'')} &#8596; ${e(d.tool_b||'')}</div>
     <div style="font-size:12px;color:var(--mut);margin-bottom:5px"><b>${e(d.category||'')}</b> &mdash; ${e(d.overlap_reason||'')}</div>
     <div style="font-size:12px;font-weight:700;color:var(--blue)">&#9654; ${e(d.recommendation||'')}</div></div>`).join('')}</div></div>`;
-  // Per-tool KPMG analysis cards
+  // Per-tool consulting analysis cards
   const ta=a.tool_analysis||[];
   if(ta.length){
     html+=`<div class="card m4"><div class="ch"><span>&#128203;</span><span class="ct">Per-Tool Analysis &mdash; Consulting View</span></div>`;
@@ -1725,7 +1774,7 @@ function renderP6Preview(){
       <div style="font-size:36px">&#128196;</div>
       <div style="flex:1;color:#fff">
         <div style="font-size:14px;font-weight:700;margin-bottom:5px">Download Your Full Report</div>
-        <div style="font-size:12px;opacity:.8;line-height:1.6">Click <strong>Reports</strong> in the left sidebar to download the complete KPMG-style HTML report including Executive Summary, all tool scores, per-tool consulting analysis, 3-phase roadmap, risk highlights, and ROI outcomes. Use browser Print &rarr; Save as PDF for a PDF copy.</div>
+        <div style="font-size:12px;opacity:.8;line-height:1.6">Click <strong>Reports</strong> in the left sidebar to download the complete executive HTML report including Executive Summary, all tool scores, per-tool consulting analysis, 3-phase roadmap, risk highlights, and ROI outcomes. Use browser Print &rarr; Save as PDF for a PDF copy.</div>
       </div>
       <div style="display:flex;flex-direction:column;gap:8px;flex-shrink:0">
         <button class="btn" style="background:#FFC200;color:#1a2340;font-weight:700;font-size:13px;padding:11px 20px;white-space:nowrap" onclick="go('reports');setTimeout(dlReport,200)">&#11015; Download Report Now</button>

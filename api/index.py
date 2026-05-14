@@ -808,18 +808,9 @@ tbody tr{{page-break-inside:avoid}}
 
 <!-- COVER HEADER -->
 <div class="hdr">
-<div style="display:flex;align-items:center;gap:22px;margin-bottom:22px">
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 482 192" width="72" height="29" style="border-radius:3px;flex-shrink:0">
-<defs><clipPath id="rptclip2"><rect x="4" y="6" width="108" height="97"/><rect x="122" y="6" width="108" height="97"/><rect x="240" y="6" width="108" height="97"/><rect x="358" y="6" width="108" height="97"/></clipPath></defs>
-<rect width="482" height="192" fill="#fff"/>
-<rect x="4" y="6" width="108" height="97" fill="#00338D"/>
-<rect x="122" y="6" width="108" height="97" fill="#00338D"/>
-<rect x="240" y="6" width="108" height="97" fill="#00338D"/>
-<rect x="358" y="6" width="108" height="97" fill="#00338D"/>
-<text x="2" y="183" font-family="Arial Black,Arial,sans-serif" font-size="120" font-weight="900" font-style="italic" fill="#00338D">KPMG</text>
-<text x="2" y="183" font-family="Arial Black,Arial,sans-serif" font-size="120" font-weight="900" font-style="italic" fill="#fff" clip-path="url(#rptclip2)">KPMG</text>
-</svg>
-<div style="border-left:1px solid rgba(255,255,255,.25);padding-left:20px">
+<div style="display:flex;align-items:center;gap:16px;margin-bottom:22px">
+<div style="width:48px;height:48px;background:rgba(255,255,255,.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:#fff;flex-shrink:0;letter-spacing:-1px">TR</div>
+<div style="border-left:1px solid rgba(255,255,255,.25);padding-left:18px">
 <div style="font-size:10px;opacity:.6;text-transform:uppercase;letter-spacing:1.4px;margin-bottom:3px">Advisory Services</div>
 <div style="font-size:13px;font-weight:600;opacity:.9">Tool Rationalization Agent</div>
 </div>
@@ -864,7 +855,7 @@ tbody tr{{page-break-inside:avoid}}
 <!-- DUPLICATE TOOLS -->
 {(f'<div class="sec"><h2>Duplicate &amp; Redundant Tools</h2><div class="g2">'+''.join(f'<div class="dup-card"><div style="font-weight:700;color:#003366;margin-bottom:4px;font-size:13px">{d.get("tool_a","")} &harr; {d.get("tool_b","")}</div><div style="font-size:11px;color:#666;margin-bottom:5px"><b>{d.get("category","")}</b> &mdash; {d.get("overlap_reason","")}</div><div style="font-size:11px;font-weight:700;color:#0063DC">&#9654; {d.get("recommendation","")}</div></div>' for d in dup_tools[:10])+'</div></div>') if dup_tools else ''}
 
-<!-- PER-TOOL KPMG ANALYSIS -->
+<!-- PER-TOOL ANALYSIS -->
 {(f'<div class="sec pb"><h2>Per-Tool Analysis &mdash; Consulting View</h2>'+''.join(f'''<div class="tc">
 <div class="tch">
 <div style="flex:1"><div style="font-size:14px;font-weight:700">{ta.get("tool_name","")}</div><div style="font-size:11px;opacity:.7;margin-top:2px">{ta.get("overview","")}</div></div>
