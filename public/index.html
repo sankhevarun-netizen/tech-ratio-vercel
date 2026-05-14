@@ -171,7 +171,7 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
 .ws.done .wn{background:var(--green);color:#fff}
 .ws.done .wt{color:var(--green)}
 .ws-line{flex:1;height:2px;background:var(--bdr);min-width:20px}
-.phase-pane{}
+.phase-pane{display:block}
 .wiz-nav{display:flex;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid var(--bdr)}
 .fg4{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .fg{display:flex;flex-direction:column;gap:5px}
@@ -686,7 +686,7 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
         <div style="background:linear-gradient(135deg,#003366,#0063DC);border-radius:10px;padding:24px;color:#fff;display:flex;align-items:center;gap:20px">
           <div style="font-size:48px">&#129302;</div>
           <div style="flex:1">
-            <div style="font-size:16px;font-weight:700;margin-bottom:6px">Ready for AI Assessment</div>
+            <div style="font-size:16px;font-weight:700;margin-bottom:6px" id="p6readyTitle">Ready for AI Assessment</div>
             <div style="font-size:12px;opacity:.8;line-height:1.6">The AI will analyse your tool portfolio against all 7 scoring dimensions, apply the Rationalization framework, identify duplication opportunities, and generate a CIO-ready executive report with a phased roadmap.</div>
           </div>
           <div class="fx g2" style="flex-direction:column">
@@ -695,6 +695,8 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
           </div>
         </div>
       </div>
+      <!-- Phase 6 assessment preview — rendered after Run Full AI Assessment -->
+      <div id="p6result" style="display:none"></div>
     </div>
   </div>
 
@@ -870,7 +872,7 @@ function setupIngest(){
   uz.ondragleave=()=>uz.classList.remove('dg');
   uz.ondrop=e=>{e.preventDefault();uz.classList.remove('dg');if(e.dataTransfer.files[0]){fi.files=e.dataTransfer.files;document.getElementById('un').textContent='Selected: '+fi.files[0].name;}};
   fi.onchange=()=>{if(fi.files[0])document.getElementById('un').textContent='Selected: '+fi.files[0].name+' — click Ingest below';};
-  document.getElementById('bi').onclick=doIngest;
+  document.getElementById('bi').onclick=()=>doIngest('btn');
   document.getElementById('bsmp').onclick=loadSample;
   gotoPhase(1);
 }
@@ -967,7 +969,6 @@ async function doIngest(wizardMode=false){
     TOOLS=d.tools; DUPS=d.duplications;
     renderDash(); renderInv();
     const nb=document.getElementById('nb'); nb.textContent=TOOLS.length; nb.classList.add('show');
-    toast('Ingested '+d.summary.total_tools+' tools successfully','ok');
     updateP2Status(d.summary);
     // Auto-populate Phase 5 budget: explicit column first, then total tool cost as fallback
     const budgetVal = d.detected_budget || (d.summary&&d.summary.total_annual_cost ? d.summary.total_annual_cost : 0);
@@ -982,8 +983,20 @@ async function doIngest(wizardMode=false){
     // Store ingest context for agent guide
     window._INGEST_CTX={tools:d.summary.total_tools,dups:DUPS.length,budget:budgetVal,painCount:d.pain_points?d.pain_points.length:0};
     updateAgentGuide('2_done');
-    if(wizardMode) gotoPhase(3);
-    else go('inventory');
+    if(wizardMode===true){
+      // Called programmatically from continueFromPhase2 — advance wizard
+      gotoPhase(3);
+    } else if(wizardMode==='btn'){
+      // Clicked the green Ingest button directly — stay on Phase 2, show success
+      const ws2=document.getElementById('ws2');
+      if(ws2){ws2.classList.remove('active');ws2.classList.add('done');}
+      toast(`✓ ${d.summary.total_tools} tools ingested & ${DUPS.length} overlaps detected — click Continue below to proceed`,'ok');
+      // Scroll the Continue button into view
+      const p2nav=document.querySelector('#ph2 .wiz-nav');
+      if(p2nav) p2nav.scrollIntoView({behavior:'smooth',block:'nearest'});
+    } else {
+      go('inventory');
+    }
   }catch(e){hideLd();toast('Error: '+e.message,'er');}
 }
 
@@ -1331,18 +1344,25 @@ async function runAssess(){
     if(!r.ok)return toast(d.detail||'Assessment failed','er');
     ASSESS=d.assessment;
     renderAssess();
-    toast('Assessment complete — view results below or go to Reports for PDF export','ok');
-    go('assessment');
-    // Post-assessment guide: prompt user toward Reports
-    setTimeout(()=>{
-      const ar=document.getElementById('ar');
-      if(ar&&!document.getElementById('postAssessGuide')){
-        const g=document.createElement('div');
-        g.id='postAssessGuide';
-        g.innerHTML=`<div class="ag-banner" style="margin-bottom:16px"><div class="ag-ico">&#128196;</div><div style="flex:1"><div class="ag-lbl">&#129302; Agent Guide &bull; Assessment Complete</div><div class="ag-txt">Your AI assessment is ready. Scroll down to review the Executive Summary, tool scores, roadmap, and Before vs After comparison. When ready, go to <strong>Reports</strong> to generate and download the full PDF report.</div><button class="ag-next" onclick="go('reports');dlReport()">&#128196; Go to Reports &amp; Download PDF &rarr;</button></div></div>`;
-        ar.insertBefore(g,ar.firstChild);
-      }
-    },400);
+    // If user triggered from Phase 6 wizard, show inline preview there instead of navigating away
+    const fromPhase6=CUR_PHASE===6&&document.getElementById('tab-ingest').classList.contains('on');
+    if(fromPhase6){
+      renderP6Preview();
+      toast('Assessment complete! Preview below — go to Reports to download the full report','ok');
+    } else {
+      toast('Assessment complete — view results below or go to Reports for PDF export','ok');
+      go('assessment');
+      // Post-assessment guide: prompt user toward Reports
+      setTimeout(()=>{
+        const ar=document.getElementById('ar');
+        if(ar&&!document.getElementById('postAssessGuide')){
+          const g=document.createElement('div');
+          g.id='postAssessGuide';
+          g.innerHTML=`<div class="ag-banner" style="margin-bottom:16px"><div class="ag-ico">&#128196;</div><div style="flex:1"><div class="ag-lbl">&#129302; Agent Guide &bull; Assessment Complete</div><div class="ag-txt">Your AI assessment is ready. Scroll down to review the Executive Summary, tool scores, roadmap, and Before vs After comparison. When ready, go to <strong>Reports</strong> to generate and download the full PDF report.</div><button class="ag-next" onclick="go('reports');dlReport()">&#128196; Go to Reports &amp; Download PDF &rarr;</button></div></div>`;
+          ar.insertBefore(g,ar.firstChild);
+        }
+      },400);
+    }
   }catch(ex){hideLd();toast('Error: '+ex.message,'er');}
 }
 
@@ -1576,6 +1596,154 @@ function toast(msg,type='in'){
   t.innerHTML=`<span>${{ok:'&#10003;',er:'&#10007;',in:'&#8505;'}[type]||'&#8505;'}</span><span>${e(msg)}</span>`;
   c.appendChild(t); setTimeout(()=>t.remove(),4000);
 }
+function renderP6Preview(){
+  const el=document.getElementById('p6result');
+  if(!el)return;
+  const a=ASSESS;
+  const tc=TOOLS.reduce((s,t)=>s+(t.annual_cost||0),0);
+  const ps=DUPS.reduce((s,d)=>s+(d.potential_annual_savings||0),0);
+  const cnt={};
+  TOOLS.forEach(t=>{const ac=t.rationalization_action||'TBD';cnt[ac]=(cnt[ac]||0)+1;});
+
+  // Executive summary snippet — show first panel
+  const exSum=a.executive_summary;
+  let execHTML='<div style="font-size:12px;color:var(--mut)">Assessment complete — see full summary in AI Assessment tab.</div>';
+  if(exSum&&typeof exSum==='object'&&exSum.tool_ecosystem){
+    execHTML=`<div style="background:#f0f4fa;border-left:3px solid #003366;border-radius:0 7px 7px 0;padding:11px 14px;font-size:12px;line-height:1.7;color:var(--txt)">${e(exSum.tool_ecosystem)}</div>`;
+  } else if(typeof exSum==='string'&&exSum.length>10){
+    execHTML=`<div style="background:#f0f4fa;border-left:3px solid #003366;border-radius:0 7px 7px 0;padding:11px 14px;font-size:12px;line-height:1.7;color:var(--txt)">${e(String(exSum).slice(0,380))}${exSum.length>380?'…':''}</div>`;
+  }
+
+  // Action breakdown
+  const ACL={Retain:'color:#155724;background:#d4edda',Rehost:'color:#004085;background:#cce5ff',Replatform:'color:#856404;background:#fff3cd',Refactor:'color:#7d3c00;background:#fde8d8',Replace:'color:#721c24;background:#f8d7da',Retire:'color:#383d41;background:#e2e3e5'};
+  const ORDER=['Retain','Rehost','Replatform','Refactor','Replace','Retire'];
+  const actHTML=ORDER.filter(k=>cnt[k]).map(k=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--bdr)">
+      <span style="display:inline-block;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:700;${ACL[k]}">${k}</span>
+      <strong style="color:var(--navy)">${cnt[k]} tool${cnt[k]!==1?'s':''}</strong>
+    </div>`).join('')||'<div style="font-size:12px;color:var(--mut)">No data</div>';
+
+  // Top 3 recommendations
+  const recs=(a.top_recommendations||[]).slice(0,3);
+  const recsHTML=recs.length?recs.map((r,i)=>`
+    <div style="display:flex;gap:9px;padding:8px 0;border-bottom:1px solid var(--bdr);align-items:flex-start">
+      <div style="width:21px;height:21px;background:var(--blue);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:1px">${r.rank||i+1}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:2px">${e(r.title||'')}</div>
+        <div style="font-size:11px;color:var(--mut)">${bdg(r.priority||'Medium')} &bull; ${e(r.timeline||'')}</div>
+      </div>
+    </div>`).join('')
+    :'<div style="font-size:12px;color:var(--mut)">Run assessment to generate recommendations.</div>';
+
+  // Before / After
+  const bac=a.before_after_comparison||{};
+  const cs=bac.current_state||{}, fs=bac.future_state||{};
+  const fmtC=n=>{if(!n&&n!==0)return '--';return n>=1e6?'$'+(n/1e6).toFixed(1)+'M':n>=1e3?'$'+(n/1e3).toFixed(1)+'K':'$'+Math.round(n).toLocaleString();};
+  const bacHTML=(cs.tool_count||fs.projected_tool_count)?`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+      <div style="background:#fff5f5;border:1px solid #fad7d7;border-top:3px solid var(--red);border-radius:8px;padding:14px">
+        <div style="font-size:10px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.8px;margin-bottom:9px">&#128198; Current State (AS-IS)</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
+          <div style="background:#fff;padding:8px;border-radius:6px;text-align:center"><div style="font-size:18px;font-weight:800;color:var(--navy)">${cs.tool_count??'--'}</div><div style="font-size:10px;color:var(--mut)">Tools</div></div>
+          <div style="background:#fff;padding:8px;border-radius:6px;text-align:center"><div style="font-size:13px;font-weight:800;color:var(--navy)">${fmtC(cs.annual_cost)}</div><div style="font-size:10px;color:var(--mut)">Annual Cost</div></div>
+          <div style="background:#fff;padding:8px;border-radius:6px;text-align:center"><div style="font-size:18px;font-weight:800;color:var(--red)">${cs.duplicate_pairs??'--'}</div><div style="font-size:10px;color:var(--mut)">Duplicate Pairs</div></div>
+          <div style="background:#fff;padding:8px;border-radius:6px;text-align:center"><div style="font-size:13px;font-weight:800;color:var(--red)">${e(cs.risk_level||'--')}</div><div style="font-size:10px;color:var(--mut)">Risk Level</div></div>
+        </div>
+      </div>
+      <div style="background:#f0faf5;border:1px solid #b8e6d0;border-top:3px solid var(--green);border-radius:8px;padding:14px">
+        <div style="font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.8px;margin-bottom:9px">&#9989; Future State (Post-Rationalization)</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
+          <div style="background:#fff;padding:8px;border-radius:6px;text-align:center"><div style="font-size:18px;font-weight:800;color:var(--green)">${fs.projected_tool_count??'--'}</div><div style="font-size:10px;color:var(--mut)">Tools (Target)</div></div>
+          <div style="background:#fff;padding:8px;border-radius:6px;text-align:center"><div style="font-size:13px;font-weight:800;color:var(--green)">${fmtC(fs.projected_annual_cost)}</div><div style="font-size:10px;color:var(--mut)">Cost (Est.)</div></div>
+          <div style="background:#fff;padding:8px;border-radius:6px;text-align:center"><div style="font-size:18px;font-weight:800;color:var(--green)">${fmtC(fs.estimated_annual_savings)}</div><div style="font-size:10px;color:var(--mut)">Annual Savings</div></div>
+          <div style="background:#fff;padding:8px;border-radius:6px;text-align:center"><div style="font-size:13px;font-weight:800;color:var(--green)">${e(fs.risk_level||'--')}</div><div style="font-size:10px;color:var(--mut)">Target Risk</div></div>
+        </div>
+      </div>
+    </div>`:'';
+
+  el.style.display='block';
+  el.innerHTML=`
+    <!-- Success banner -->
+    <div style="background:linear-gradient(135deg,#00A651,#008f46);border-radius:10px;padding:16px 22px;color:#fff;display:flex;align-items:center;gap:16px;margin-bottom:14px">
+      <div style="font-size:34px">&#9989;</div>
+      <div style="flex:1">
+        <div style="font-size:15px;font-weight:700;margin-bottom:3px">Assessment Complete!</div>
+        <div style="font-size:12px;opacity:.85;line-height:1.5">Your CIO-ready rationalization report is ready. Preview key findings below, then download the full report from <strong>Reports</strong> in the left sidebar.</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:7px">
+        <button class="btn" style="background:#fff;color:#00A651;font-size:12px;font-weight:700;padding:8px 16px;white-space:nowrap" onclick="go('reports')">&#128196; Go to Reports &amp; Download &rarr;</button>
+        <button class="btn" style="background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.35);font-size:11px;white-space:nowrap" onclick="go('assessment')">View Full AI Assessment &rarr;</button>
+      </div>
+    </div>
+
+    <!-- 4 KPI cards -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px">
+      <div class="dkc" style="text-align:center">
+        <div class="dkl" style="justify-content:center">TOOLS ASSESSED</div>
+        <div class="dkv">${TOOLS.length}</div>
+        <div class="dks">in portfolio</div>
+      </div>
+      <div class="dkc" style="text-align:center">
+        <div class="dkl" style="justify-content:center">ANNUAL SPEND</div>
+        <div class="dkv" style="font-size:20px">$${fmt(tc)}</div>
+        <div class="dks">technology budget</div>
+      </div>
+      <div class="dkc" style="text-align:center">
+        <div class="dkl" style="justify-content:center">EST. SAVINGS</div>
+        <div class="dkv" style="font-size:20px;color:var(--green)">$${fmt(ps)}</div>
+        <div class="dks">annual potential</div>
+      </div>
+      <div class="dkc" style="text-align:center">
+        <div class="dkl" style="justify-content:center">PORTFOLIO HEALTH</div>
+        <div class="dkv" style="font-size:16px;margin-top:6px">${(a.portfolio_overview||{}).portfolio_health||'--'}</div>
+        <div class="dks">${(a.portfolio_overview||{}).health_rationale||''}</div>
+      </div>
+    </div>
+
+    <!-- 3-column preview grid -->
+    <div style="display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:12px;margin-bottom:14px">
+      <div class="card" style="padding:16px">
+        <div class="ch" style="margin-bottom:10px"><span>&#128203;</span><span class="ct" style="font-size:13px">Executive Summary</span></div>
+        ${execHTML}
+        ${exSum&&typeof exSum==='object'&&exSum.recommendations?`<div style="margin-top:10px;background:#f0faf5;border-left:3px solid var(--green);border-radius:0 7px 7px 0;padding:10px 13px;font-size:12px;line-height:1.6;color:var(--txt)"><div style="font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;margin-bottom:5px">&#9989; Recommendations</div>${e(exSum.recommendations)}</div>`:''}
+      </div>
+      <div class="card" style="padding:16px">
+        <div class="ch" style="margin-bottom:10px"><span>&#127991;</span><span class="ct" style="font-size:13px">Rationalization Actions</span></div>
+        ${actHTML}
+      </div>
+      <div class="card" style="padding:16px">
+        <div class="ch" style="margin-bottom:10px"><span>&#127919;</span><span class="ct" style="font-size:13px">Top Recommendations</span></div>
+        ${recsHTML}
+      </div>
+    </div>
+
+    <!-- Before / After comparison -->
+    ${bacHTML}
+
+    <!-- Download CTA -->
+    <div style="background:linear-gradient(135deg,#003366,#0063DC);border-radius:10px;padding:20px 24px;display:flex;align-items:center;gap:18px">
+      <div style="font-size:36px">&#128196;</div>
+      <div style="flex:1;color:#fff">
+        <div style="font-size:14px;font-weight:700;margin-bottom:5px">Download Your Full Report</div>
+        <div style="font-size:12px;opacity:.8;line-height:1.6">Click <strong>Reports</strong> in the left sidebar to download the complete KPMG-style HTML report including Executive Summary, all tool scores, per-tool consulting analysis, 3-phase roadmap, risk highlights, and ROI outcomes. Use browser Print &rarr; Save as PDF for a PDF copy.</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;flex-shrink:0">
+        <button class="btn" style="background:#FFC200;color:#1a2340;font-weight:700;font-size:13px;padding:11px 20px;white-space:nowrap" onclick="go('reports');setTimeout(dlReport,200)">&#11015; Download Report Now</button>
+        <button class="btn" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);font-size:12px;white-space:nowrap" onclick="go('reports')">&#128196; Open Reports Section &rarr;</button>
+      </div>
+    </div>
+  `;
+
+  // Update Phase 6 run button state
+  const ba2=document.getElementById('ba2');
+  if(ba2){ba2.innerHTML='&#127919; Re-run Assessment';ba2.style.background='rgba(255,255,255,.2)';ba2.style.border='1px solid rgba(255,255,255,.4)';}
+  const title=document.getElementById('p6readyTitle');
+  if(title) title.textContent='Assessment Complete — Preview Below';
+
+  // Smooth scroll to preview
+  setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'start'}),100);
+}
+
 document.addEventListener('DOMContentLoaded',init);
 </script>
 </body>
