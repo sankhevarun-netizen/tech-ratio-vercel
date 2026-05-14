@@ -723,10 +723,19 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
       <div class="card">
         <div class="ch"><span class="ct">Phase 5 &mdash; Financial Parameters</span></div>
         <p class="tx mu2 m4">Financial constraints help calibrate ROI projections and prioritise recommendations by economic impact.</p>
+        <!-- Budget auto-calc banner — shown when tools are ingested -->
+        <div id="p5budgetBanner" style="display:none;background:#eef4ff;border:1px solid #c7d8ff;border-left:4px solid var(--blue);border-radius:8px;padding:11px 16px;margin-bottom:16px;display:none;align-items:center;gap:12px">
+          <div style="flex:1">
+            <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:2px">Budget auto-calculated from your tool portfolio</div>
+            <div style="font-size:12px;color:var(--mut)">Total annual costs across all <span id="p5toolCountLbl">0</span> ingested tools: <strong id="p5totalCostLbl" style="color:var(--navy)">$0</strong>. This has been pre-filled below — adjust if your actual IT budget differs.</div>
+          </div>
+          <button class="btn bs1 bsm" onclick="document.getElementById('p5budget').value='';document.getElementById('p5budgetBanner').style.display='none'">Clear</button>
+        </div>
         <div class="fg4">
           <div class="fg">
             <label class="fl2">Annual IT / Technology Budget (USD)</label>
             <input type="number" id="p5budget" class="fi2" placeholder="e.g., 5000000">
+            <div style="font-size:11px;color:var(--mut);margin-top:4px" id="p5budgetHint"></div>
           </div>
           <div class="fg">
             <label class="fl2">Target Cost Reduction (%)</label>
@@ -987,6 +996,7 @@ function gotoPhase(n){
     const ws=document.getElementById('ws'+i);
     if(ws){ws.classList.remove('active','done');if(i<n)ws.classList.add('done');else if(i===n)ws.classList.add('active');}
   }
+  if(n===5) syncP5Budget();
   if(n===6) buildP6Summary();
   updateAgentGuide(n);
 }
@@ -1046,13 +1056,18 @@ function buildP6Summary(){
   const cloud=document.getElementById('p4cloud');
   const timeline=document.getElementById('p4timeline');
   const target=document.getElementById('p5target');
-  document.getElementById('p6summary').innerHTML=`<div class="sum-grid">
+  const budgetRaw=parseFloat(document.getElementById('p5budget').value)||TOOLS.reduce((s,t)=>s+(t.annual_cost||0),0);
+  const fmtB=n=>n>=1e6?'$'+(n/1e6).toFixed(2)+'M':n>=1e3?'$'+(n/1e3).toFixed(1)+'K':n?'$'+Math.round(n).toLocaleString():'Not set';
+  const infraLbl={onprem:'On Premises',cloud:'On Cloud',hybrid:'Hybrid'}[INFRA_TYPE]||'Hybrid';
+  document.getElementById('p6summary').innerHTML=`<div class="sum-grid" style="grid-template-columns:repeat(4,1fr)">
     <div class="sum-card"><div class="sum-label">Organisation</div><div class="sum-val">${e(org)}</div></div>
     <div class="sum-card"><div class="sum-label">Industry</div><div class="sum-val">${e(indTxt)}</div></div>
-    <div class="sum-card"><div class="sum-label">Tools Ingested</div><div class="sum-val">${TOOLS.length} tools &bull; ${DUPS.length} overlaps detected</div></div>
+    <div class="sum-card"><div class="sum-label">Tools Ingested</div><div class="sum-val">${TOOLS.length} tools &bull; ${DUPS.length} overlaps</div></div>
+    <div class="sum-card"><div class="sum-label">Infrastructure</div><div class="sum-val">${infraLbl}</div></div>
+    <div class="sum-card"><div class="sum-label">Annual IT Budget</div><div class="sum-val" style="color:var(--navy);font-weight:700">${fmtB(budgetRaw)}</div></div>
     <div class="sum-card"><div class="sum-label">Compliance</div><div class="sum-val">${compliance.length?compliance.join(', '):'None specified'}</div></div>
-    <div class="sum-card"><div class="sum-label">Cloud Posture</div><div class="sum-val">${e(cloud.options[cloud.selectedIndex].text)}</div></div>
-    <div class="sum-card"><div class="sum-label">Cost Target</div><div class="sum-val">${e(target.options[target.selectedIndex].text)} reduction &bull; ${e(timeline.options[timeline.selectedIndex].text)}</div></div>
+    <div class="sum-card"><div class="sum-label">Cost Target</div><div class="sum-val">${e(target.options[target.selectedIndex].text)} reduction</div></div>
+    <div class="sum-card"><div class="sum-label">Timeline</div><div class="sum-val">${e(timeline.options[timeline.selectedIndex].text)}</div></div>
   </div>`;
 }
 
@@ -1079,10 +1094,8 @@ async function doIngest(wizardMode=false){
     renderDash(); renderInv();
     const nb=document.getElementById('nb'); nb.textContent=TOOLS.length; nb.classList.add('show');
     updateP2Status(d.summary);
-    // Auto-populate Phase 5 budget: explicit column first, then total tool cost as fallback
-    const budgetVal = d.detected_budget || (d.summary&&d.summary.total_annual_cost ? d.summary.total_annual_cost : 0);
-    const bField=document.getElementById('p5budget');
-    if(bField&&!bField.value&&budgetVal) bField.value=Math.round(budgetVal);
+    // Auto-populate Phase 5 budget — syncP5Budget will recalculate from TOOLS (called on gotoPhase(5) too)
+    syncP5Budget();
     // Auto-populate Phase 3 & 4 with pain points extracted + auto-derived from tool analysis
     if(d.pain_points&&d.pain_points.length){
       populateP3Challenges(d.pain_points);
@@ -1090,7 +1103,8 @@ async function doIngest(wizardMode=false){
       if(pField&&!pField.value) pField.value=d.pain_points.join('\n');
     }
     // Store ingest context for agent guide
-    window._INGEST_CTX={tools:d.summary.total_tools,dups:DUPS.length,budget:budgetVal,painCount:d.pain_points?d.pain_points.length:0};
+    const _budgetForGuide=TOOLS.reduce((s,t)=>s+(t.annual_cost||0),0)||d.detected_budget||0;
+    window._INGEST_CTX={tools:d.summary.total_tools,dups:DUPS.length,budget:_budgetForGuide,painCount:d.pain_points?d.pain_points.length:0};
     updateAgentGuide('2_done');
     if(wizardMode===true){
       // Called programmatically from continueFromPhase2 — advance wizard
@@ -1444,7 +1458,9 @@ async function runAssess(){
   const bizChallenges=(document.getElementById('p3challenges')||{}).value||'';
   const infraLabel=INFRA_TYPE==='onprem'?'Infrastructure: On-Premises / Data Centre — prioritise cloud migration and Rehost recommendations':INFRA_TYPE==='cloud'?'Infrastructure: Cloud-Native — prioritise Replatform and SaaS consolidation recommendations':'Infrastructure: Hybrid — balance on-prem and cloud rationalization recommendations';
   const chatCtx=_CHAT_EXTRA_CTX?'Additional advisor context:\n'+_CHAT_EXTRA_CTX:'';
-  const focusParts=[baseFocus,compliance.length?'Compliance: '+compliance.join(', '):'',priorities.length?'Priorities: '+priorities.join(', '):'',bizChallenges?'Business challenges: '+bizChallenges:'',pain?'Technical pain points: '+pain:'',org?'Organisation: '+org:'',infraLabel,chatCtx].filter(Boolean);
+  const budgetFromField=parseFloat((document.getElementById('p5budget')||{}).value)||0;
+  const budgetCtx=budgetFromField?`Annual IT budget: $${budgetFromField.toLocaleString()} USD (sum of all tool costs from portfolio — use this as the baseline for ROI and savings projections)`:'';
+  const focusParts=[baseFocus,compliance.length?'Compliance: '+compliance.join(', '):'',priorities.length?'Priorities: '+priorities.join(', '):'',bizChallenges?'Business challenges: '+bizChallenges:'',pain?'Technical pain points: '+pain:'',org?'Organisation: '+org:'',infraLabel,budgetCtx,chatCtx].filter(Boolean);
   const focus=focusParts.join(' | ');
   showLd('Running AI assessment...');
   try{
@@ -1857,6 +1873,30 @@ function renderP6Preview(){
 
   // Smooth scroll to preview
   setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'start'}),100);
+}
+
+function syncP5Budget(){
+  if(!TOOLS.length) return;
+  const total=TOOLS.reduce((s,t)=>s+(t.annual_cost||0),0);
+  if(!total) return; // tools have no cost data — leave field as-is
+  const field=document.getElementById('p5budget');
+  const banner=document.getElementById('p5budgetBanner');
+  const hint=document.getElementById('p5budgetHint');
+  const lbl=document.getElementById('p5totalCostLbl');
+  const cnt=document.getElementById('p5toolCountLbl');
+  const fmtUSD=n=>n>=1e6?'$'+(n/1e6).toFixed(2)+'M':n>=1e3?'$'+(n/1e3).toFixed(1)+'K':'$'+Math.round(n).toLocaleString();
+  // Always set the field to the tool-cost total (overwrite if previously auto-set, skip if manually edited)
+  if(field&&(!field.dataset.manual||!field.value)){
+    field.value=Math.round(total);
+    field.dataset.manual='';
+  }
+  // Show banner
+  if(banner){banner.style.display='flex';}
+  if(lbl) lbl.textContent=fmtUSD(total);
+  if(cnt) cnt.textContent=TOOLS.length;
+  if(hint) hint.textContent=TOOLS.length+' tools × avg $'+Math.round(total/TOOLS.length).toLocaleString()+'/tool';
+  // Mark field as auto-filled so the "Clear" button and manual edits can be tracked
+  if(field) field.oninput=()=>{field.dataset.manual='1';};
 }
 
 function setInfra(type){
