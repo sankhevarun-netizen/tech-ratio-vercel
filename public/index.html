@@ -385,6 +385,21 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
           <path d="M 146 228 A 224 224 0 0 1 340 116" fill="none" stroke="#534AB7" stroke-width="3" stroke-opacity=".22" filter="url(#gp)"/>
           <path d="M 146 228 A 224 224 0 0 1 340 116" fill="none" stroke="#7F77DD" stroke-width="2.5" stroke-opacity=".9" stroke-dasharray="16 12" style="animation:dash-flow-a 2.2s linear infinite 1s"/>
 
+          <!-- ── Clockwise flow arrowheads at each arc midpoint ── -->
+          <!-- Midpoints: each arc spans 60°; midpoint is at 30° along the arc from start node -->
+          <!-- P1→P2 midpoint at θ=-60° (452,146), tangent=(0.866,0.5) — purple -->
+          <polygon points="462,152 444,149 451,137" fill="#7F77DD" opacity=".95" filter="url(#gp)"/>
+          <!-- P2→P3 midpoint at θ=0° (564,340), tangent=(0,1) — teal -->
+          <polygon points="564,352 557,334 571,334" fill="#1D9E75" opacity=".95" filter="url(#gt)"/>
+          <!-- P3→P4 midpoint at θ=60° (452,534), tangent=(-0.866,0.5) — teal -->
+          <polygon points="442,540 454,525 461,537" fill="#1D9E75" opacity=".95" filter="url(#gt)"/>
+          <!-- P4→P5 midpoint at θ=120° (228,534), tangent=(-0.866,-0.5) — amber -->
+          <polygon points="218,528 237,531 230,543" fill="#EF9F27" opacity=".95" filter="url(#ga)"/>
+          <!-- P5→P6 midpoint at θ=180° (116,340), tangent=(0,-1) — amber -->
+          <polygon points="116,328 123,346 109,346" fill="#EF9F27" opacity=".95" filter="url(#ga)"/>
+          <!-- P6→P1 midpoint at θ=240° (228,146), tangent=(0.866,-0.5) — purple -->
+          <polygon points="238,140 227,155 220,143" fill="#7F77DD" opacity=".95" filter="url(#gp)"/>
+
           <!-- ── Central AI Core ── -->
           <!-- Spinning outer ring -->
           <circle cx="340" cy="340" r="94" fill="none" stroke="#534AB7" stroke-width="1" stroke-opacity=".3" stroke-dasharray="4 8" style="transform-origin:340px 340px;animation:spin-slow 20s linear infinite"/>
