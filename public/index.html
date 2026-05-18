@@ -1021,7 +1021,43 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
             </select>
           </div>
         </div>
-        <div class="wiz-nav"><button class="btn bs1" onclick="gotoPhase(4)">&larr; Back</button><button class="btn bp1" onclick="gotoPhase(6)">Review &amp; Run Assessment &rarr;</button></div>
+        <!-- Total Annual Cost of Tools — populated by syncP5Budget() -->
+        <div id="p5costBreakdown" style="display:none;margin-top:22px;padding-top:18px;border-top:2px solid var(--bdr)">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <div>
+              <div style="font-size:13px;font-weight:800;color:var(--navy)">Total Annual Cost of Tools</div>
+              <div style="font-size:11px;color:var(--mut);margin-top:2px">Auto-calculated from your ingested portfolio &mdash; compare against your IT budget below</div>
+            </div>
+            <span id="p5toolCountChip" style="background:#eef4ff;color:var(--blue);font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;border:1px solid #c7d8ff"></span>
+          </div>
+
+          <!-- 3 KPI comparison cards -->
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:18px">
+            <div style="background:#f0f6ff;border:1px solid #c7d8f5;border-top:3px solid var(--blue);border-radius:10px;padding:16px;text-align:center">
+              <div style="font-size:10px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">Total Tool Spend</div>
+              <div id="p5kpiToolSpend" style="font-size:24px;font-weight:800;color:var(--navy)">$0</div>
+              <div id="p5kpiToolSpendSub" style="font-size:11px;color:var(--mut);margin-top:4px">across all ingested tools</div>
+            </div>
+            <div style="background:#f0faf5;border:1px solid #b8e6d0;border-top:3px solid var(--green);border-radius:10px;padding:16px;text-align:center">
+              <div style="font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">Annual IT Budget</div>
+              <div id="p5kpiBudget" style="font-size:24px;font-weight:800;color:var(--navy)">—</div>
+              <div style="font-size:11px;color:var(--mut);margin-top:4px">entered in field above</div>
+            </div>
+            <div id="p5kpiGapCard" style="background:#fff5f5;border:1px solid #fad7d7;border-top:3px solid var(--red);border-radius:10px;padding:16px;text-align:center">
+              <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px" id="p5kpiGapLabel" style="color:var(--red)">Budget Gap</div>
+              <div id="p5kpiGap" style="font-size:24px;font-weight:800;color:var(--red)">—</div>
+              <div id="p5kpiGapSub" style="font-size:11px;color:var(--mut);margin-top:4px">vs. tool portfolio spend</div>
+            </div>
+          </div>
+
+          <!-- Category cost breakdown bars -->
+          <div style="background:#f8fafc;border:1px solid var(--bdr);border-radius:10px;padding:16px">
+            <div style="font-size:11px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px">Spend by Category</div>
+            <div id="p5categoryBars" style="display:flex;flex-direction:column;gap:9px"></div>
+          </div>
+        </div>
+
+        <div class="wiz-nav" style="margin-top:22px"><button class="btn bs1" onclick="gotoPhase(4)">&larr; Back</button><button class="btn bp1" onclick="gotoPhase(6)">Review &amp; Run Assessment &rarr;</button></div>
       </div>
     </div>
 
@@ -2157,25 +2193,98 @@ function renderP6Preview(){
 function syncP5Budget(){
   if(!TOOLS.length) return;
   const total=TOOLS.reduce((s,t)=>s+(t.annual_cost||0),0);
-  if(!total) return; // tools have no cost data — leave field as-is
+  const fmtUSD=n=>n>=1e6?'$'+(n/1e6).toFixed(2)+'M':n>=1e3?'$'+(n/1e3).toFixed(1)+'K':'$'+Math.round(n).toLocaleString();
+
+  // ── Budget field + banner ─────────────────────────────
   const field=document.getElementById('p5budget');
   const banner=document.getElementById('p5budgetBanner');
   const hint=document.getElementById('p5budgetHint');
   const lbl=document.getElementById('p5totalCostLbl');
   const cnt=document.getElementById('p5toolCountLbl');
-  const fmtUSD=n=>n>=1e6?'$'+(n/1e6).toFixed(2)+'M':n>=1e3?'$'+(n/1e3).toFixed(1)+'K':'$'+Math.round(n).toLocaleString();
-  // Always set the field to the tool-cost total (overwrite if previously auto-set, skip if manually edited)
-  if(field&&(!field.dataset.manual||!field.value)){
-    field.value=Math.round(total);
-    field.dataset.manual='';
+  if(total){
+    if(field&&(!field.dataset.manual||!field.value)){
+      field.value=Math.round(total);
+      field.dataset.manual='';
+    }
+    if(banner) banner.style.display='flex';
+    if(lbl) lbl.textContent=fmtUSD(total);
+    if(cnt) cnt.textContent=TOOLS.length;
+    if(hint) hint.textContent=TOOLS.length+' tools × avg $'+Math.round(total/TOOLS.length).toLocaleString()+'/tool';
+    if(field) field.oninput=()=>{field.dataset.manual='1'; _syncP5GapCard();};
   }
-  // Show banner
-  if(banner){banner.style.display='flex';}
-  if(lbl) lbl.textContent=fmtUSD(total);
-  if(cnt) cnt.textContent=TOOLS.length;
-  if(hint) hint.textContent=TOOLS.length+' tools × avg $'+Math.round(total/TOOLS.length).toLocaleString()+'/tool';
-  // Mark field as auto-filled so the "Clear" button and manual edits can be tracked
-  if(field) field.oninput=()=>{field.dataset.manual='1';};
+
+  // ── Cost Breakdown section ────────────────────────────
+  const section=document.getElementById('p5costBreakdown');
+  if(!section) return;
+  if(!TOOLS.length){section.style.display='none';return;}
+
+  // Build category totals
+  const cats={};
+  TOOLS.forEach(t=>{
+    const cat=t.category||'Other';
+    if(!cats[cat]) cats[cat]={cost:0,count:0};
+    cats[cat].cost+=(t.annual_cost||0);
+    cats[cat].count++;
+  });
+  const sortedCats=Object.entries(cats).sort((a,b)=>b[1].cost-a[1].cost);
+  const maxCat=sortedCats[0]?sortedCats[0][1].cost:1;
+  const toolsWithCost=TOOLS.filter(t=>t.annual_cost>0).length;
+
+  // KPI cards
+  document.getElementById('p5kpiToolSpend').textContent=total?fmtUSD(total):'$0';
+  document.getElementById('p5kpiToolSpendSub').textContent=toolsWithCost+' of '+TOOLS.length+' tools have cost data';
+  document.getElementById('p5toolCountChip').textContent=TOOLS.length+' tools ingested';
+
+  // Category bars
+  const CAT_COLORS=['#0063DC','#00A651','#7B2FBE','#E31837','#FFC200','#00338D','#FF7700','#1D9E75','#534AB7','#854F0B'];
+  const barsEl=document.getElementById('p5categoryBars');
+  if(barsEl){
+    barsEl.innerHTML=sortedCats.map(([cat,d],i)=>{
+      const pct=maxCat>0?Math.round(d.cost/maxCat*100):0;
+      const col=CAT_COLORS[i%CAT_COLORS.length];
+      return `<div style="display:grid;grid-template-columns:140px 1fr 90px 60px;align-items:center;gap:10px">
+        <div style="font-size:11px;font-weight:600;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${e(cat)}">${e(cat)}</div>
+        <div style="height:8px;background:#e8edf5;border-radius:4px;overflow:hidden">
+          <div style="height:100%;width:${pct}%;background:${col};border-radius:4px;transition:width .4s"></div>
+        </div>
+        <div style="font-size:11px;font-weight:700;color:var(--navy);text-align:right">${fmtUSD(d.cost)}</div>
+        <div style="font-size:10px;color:var(--mut);text-align:right">${d.count} tool${d.count!==1?'s':''}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // Total row
+  if(barsEl&&total){
+    barsEl.innerHTML+=`<div style="margin-top:8px;padding-top:8px;border-top:2px solid var(--bdr);display:grid;grid-template-columns:140px 1fr 90px 60px;align-items:center;gap:10px">
+      <div style="font-size:11px;font-weight:800;color:var(--navy)">TOTAL</div>
+      <div></div>
+      <div style="font-size:13px;font-weight:800;color:var(--blue);text-align:right">${fmtUSD(total)}</div>
+      <div style="font-size:10px;color:var(--mut);text-align:right">${TOOLS.length} tools</div>
+    </div>`;
+  }
+
+  section.style.display='block';
+  _syncP5GapCard();
+}
+
+function _syncP5GapCard(){
+  const fmtUSD=n=>n>=1e6?'$'+(n/1e6).toFixed(2)+'M':n>=1e3?'$'+(n/1e3).toFixed(1)+'K':'$'+Math.round(n).toLocaleString();
+  const total=TOOLS.reduce((s,t)=>s+(t.annual_cost||0),0);
+  const budget=parseFloat((document.getElementById('p5budget')||{}).value)||0;
+  const kpiBudget=document.getElementById('p5kpiBudget');
+  const kpiGap=document.getElementById('p5kpiGap');
+  const kpiGapCard=document.getElementById('p5kpiGapCard');
+  const kpiGapLabel=document.getElementById('p5kpiGapLabel');
+  const kpiGapSub=document.getElementById('p5kpiGapSub');
+  if(kpiBudget) kpiBudget.textContent=budget?fmtUSD(budget):'—';
+  if(!budget||!total){if(kpiGap)kpiGap.textContent='—';return;}
+  const gap=budget-total;
+  const surplus=gap>=0;
+  if(kpiGap) kpiGap.textContent=(surplus?'+':'')+fmtUSD(Math.abs(gap));
+  if(kpiGap) kpiGap.style.color=surplus?'var(--green)':'var(--red)';
+  if(kpiGapLabel){kpiGapLabel.textContent=surplus?'Budget Surplus':'Budget Shortfall';kpiGapLabel.style.color=surplus?'var(--green)':'var(--red)';}
+  if(kpiGapCard){kpiGapCard.style.background=surplus?'#f0faf5':'#fff5f5';kpiGapCard.style.borderTopColor=surplus?'var(--green)':'var(--red)';kpiGapCard.style.borderColor=surplus?'#b8e6d0':'#fad7d7';}
+  if(kpiGapSub){const pct=Math.abs(Math.round(gap/total*100));kpiGapSub.textContent=(surplus?pct+'% headroom above tool spend':pct+'% over tool spend vs budget');}
 }
 
 function setInfra(type){
