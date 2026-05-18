@@ -224,6 +224,17 @@ COL_ALIAS = {
     "license_fee":"annual_cost","subscription_cost":"annual_cost","subscription":"annual_cost",
     "spend":"annual_cost","budget":"annual_cost","annual_budget":"annual_cost",
     "contract_value":"annual_cost","contract_cost":"annual_cost",
+    # additional explicit cost aliases
+    "software_cost":"annual_cost","tool_cost":"annual_cost","app_cost":"annual_cost",
+    "application_cost":"annual_cost","platform_cost":"annual_cost","cost_per_year":"annual_cost",
+    "yearly_spend":"annual_cost","annual_expenditure":"annual_cost","expenditure":"annual_cost",
+    "annual_fee":"annual_cost","annual_price":"annual_cost","price_per_year":"annual_cost",
+    "yearly_fee":"annual_cost","yearly_license":"annual_cost","annual_licence":"annual_cost",
+    "licence_cost":"annual_cost","licence_fee":"annual_cost","annual_licence_cost":"annual_cost",
+    "saas_cost":"annual_cost","saas_spend":"annual_cost","software_spend":"annual_cost",
+    "it_cost":"annual_cost","technology_cost":"annual_cost","tech_cost":"annual_cost",
+    "cost_usd_annual":"annual_cost","usd_annual":"annual_cost","annual_value":"annual_cost",
+    "total_annual_spend":"annual_cost","total_spend":"annual_cost","total_annual_fee":"annual_cost",
     # additional user aliases
     "seats":"user_count","licenses":"user_count","license_count2":"user_count","headcount":"user_count",
     # additional category aliases
@@ -270,7 +281,16 @@ def _s(v:Any)->str:
     return "" if v is None else ("" if str(v).lower() in ("nan","none","null","n/a") else str(v).strip())
 
 def _n(v:Any)->Optional[float]:
-    try: return float(str(v).replace(",","").replace("$","").replace("£","").replace("€","").strip())
+    if v is None: return None
+    s = str(v).strip().replace(",","").replace("$","").replace("£","").replace("€","").replace(" ","")
+    if not s or s.lower() in ("nan","none","null","n/a","-",""):
+        return None
+    # Handle K / M / B suffixes  (e.g. "50K", "1.2M", "2.5B")
+    m = re.match(r'^(-?[\d.]+)\s*([KkMmBb]?)$', s)
+    if m:
+        num, suffix = float(m.group(1)), m.group(2).upper()
+        return num * {"K":1_000,"M":1_000_000,"B":1_000_000_000}.get(suffix, 1)
+    try: return float(s)
     except: return None
 
 def _ni(v:Any)->Optional[int]:
@@ -334,6 +354,20 @@ def _df(df)->List[Dict]:
             break
     _LAST_INGEST_META["detected_budget"] = detected_budget
     df=df.rename(columns={k:v for k,v in COL_ALIAS.items() if k in df.columns})
+
+    # Fuzzy fallback: detect annual_cost column if still not mapped
+    if "annual_cost" not in df.columns:
+        COST_KW = ("cost","spend","price","expenditure","licence","license","fee","value","contract","subscription","budget")
+        candidates = [c for c in df.columns if any(kw in c for kw in COST_KW)
+                      and c not in ("it_budget","technology_budget","tech_budget")]
+        for cand in candidates:
+            # Accept column if it has at least one parseable numeric value
+            clean = df[cand].astype(str).str.replace(r'[\$£€,\s]','',regex=True)
+            numeric_count = pd.to_numeric(clean, errors='coerce').notna().sum()
+            if numeric_count > 0:
+                df = df.rename(columns={cand: "annual_cost"})
+                break
+
     # Fallback: detect name column if not found
     if "name" not in df.columns:
         str_cols = [c for c in df.columns if df[c].dtype == object and c not in
