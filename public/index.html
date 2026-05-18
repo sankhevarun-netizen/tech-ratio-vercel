@@ -236,6 +236,46 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
 /* Chat report update banner */
 .chat-report-bar{background:linear-gradient(135deg,#003366,#0063DC);border-radius:9px;padding:11px 16px;display:flex;align-items:center;gap:12px;margin-top:10px;display:none}
 .chat-report-bar.show{display:flex}
+/* ── Manual Entry Wizard ── */
+.mw-sec-lbl{font-size:10px;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
+.mw-radio{display:flex;flex-direction:column;gap:8px}
+.mw-rcard{display:flex;align-items:center;gap:12px;padding:11px 16px;border:1.5px solid var(--bdr);border-radius:8px;cursor:pointer;transition:all .15s;background:var(--sur);user-select:none}
+.mw-rcard:hover{border-color:var(--blue);background:#f0f6ff}
+.mw-rcard.on{border-color:var(--blue);background:#e8f0fe}
+.mw-dot{width:16px;height:16px;border-radius:50%;border:2px solid #cdd6e4;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.mw-rcard.on .mw-dot{border-color:var(--blue);background:var(--blue)}
+.mw-rcard.on .mw-dot::after{content:'';width:5px;height:5px;background:#fff;border-radius:50%;display:block}
+.mw-chips{display:flex;flex-wrap:wrap;gap:6px}
+.mw-chip{padding:5px 12px;border-radius:20px;border:1.5px solid var(--bdr);font-size:11px;font-weight:600;cursor:pointer;background:var(--sur);color:var(--txt);transition:all .15s;user-select:none}
+.mw-chip:hover{border-color:var(--blue);color:var(--blue)}.mw-chip.on{border-color:var(--blue);background:var(--blue);color:#fff}
+.mw-search{width:100%;padding:9px 14px;border:1.5px solid var(--bdr);border-radius:8px;font-size:13px;outline:none;background:var(--sur);color:var(--txt)}
+.mw-search:focus{border-color:var(--blue)}
+.mw-cat-tabs{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0 6px}
+.mw-cat{padding:4px 11px;border-radius:16px;border:1px solid var(--bdr);font-size:11px;font-weight:600;cursor:pointer;color:var(--mut);background:var(--sur);transition:all .15s;user-select:none}
+.mw-cat:hover{background:var(--bg)}.mw-cat.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.mw-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(152px,1fr));gap:7px;max-height:320px;overflow-y:auto;padding:2px}
+.mw-tool{padding:9px 11px;border:1.5px solid var(--bdr);border-radius:8px;cursor:pointer;background:var(--sur);transition:all .15s;position:relative}
+.mw-tool:hover{border-color:var(--blue);background:#f0f6ff}.mw-tool.on{border-color:var(--blue);background:#e8f0fe}
+.mw-tool.on::after{content:'✓';position:absolute;top:5px;right:8px;font-size:10px;font-weight:800;color:var(--blue)}
+.mw-tn{font-size:12px;font-weight:700;color:var(--navy);line-height:1.3;margin-bottom:2px}
+.mw-tv{font-size:10px;color:var(--mut)}
+.mw-trow-name{font-size:12px;font-weight:700;color:var(--navy);line-height:1.3}
+.mw-ir-row{display:flex;flex-wrap:wrap;gap:4px}
+.mw-ir{padding:4px 9px;border:1.5px solid var(--bdr);border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;color:var(--mut);transition:all .15s;user-select:none;white-space:nowrap}
+.mw-ir:hover{border-color:var(--blue);color:var(--blue)}
+.mw-ir.on{border-color:var(--blue);background:var(--blue);color:#fff}
+.mw-ir.on-r{border-color:var(--red);background:var(--red);color:#fff}
+.mw-ir.on-a{border-color:#cc8800;background:#e5a900;color:#1a0}
+.mw-ir.on-g{border-color:var(--green);background:var(--green);color:#fff}
+.mw-step-bar{display:flex;align-items:flex-start;justify-content:center}
+.mw-strack{display:flex;flex-direction:column;align-items:center;gap:3px}
+.mw-sdot{width:28px;height:28px;border-radius:50%;background:#dde5f0;color:var(--mut);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+.mw-sdot.on{background:var(--blue);color:#fff;box-shadow:0 0 0 3px #b8d4f8}
+.mw-sdot.dn{background:var(--green);color:#fff}
+.mw-sline{flex:1;height:2px;background:#dde5f0;width:60px;align-self:center;margin-top:-14px;transition:background .2s}
+.mw-sline.dn{background:var(--green)}
+.mw-slbl{font-size:9px;color:var(--mut);font-weight:700;text-align:center;white-space:nowrap}
+.mw-slbl.on{color:var(--blue)}.mw-slbl.dn{color:var(--green)}
 </style>
 </head>
 <body>
@@ -850,6 +890,24 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
           </div>
         </div>
       </div>
+      <!-- ── OR / Manual Entry Wizard ── -->
+      <div style="display:flex;align-items:center;gap:10px;margin:18px 0 10px">
+        <div style="flex:1;height:1px;background:var(--bdr)"></div>
+        <span style="font-size:10px;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.8px;white-space:nowrap">OR USE MANUAL ENTRY WIZARD</span>
+        <div style="flex:1;height:1px;background:var(--bdr)"></div>
+      </div>
+      <div style="text-align:center;margin-bottom:10px">
+        <button id="mwToggleBtn" class="btn" style="background:var(--navy);color:#fff;padding:10px 22px;font-size:13px" onclick="mwToggle()">&#9998;&nbsp;Manual Entry Wizard &mdash; Select Tools &amp; Parameters</button>
+        <p style="font-size:11px;color:var(--mut);margin-top:6px">Build your tool portfolio step-by-step — searchable catalog, toggle buttons, no typing or file upload required</p>
+      </div>
+      <div id="mwWrap" style="display:none;margin-bottom:12px">
+        <div class="card" style="padding:20px;border:1.5px solid var(--blue)">
+          <div id="mwStepBar" style="margin-bottom:20px"></div>
+          <div id="mwContent" style="min-height:300px"></div>
+          <div id="mwNav" style="display:flex;align-items:center;justify-content:space-between;margin-top:18px;padding-top:14px;border-top:1px solid var(--bdr)"></div>
+        </div>
+      </div>
+
       <div class="wiz-nav"><button class="btn bs1" onclick="gotoPhase(1)">&larr; Back</button><span id="p2toolcount" style="flex:1;font-size:12px;color:var(--green);font-weight:600;text-align:center"></span><button class="btn bp1" onclick="continueFromPhase2()">Continue to Business Context &rarr;</button></div>
     </div>
 
@@ -1413,12 +1471,12 @@ async function doIngest(wizardMode=false){
     if(wizardMode===true){
       // Called programmatically from continueFromPhase2 — advance wizard
       gotoPhase(3);
-    } else if(wizardMode==='btn'){
-      // Clicked the green Ingest button directly — stay on Phase 2, show success
+    } else if(wizardMode==='btn'||wizardMode==='mw'){
+      // File button or Manual Wizard — stay on Phase 2, show success
       const ws2=document.getElementById('ws2');
       if(ws2){ws2.classList.remove('active');ws2.classList.add('done');}
-      toast(`✓ ${d.summary.total_tools} tools ingested & ${DUPS.length} overlaps detected — click Continue below to proceed`,'ok');
-      // Scroll the Continue button into view
+      const src=wizardMode==='mw'?'Manual Wizard':'file/text';
+      toast(`✓ ${d.summary.total_tools} tools ingested via ${src} — ${DUPS.length} overlaps detected. Click Continue below to proceed`,'ok');
       const p2nav=document.querySelector('#ph2 .wiz-nav');
       if(p2nav) p2nav.scrollIntoView({behavior:'smooth',block:'nearest'});
     } else {
@@ -2366,6 +2424,242 @@ async function renderP6FullReport(){
     </div>`;
     iframeWrap.scrollIntoView({behavior:'smooth',block:'start'});
   }catch(ex){if(iframeWrap)iframeWrap.innerHTML=errCard(ex.message||'Network error — check your connection.');}
+}
+
+// ══════════════════════════════════════════════════════════════════
+// MANUAL ENTRY WIZARD
+// ══════════════════════════════════════════════════════════════════
+const TOOL_CATALOG=(function(){
+  const d=[
+    // Monitoring
+    ['Datadog','Datadog','Monitoring'],['New Relic','New Relic','Monitoring'],['Dynatrace','Dynatrace','Monitoring'],['AppDynamics','Cisco','Monitoring'],['Prometheus','CNCF','Monitoring'],['Grafana','Grafana Labs','Monitoring'],['PagerDuty','PagerDuty','Monitoring'],['OpsGenie','Atlassian','Monitoring'],['Nagios','Nagios Enterprises','Monitoring'],['Zabbix','Zabbix','Monitoring'],['SolarWinds Observability','SolarWinds','Monitoring'],['PRTG Network Monitor','Paessler','Monitoring'],['Instana','IBM','Monitoring'],['Honeycomb','Honeycomb','Monitoring'],['Elastic Observability','Elastic','Monitoring'],['Signoz','SigNoz','Monitoring'],['VictorOps','Splunk','Monitoring'],['StatusPage','Atlassian','Monitoring'],
+    // Logging
+    ['Splunk Enterprise','Splunk','Logging'],['Elastic Stack ELK','Elastic','Logging'],['Sumo Logic','Sumo Logic','Logging'],['Graylog','Graylog','Logging'],['Fluentd','CNCF','Logging'],['AWS CloudWatch','Amazon','Logging'],['Azure Monitor','Microsoft','Logging'],['Google Cloud Logging','Google','Logging'],['Papertrail','SolarWinds','Logging'],['Loggly','SolarWinds','Logging'],['Logstash','Elastic','Logging'],['Cribl','Cribl','Logging'],
+    // Security
+    ['CrowdStrike Falcon','CrowdStrike','Security'],['SentinelOne','SentinelOne','Security'],['Palo Alto Prisma Cloud','Palo Alto Networks','Security'],['Microsoft Defender','Microsoft','Security'],['Qualys VMDR','Qualys','Security'],['Tenable.io','Tenable','Security'],['Rapid7 InsightVM','Rapid7','Security'],['Zscaler','Zscaler','Security'],['Cloudflare','Cloudflare','Security'],['Wiz','Wiz','Security'],['Lacework','Lacework','Security'],['Snyk','Snyk','Security'],['Checkmarx','Checkmarx','Security'],['Veracode','Broadcom','Security'],['SonarQube','SonarSource','Security'],['Darktrace','Darktrace','Security'],['Fortinet FortiGate','Fortinet','Security'],['Cisco Secure Firewall','Cisco','Security'],['F5 BIG-IP','F5','Security'],['Aqua Security','Aqua','Security'],
+    // Identity
+    ['Okta','Okta','Identity'],['Microsoft Entra ID','Microsoft','Identity'],['Ping Identity','Ping Identity','Identity'],['ForgeRock','Ping Identity','Identity'],['SailPoint','SailPoint','Identity'],['CyberArk','CyberArk','Identity'],['HashiCorp Vault','HashiCorp','Identity'],['BeyondTrust','BeyondTrust','Identity'],['Saviynt','Saviynt','Identity'],['Delinea','Delinea','Identity'],
+    // ITSM
+    ['ServiceNow','ServiceNow','ITSM'],['Jira Service Management','Atlassian','ITSM'],['BMC Helix','BMC','ITSM'],['Freshservice','Freshworks','ITSM'],['Zendesk','Zendesk','ITSM'],['ManageEngine ServiceDesk','Zoho','ITSM'],['TOPdesk','TOPdesk','ITSM'],['Ivanti','Ivanti','ITSM'],['SysAid','SysAid','ITSM'],['Cherwell','Ivanti','ITSM'],
+    // Collaboration
+    ['Microsoft Teams','Microsoft','Collaboration'],['Slack','Salesforce','Collaboration'],['Zoom','Zoom','Collaboration'],['Google Workspace','Google','Collaboration'],['Webex','Cisco','Collaboration'],['Miro','Miro','Collaboration'],['Confluence','Atlassian','Collaboration'],['Notion','Notion','Collaboration'],['Asana','Asana','Collaboration'],['Monday.com','Monday.com','Collaboration'],['SharePoint','Microsoft','Collaboration'],['Trello','Atlassian','Collaboration'],['Mattermost','Mattermost','Collaboration'],['Loom','Loom','Collaboration'],
+    // DevOps
+    ['GitHub','Microsoft','DevOps'],['GitLab','GitLab','DevOps'],['Azure DevOps','Microsoft','DevOps'],['Jenkins','CloudBees','DevOps'],['CircleCI','CircleCI','DevOps'],['Harness','Harness','DevOps'],['ArgoCD','CNCF','DevOps'],['Terraform','HashiCorp','DevOps'],['Ansible','Red Hat','DevOps'],['Bamboo','Atlassian','DevOps'],['TeamCity','JetBrains','DevOps'],['Chef','Progress','DevOps'],['Puppet','Puppet','DevOps'],['Spinnaker','Netflix','DevOps'],['Pulumi','Pulumi','DevOps'],
+    // Containers
+    ['Kubernetes','CNCF','Containers'],['Docker','Docker','Containers'],['OpenShift','Red Hat','Containers'],['Rancher','SUSE','Containers'],['Amazon EKS','Amazon','Containers'],['Azure AKS','Microsoft','Containers'],['Google GKE','Google','Containers'],['VMware Tanzu','Broadcom','Containers'],['Helm','CNCF','Containers'],['Istio','Linux Foundation','Containers'],['Linkerd','CNCF','Containers'],
+    // Database
+    ['Oracle Database','Oracle','Database'],['Microsoft SQL Server','Microsoft','Database'],['MySQL','Oracle','Database'],['PostgreSQL','Open Source','Database'],['MongoDB','MongoDB','Database'],['Redis','Redis','Database'],['Apache Cassandra','Apache','Database'],['Snowflake','Snowflake','Database'],['Databricks','Databricks','Database'],['Google BigQuery','Google','Database'],['Amazon Redshift','Amazon','Database'],['Azure Synapse','Microsoft','Database'],['Elasticsearch','Elastic','Database'],['CockroachDB','Cockroach Labs','Database'],['Couchbase','Couchbase','Database'],['IBM Db2','IBM','Database'],['MariaDB','MariaDB Foundation','Database'],
+    // Analytics
+    ['Tableau','Salesforce','Analytics'],['Power BI','Microsoft','Analytics'],['Looker','Google','Analytics'],['Qlik Sense','Qlik','Analytics'],['MicroStrategy','MicroStrategy','Analytics'],['SAP BusinessObjects','SAP','Analytics'],['Domo','Domo','Analytics'],['Metabase','Metabase','Analytics'],['Sisense','Sisense','Analytics'],['ThoughtSpot','ThoughtSpot','Analytics'],['Apache Superset','Apache','Analytics'],['Sigma Computing','Sigma','Analytics'],
+    // ERP/CRM
+    ['SAP S4HANA','SAP','ERP/CRM'],['Oracle ERP Cloud','Oracle','ERP/CRM'],['Microsoft Dynamics 365','Microsoft','ERP/CRM'],['Salesforce CRM','Salesforce','ERP/CRM'],['HubSpot','HubSpot','ERP/CRM'],['Zoho CRM','Zoho','ERP/CRM'],['Workday','Workday','ERP/CRM'],['Oracle NetSuite','Oracle','ERP/CRM'],['SAP SuccessFactors','SAP','ERP/CRM'],['Infor CloudSuite','Infor','ERP/CRM'],
+    // Network
+    ['Cisco Catalyst','Cisco','Network'],['Cisco Meraki','Cisco','Network'],['Fortinet FortiManager','Fortinet','Network'],['VMware NSX','Broadcom','Network'],['Juniper Mist','Juniper Networks','Network'],['Arista EOS','Arista','Network'],['Infoblox','Infoblox','Network'],['F5 BIG-IP GTM','F5','Network'],['Citrix ADC','Cloud Software Group','Network'],['Aruba Central','HPE','Network'],
+    // Storage
+    ['NetApp ONTAP','NetApp','Storage'],['Dell EMC PowerStore','Dell','Storage'],['Pure Storage','Pure Storage','Storage'],['IBM Storage','IBM','Storage'],['Nutanix','Nutanix','Storage'],['Veeam Backup','Veeam','Storage'],['Commvault','Commvault','Storage'],['Veritas NetBackup','Veritas','Storage'],['Cohesity','Cohesity','Storage'],['Rubrik','Rubrik','Storage'],
+    // Integration
+    ['MuleSoft Anypoint','Salesforce','Integration'],['Apigee','Google','Integration'],['Kong Gateway','Kong','Integration'],['AWS API Gateway','Amazon','Integration'],['Azure API Management','Microsoft','Integration'],['WSO2','WSO2','Integration'],['Apache Kafka','Apache/Confluent','Integration'],['RabbitMQ','Broadcom','Integration'],['IBM MQ','IBM','Integration'],['Boomi','Boomi','Integration'],['Talend','Qlik','Integration'],['Informatica','Informatica','Integration'],['SnapLogic','SnapLogic','Integration'],
+    // Cloud
+    ['AWS','Amazon','Cloud'],['Microsoft Azure','Microsoft','Cloud'],['Google Cloud Platform','Google','Cloud'],['VMware vSphere','Broadcom','Cloud'],['Nutanix AHV','Nutanix','Cloud'],['HashiCorp Consul','HashiCorp','Cloud'],['AWS CloudFormation','Amazon','Cloud'],['Azure Resource Manager','Microsoft','Cloud'],['OpenStack','OpenInfra','Cloud'],
+    // AI/ML
+    ['Azure OpenAI Service','Microsoft','AI/ML'],['AWS Bedrock','Amazon','AI/ML'],['Google Vertex AI','Google','AI/ML'],['Hugging Face','Hugging Face','AI/ML'],['DataRobot','DataRobot','AI/ML'],['Amazon SageMaker','Amazon','AI/ML'],['Weights and Biases','Weights and Biases','AI/ML'],['MLflow','Databricks','AI/ML'],['OpenAI API','OpenAI','AI/ML'],['H2O.ai','H2O.ai','AI/ML'],['Databricks MLflow','Databricks','AI/ML'],
+    // Testing
+    ['Selenium','Open Source','Testing'],['Cypress','Cypress','Testing'],['Playwright','Microsoft','Testing'],['JMeter','Apache','Testing'],['LoadRunner','Micro Focus','Testing'],['Katalon Studio','Katalon','Testing'],['Postman','Postman','Testing'],['SoapUI','SmartBear','Testing'],['TestComplete','SmartBear','Testing'],
+  ];
+  return d.map(([n,v,c])=>({n,v,c}));
+})();
+
+let MW_STEP=1, _MW_CAT='All', _MW_Q='';
+let MW_SEL={}; // tool name -> {vendor,cat,criticality,deployment,eol,cost_range,users_range}
+let MW_CFG={industry:'',size:'',infra:'',cloud:'',goals:[],compliance:[],pain:[],extra:'',budget:0};
+let _mwRowNames=[]; // row-indexed names for step 3/4
+
+const _SIZE_OPTS=['1–10 tools','11–25 tools','26–50 tools','51–100 tools','100+ tools'];
+const _INFRA_OPTS=['On-Premises / Data Centre','Cloud-Native','Hybrid (Cloud + On-Prem)','Multi-Cloud'];
+const _CLOUD_OPTS=['No cloud — fully on-prem','Evaluating cloud options','Early adoption (< 20% workloads)','Growing footprint (20–60% cloud)','Advanced adoption (> 60% cloud)','Cloud-first / cloud-native'];
+const _CRITS=['Critical','High','Medium','Low'];
+const _CRIT_CLS={Critical:'on-r',High:'on-a',Medium:'on',Low:'on-g'};
+const _DEPS=['Cloud','On-Prem','Hybrid'];
+const _COST_RANGES=['Free / Open Source','< $10K','$10K–$50K','$50K–$200K','$200K–$1M','$1M+'];
+const _USER_RANGES=['< 10 users','10–50 users','51–200 users','201–500 users','500+ users'];
+const _COST_MID={'Free / Open Source':0,'< $10K':5000,'$10K–$50K':30000,'$50K–$200K':125000,'$200K–$1M':600000,'$1M+':2000000};
+const _USER_MID={'< 10 users':5,'10–50 users':30,'51–200 users':125,'201–500 users':350,'500+ users':750};
+
+function mwToggle(){
+  const w=document.getElementById('mwWrap');
+  const b=document.getElementById('mwToggleBtn');
+  const open=w.style.display==='none';
+  w.style.display=open?'block':'none';
+  b.innerHTML=open?'&#10006;&nbsp;Close Manual Wizard':'&#9998;&nbsp;Manual Entry Wizard &mdash; Select Tools &amp; Parameters';
+  if(open){MW_STEP=1;MW_SEL={};MW_CFG={industry:'',size:'',infra:'',cloud:'',goals:[],compliance:[],pain:[],extra:'',budget:0};_MW_CAT='All';_MW_Q='';mwRender();}
+}
+function mwGoto(n){
+  if(n<1||n>5)return;
+  if(n>2&&Object.keys(MW_SEL).length===0){toast('Please select at least one tool first','er');return;}
+  MW_STEP=n;mwRender();
+  document.getElementById('mwWrap').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function mwNext(){
+  if(MW_STEP===2&&Object.keys(MW_SEL).length===0){toast('Select at least one tool to continue','er');return;}
+  if(MW_STEP===1){MW_CFG.industry=(document.getElementById('mwInd')||{}).value||MW_CFG.industry;}
+  mwGoto(MW_STEP+1);
+}
+function mwRender(){
+  const STEP_NAMES=['Context','Tool Selection','Properties','Financial','Risk & Submit'];
+  document.getElementById('mwStepBar').innerHTML='<div class="mw-step-bar">'+STEP_NAMES.map((s,i)=>{
+    const n=i+1,isDn=n<MW_STEP,isOn=n===MW_STEP;
+    const dc=isDn?'dn':isOn?'on':'',lc=isDn?'dn':'';
+    return (n>1?`<div class="mw-sline ${lc}"></div>`:'')+
+      `<div class="mw-strack"><div class="mw-sdot ${dc}">${isDn?'✓':n}</div><div class="mw-slbl ${dc}">${s}</div></div>`;
+  }).join('')+'</div>';
+  const c=document.getElementById('mwContent');
+  if(MW_STEP===1)c.innerHTML=mwS1();
+  else if(MW_STEP===2)c.innerHTML=mwS2();
+  else if(MW_STEP===3)c.innerHTML=mwS3();
+  else if(MW_STEP===4)c.innerHTML=mwS4();
+  else c.innerHTML=mwS5();
+  const sel=Object.keys(MW_SEL).length;
+  const back=MW_STEP>1?`<button class="btn bs1" onclick="mwGoto(${MW_STEP-1})">&larr; Back</button>`:'<div></div>';
+  const nxt=MW_STEP===5?'mwSubmit()':'mwNext()';
+  const nlbl=MW_STEP===5?'Generate AI Assessment':MW_STEP===2&&sel?`Next &rarr; (${sel} tool${sel!==1?'s':''})`:'Next &rarr;';
+  const nst=MW_STEP===5?'background:var(--green);color:#fff;font-size:14px;padding:10px 22px':'';
+  document.getElementById('mwNav').innerHTML=`${back}<span style="font-size:12px;color:var(--mut);font-weight:600">${MW_STEP}/5</span><button class="btn bp1" onclick="${nxt}" style="${nst}">${nlbl}</button>`;
+}
+
+// ── Step 1: Context ──────────────────────────────────────────────
+function mwS1(){
+  const INDS=['Telecom','Banking & Financial Services','Insurance','Healthcare','Manufacturing','Retail & E-commerce','Government / PSU','IT Services & Consulting','Energy & Utilities','Media & Entertainment','Education','Logistics & Supply Chain','Pharma & Life Sciences','Other'];
+  const GOALS=['Cost Reduction','Security Improvement','Cloud Migration','Vendor Consolidation','Performance Optimisation','Compliance & Governance','Digital Transformation','Operational Efficiency'];
+  return `<div style="display:flex;flex-direction:column;gap:18px">
+<div><div class="mw-sec-lbl">INDUSTRY / SECTOR *</div>
+<select id="mwInd" style="width:100%;padding:10px 14px;border:1.5px solid var(--bdr);border-radius:8px;font-size:13px;background:var(--sur);color:var(--txt);outline:none">
+<option value="">Select your industry...</option>${INDS.map(x=>`<option${MW_CFG.industry===x?' selected':''}>${x}</option>`).join('')}</select></div>
+<div><div class="mw-sec-lbl">PORTFOLIO SIZE — HOW MANY TOOLS DO YOU USE? *</div>
+<div class="mw-radio">${_SIZE_OPTS.map((s,i)=>`<div class="mw-rcard${MW_CFG.size===s?' on':''}" data-sz="${i}" onclick="mwPickR(this,'size',_SIZE_OPTS,${i})"><div class="mw-dot"></div><span style="font-size:13px">${s}</span></div>`).join('')}</div></div>
+<div><div class="mw-sec-lbl">INFRASTRUCTURE MODEL *</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">${_INFRA_OPTS.map((s,i)=>`<div class="mw-rcard${MW_CFG.infra===s?' on':''}" data-inf="${i}" onclick="mwPickR(this,'infra',_INFRA_OPTS,${i})"><div class="mw-dot"></div><span style="font-size:12px">${s}</span></div>`).join('')}</div></div>
+<div><div class="mw-sec-lbl">PRIMARY RATIONALIZATION GOALS (MULTI-SELECT)</div>
+<div class="mw-chips">${GOALS.map(g=>`<div class="mw-chip${(MW_CFG.goals||[]).includes(g)?' on':''}" onclick="mwChip('goals','${g}',this)">${g}</div>`).join('')}</div></div>
+</div>`;
+}
+
+// ── Step 2: Tool Selection ────────────────────────────────────────
+function mwS2(){
+  const cats=['All',...[...new Set(TOOL_CATALOG.map(t=>t.c))].sort()];
+  const sel=Object.keys(MW_SEL);
+  const filtered=TOOL_CATALOG.map((t,i)=>({...t,i})).filter(t=>(_MW_CAT==='All'||t.c===_MW_CAT)&&(!_MW_Q||t.n.toLowerCase().includes(_MW_Q.toLowerCase())||t.v.toLowerCase().includes(_MW_Q.toLowerCase())||t.c.toLowerCase().includes(_MW_Q.toLowerCase())));
+  return `<div>
+<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+<input class="mw-search" id="mwSearch" type="text" placeholder="Search tools, vendors, categories..." value="${_MW_Q.replace(/"/g,'&quot;')}" oninput="mwFlt(this.value)">
+${sel.length?`<button class="btn bs1 bsm" onclick="MW_SEL={};mwRender()" style="white-space:nowrap;flex-shrink:0">Clear All</button>`:''}
+</div>
+<div class="mw-cat-tabs" id="mwCatTabs">${cats.map(c=>`<div class="mw-cat${_MW_CAT===c?' on':''}" onclick="mwSelCat('${c}')">${c}${c==='All'?'':' ('+TOOL_CATALOG.filter(t=>t.c===c).length+')'}</div>`).join('')}</div>
+${sel.length?`<div style="background:#e8f3ff;border:1px solid #b8d4f8;border-radius:7px;padding:7px 12px;margin-bottom:6px;font-size:12px;color:var(--navy)"><strong>${sel.length} selected:</strong> ${sel.slice(0,7).join(', ')}${sel.length>7?' + '+(sel.length-7)+' more':''}</div>`:''}
+<div style="font-size:11px;color:var(--mut);margin-bottom:4px" id="mwCount">${filtered.length} tools shown</div>
+<div class="mw-grid" id="mwGrid">${mwGridHTML(filtered)}</div>
+<div style="margin-top:8px;font-size:11px;color:var(--mut);text-align:center">Can't find a tool? Type its name above and click <button class="btn bs1" style="font-size:10px;padding:2px 8px;display:inline-flex;margin-left:4px" onclick="mwAddCustom()">Add Custom</button></div>
+</div>`;
+}
+function mwGridHTML(filtered){
+  if(!filtered.length)return`<div style="grid-column:1/-1;text-align:center;padding:28px 16px;color:var(--mut);font-size:12px">No tools matching "${e(_MW_Q)}" — <button class="btn bs1 bsm" onclick="mwAddCustom()">Add "${e(_MW_Q)}" as custom</button></div>`;
+  return filtered.map(t=>`<div class="mw-tool${MW_SEL[t.n]?' on':''}" onclick="mwTogTool(${t.i})"><div class="mw-tn">${t.n}</div><div class="mw-tv">${t.v} &bull; ${t.c}</div></div>`).join('');
+}
+function mwFlt(val){_MW_Q=val;const filtered=TOOL_CATALOG.map((t,i)=>({...t,i})).filter(t=>(_MW_CAT==='All'||t.c===_MW_CAT)&&(!val||t.n.toLowerCase().includes(val.toLowerCase())||t.v.toLowerCase().includes(val.toLowerCase())||t.c.toLowerCase().includes(val.toLowerCase())));const g=document.getElementById('mwGrid');const cnt=document.getElementById('mwCount');if(g)g.innerHTML=mwGridHTML(filtered);if(cnt)cnt.textContent=filtered.length+' tools shown';const s=document.getElementById('mwSearch');if(s){const p=s.selectionStart;s.focus();try{s.setSelectionRange(p,p);}catch(ex){}}}
+function mwSelCat(cat){_MW_CAT=cat;document.querySelectorAll('.mw-cat').forEach(el=>el.classList.toggle('on',el.textContent.startsWith(cat)));const filtered=TOOL_CATALOG.map((t,i)=>({...t,i})).filter(t=>(cat==='All'||t.c===cat)&&(!_MW_Q||t.n.toLowerCase().includes(_MW_Q.toLowerCase())||t.v.toLowerCase().includes(_MW_Q.toLowerCase())));const g=document.getElementById('mwGrid');const cnt=document.getElementById('mwCount');if(g)g.innerHTML=mwGridHTML(filtered);if(cnt)cnt.textContent=filtered.length+' tools shown';}
+function mwTogTool(idx){const t=TOOL_CATALOG[idx];if(MW_SEL[t.n])delete MW_SEL[t.n];else MW_SEL[t.n]={vendor:t.v,cat:t.c,criticality:'High',deployment:'Cloud',eol:false,cost_range:'$50K–$200K',users_range:'51–200 users'};mwRender();const s=document.getElementById('mwSearch');if(s)s.focus();}
+function mwAddCustom(){const name=_MW_Q.trim();if(!name){toast('Type a tool name in the search box first','er');return;}if(MW_SEL[name]){toast('"'+name+'" already selected','in');return;}MW_SEL[name]={vendor:'Custom',cat:'Other',criticality:'High',deployment:'Cloud',eol:false,cost_range:'$50K–$200K',users_range:'51–200 users'};_MW_Q='';mwRender();}
+
+// ── Step 3: Tool Properties ───────────────────────────────────────
+function mwS3(){
+  _mwRowNames=Object.keys(MW_SEL);
+  return `<div>
+<div style="font-size:12px;color:var(--mut);margin-bottom:10px;padding:8px 12px;background:#f8faff;border-radius:7px;border:1px solid var(--bdr)">Set criticality, deployment, and EOL status for each tool. Defaults are pre-set — adjust to match your actual environment.</div>
+<div style="display:grid;grid-template-columns:176px 1fr 1fr 58px;gap:6px;padding:7px 10px;background:var(--bg);border-radius:6px;font-size:10px;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px"><div>Tool</div><div>Criticality</div><div>Deployment</div><div>EOL</div></div>
+<div style="max-height:420px;overflow-y:auto;padding-right:2px">
+${_mwRowNames.map((nm,ri)=>{const d=MW_SEL[nm];return`<div style="display:grid;grid-template-columns:176px 1fr 1fr 58px;gap:6px;align-items:center;padding:9px 10px;border:1px solid var(--bdr);border-radius:7px;background:var(--sur);margin-bottom:6px"><div><div class="mw-trow-name" title="${e(nm)}">${nm.length>22?nm.slice(0,20)+'…':nm}</div><div style="font-size:10px;color:var(--mut)">${d.cat}</div></div><div class="mw-ir-row">${_CRITS.map(c=>`<div class="mw-ir${d.criticality===c?' '+_CRIT_CLS[c]:''}" onclick="mwSetPropR(${ri},'criticality','${c}',this,'${_CRIT_CLS[c]}')">${c}</div>`).join('')}</div><div class="mw-ir-row">${_DEPS.map(dp=>`<div class="mw-ir${d.deployment===dp?' on':''}" onclick="mwSetPropR(${ri},'deployment','${dp}',this,'on')">${dp}</div>`).join('')}</div><div><label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:11px;font-weight:700;color:${d.eol?'var(--red)':'var(--mut)'}"><input type="checkbox" ${d.eol?'checked':''} onchange="mwEolR(${ri},this)">EOL</label></div></div>`;}).join('')}
+</div></div>`;
+}
+function mwSetPropR(ri,prop,val,el,cls){const nm=_mwRowNames[ri];if(!MW_SEL[nm])return;MW_SEL[nm][prop]=val;el.closest('.mw-ir-row').querySelectorAll('.mw-ir').forEach(e=>{e.className='mw-ir';});el.classList.add(cls);}
+function mwEolR(ri,inp){const nm=_mwRowNames[ri];if(MW_SEL[nm])MW_SEL[nm].eol=inp.checked;inp.closest('label').style.color=inp.checked?'var(--red)':'var(--mut)';}
+
+// ── Step 4: Financial Context ─────────────────────────────────────
+function mwS4(){
+  _mwRowNames=Object.keys(MW_SEL);
+  return `<div>
+<div style="background:var(--bg);border-radius:9px;padding:14px;margin-bottom:14px">
+<div class="mw-sec-lbl">TOTAL IT / TECHNOLOGY ANNUAL BUDGET (OPTIONAL)</div>
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px">
+<div style="display:flex;align-items:center;gap:6px;background:var(--sur);border:1.5px solid var(--bdr);border-radius:8px;padding:8px 12px"><span style="color:var(--mut);font-weight:700">$</span><input type="number" id="mwBudget" style="width:130px;border:none;outline:none;font-size:13px;background:transparent" placeholder="e.g. 5000000" value="${MW_CFG.budget||''}"></div>
+<div class="mw-chips">${['500K','1M','2M','5M','10M','25M+'].map(v=>{const n=v==='25M+'?25000000:v.endsWith('M')?parseInt(v)*1000000:500000;return`<div class="mw-chip" onclick="document.getElementById('mwBudget').value=${n};MW_CFG.budget=${n}">${v}</div>`;}).join('')}</div>
+</div></div>
+<div style="display:grid;grid-template-columns:160px 1fr 1fr;gap:6px;padding:7px 10px;background:var(--bg);border-radius:6px;font-size:10px;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px"><div>Tool</div><div>Annual Cost Range</div><div>User Count</div></div>
+<div style="max-height:400px;overflow-y:auto;padding-right:2px">
+${_mwRowNames.map((nm,ri)=>{const d=MW_SEL[nm];return`<div style="display:grid;grid-template-columns:160px 1fr 1fr;gap:8px;align-items:start;padding:9px 10px;border:1px solid var(--bdr);border-radius:7px;background:var(--sur);margin-bottom:6px"><div><div class="mw-trow-name">${nm.length>20?nm.slice(0,18)+'…':nm}</div><div style="font-size:10px;color:var(--mut)">${d.vendor}</div></div><div class="mw-ir-row">${_COST_RANGES.map(r=>`<div class="mw-ir${d.cost_range===r?' on':''}" style="font-size:10px" onclick="mwSetPropR(${ri},'cost_range',${JSON.stringify(r)},this,'on')">${r}</div>`).join('')}</div><div class="mw-ir-row">${_USER_RANGES.map(r=>`<div class="mw-ir${d.users_range===r?' on':''}" style="font-size:10px" onclick="mwSetPropR(${ri},'users_range',${JSON.stringify(r)},this,'on')">${r}</div>`).join('')}</div></div>`;}).join('')}
+</div></div>`;
+}
+
+// ── Step 5: Risk, Compliance & Submit ─────────────────────────────
+function mwS5(){
+  const COMPS=['ISO 27001','SOC 2 Type II','GDPR','HIPAA','PCI DSS','DORA','NIST CSF','RBI Guidelines','SEBI / IRDAI','TRAI Compliance','FedRAMP','CMMC'];
+  const PAINS=['High licensing costs','Vendor lock-in','Poor user adoption','Security vulnerabilities','EOL software in use','Too many overlapping tools','Poor integrations','Scalability issues','Lack of cloud readiness','Slow release cycles','Complex maintenance','Shadow IT proliferation'];
+  const tl=Object.entries(MW_SEL);
+  const est=tl.reduce((s,[,d])=>s+(_COST_MID[d.cost_range]||0),0);
+  const fmt=n=>n>=1e6?'$'+(n/1e6).toFixed(1)+'M':n>=1e3?'$'+(n/1e3).toFixed(0)+'K':'$'+n;
+  const cats=tl.reduce((a,[,d])=>{a[d.cat]=(a[d.cat]||0)+1;return a;},{});
+  return `<div style="display:grid;grid-template-columns:1fr 250px;gap:16px">
+<div style="display:flex;flex-direction:column;gap:14px">
+<div><div class="mw-sec-lbl">COMPLIANCE FRAMEWORKS (SELECT ALL THAT APPLY)</div><div class="mw-chips">${COMPS.map(c=>`<div class="mw-chip${(MW_CFG.compliance||[]).includes(c)?' on':''}" onclick="mwChip('compliance','${c}',this)">${c}</div>`).join('')}</div></div>
+<div><div class="mw-sec-lbl">CLOUD MATURITY LEVEL</div><div class="mw-radio">${_CLOUD_OPTS.map((c,i)=>`<div class="mw-rcard${MW_CFG.cloud===c?' on':''}" data-cl="${i}" onclick="mwPickR(this,'cloud',_CLOUD_OPTS,${i})"><div class="mw-dot"></div><span style="font-size:12px">${c}</span></div>`).join('')}</div></div>
+<div><div class="mw-sec-lbl">KEY PAIN POINTS (SELECT ALL THAT APPLY)</div><div class="mw-chips">${PAINS.map(p=>`<div class="mw-chip${(MW_CFG.pain||[]).includes(p)?' on':''}" onclick="mwChip('pain','${p}',this)">${p}</div>`).join('')}</div></div>
+<div><div class="mw-sec-lbl">ADDITIONAL CONTEXT / CONSTRAINTS (OPTIONAL)</div><textarea id="mwExtra" rows="3" style="width:100%;padding:9px 12px;border:1.5px solid var(--bdr);border-radius:8px;font-size:12px;color:var(--txt);background:var(--sur);resize:vertical;outline:none" placeholder="Anchor tenant discussions, government approvals in progress, specific constraints...">${MW_CFG.extra||''}</textarea></div>
+</div>
+<div>
+<div class="mw-sec-lbl">PORTFOLIO SUMMARY</div>
+<div style="background:var(--bg);border-radius:10px;padding:14px">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+<div style="background:var(--sur);border-radius:8px;padding:10px;text-align:center;border:1px solid var(--bdr)"><div style="font-size:22px;font-weight:800;color:var(--navy)">${tl.length}</div><div style="font-size:10px;color:var(--mut)">Tools Selected</div></div>
+<div style="background:var(--sur);border-radius:8px;padding:10px;text-align:center;border:1px solid var(--bdr)"><div style="font-size:15px;font-weight:800;color:var(--navy)">${fmt(est)}</div><div style="font-size:10px;color:var(--mut)">Est. Annual Cost</div></div>
+</div>
+<div style="font-size:10px;font-weight:700;color:var(--mut);text-transform:uppercase;margin-bottom:5px">By Category</div>
+${Object.entries(cats).slice(0,7).map(([cat,cnt])=>`<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--bdr);font-size:11px"><span>${cat}</span><strong>${cnt}</strong></div>`).join('')}
+<div style="font-size:10px;font-weight:700;color:var(--mut);text-transform:uppercase;margin:10px 0 4px">Criticality Mix</div>
+${['Critical','High','Medium','Low'].map(c=>{const cnt=tl.filter(([,d])=>d.criticality===c).length;if(!cnt)return'';const col=c==='Critical'?'var(--red)':c==='High'?'#e5a900':c==='Medium'?'var(--blue)':'var(--green)';return`<div style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px"><div style="width:8px;height:8px;background:${col};border-radius:50%"></div><span style="flex:1">${c}</span><strong>${cnt}</strong></div>`;}).join('')}
+</div>
+<div style="background:#f0faf5;border:1px solid #b8e6d0;border-radius:9px;padding:12px;margin-top:10px">
+<strong style="font-size:12px;color:var(--green)">Ready to generate!</strong>
+<p style="font-size:11px;color:var(--mut);margin-top:4px;line-height:1.5">The AI will score all ${tl.length} tool${tl.length!==1?'s':''} across 7 dimensions, detect overlaps, and generate a full CIO-ready report.</p>
+</div>
+</div>
+</div>`;
+}
+
+// ── Shared MW helpers ─────────────────────────────────────────────
+function mwPickR(el,key,optArr,idx){document.querySelectorAll('.mw-rcard[data-'+key+']').forEach(e=>e.classList.remove('on'));el.classList.add('on');MW_CFG[key]=optArr[idx];}
+function mwChip(key,val,el){if(!MW_CFG[key])MW_CFG[key]=[];const i=MW_CFG[key].indexOf(val);if(i===-1){MW_CFG[key].push(val);el.classList.add('on');}else{MW_CFG[key].splice(i,1);el.classList.remove('on');}}
+
+// ── Submit ────────────────────────────────────────────────────────
+async function mwSubmit(){
+  const tl=Object.entries(MW_SEL);
+  if(!tl.length){toast('Please select at least one tool','er');return;}
+  const budgetEl=document.getElementById('mwBudget');
+  if(budgetEl&&budgetEl.value)MW_CFG.budget=parseFloat(budgetEl.value)||MW_CFG.budget;
+  const extraEl=document.getElementById('mwExtra');
+  if(extraEl)MW_CFG.extra=extraEl.value;
+  let txt=tl.map(([nm,d])=>['Tool: '+nm,'Vendor: '+d.vendor,'Category: '+d.cat,_COST_MID[d.cost_range]>0?'Annual Cost: '+_COST_MID[d.cost_range]:'','Users: '+(_USER_MID[d.users_range]||50),'Criticality: '+d.criticality,'Deployment: '+d.deployment,d.eol?'End of Life: Yes':''].filter(Boolean).join('\n')).join('\n\n');
+  const ctx=[];
+  if(MW_CFG.industry)ctx.push('Industry: '+MW_CFG.industry);
+  if(MW_CFG.infra)ctx.push('Infrastructure: '+MW_CFG.infra);
+  if(MW_CFG.cloud)ctx.push('Cloud Maturity: '+MW_CFG.cloud);
+  if((MW_CFG.compliance||[]).length)ctx.push('Compliance: '+MW_CFG.compliance.join(', '));
+  if((MW_CFG.pain||[]).length)ctx.push('Pain Points: '+MW_CFG.pain.join(', '));
+  if((MW_CFG.goals||[]).length)ctx.push('Strategic Goals: '+MW_CFG.goals.join(', '));
+  if(MW_CFG.extra)ctx.push('Additional Context: '+MW_CFG.extra);
+  if(ctx.length)txt+='\n\n// Organisational Context:\n'+ctx.join('\n');
+  if(MW_CFG.budget){const bf=document.getElementById('p5budget');if(bf)bf.value=MW_CFG.budget;}
+  document.getElementById('ti').value=txt;
+  document.getElementById('mwWrap').style.display='none';
+  document.getElementById('mwToggleBtn').innerHTML='&#9998;&nbsp;Manual Entry Wizard &mdash; Select Tools &amp; Parameters';
+  await doIngest('mw');
 }
 
 document.addEventListener('DOMContentLoaded',init);
