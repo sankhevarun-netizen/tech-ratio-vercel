@@ -831,8 +831,12 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
     <!-- Phase 2: Tool Inventory Upload -->
     <div class="phase-pane" id="ph2" style="display:none">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-        <div>
-          <div class="card m4">
+
+        <!-- ── LEFT COLUMN: Upload + Manual Wizard ── -->
+        <div style="display:flex;flex-direction:column;gap:16px">
+
+          <!-- Upload Tool Inventory -->
+          <div class="card" style="flex:1">
             <div class="ch"><span class="ct">Phase 2 &mdash; Upload Tool Inventory</span></div>
             <p class="tx mu2 m4">Upload a CSV, Excel, PDF, PowerPoint, or Image file with your tool portfolio. Supported column names: Tool Name, Vendor, Category, Annual Cost, Users, Criticality, Deployment, Age, Integrations, End of Life.</p>
             <div class="uz" id="uz">
@@ -849,6 +853,49 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
               <input type="file" id="fi" accept=".csv,.xlsx,.xls,.pdf,.pptx,.ppt,.jpg,.jpeg,.png" style="display:none">
             </div>
           </div>
+
+          <!-- Manual Entry Wizard (same-size card, directly below Upload) -->
+          <div class="card" style="flex:1;border:2px solid var(--navy);background:linear-gradient(135deg,#f5f7ff 0%,#eef1fa 100%)">
+            <div class="ch" style="background:var(--navy);margin:-20px -20px 16px;padding:12px 20px;border-radius:8px 8px 0 0">
+              <span class="ct" style="color:#fff">&#9998;&nbsp;Manual Entry Wizard</span>
+            </div>
+            <p class="tx mu2 m4" style="font-size:12px">Build your tool portfolio step-by-step using a searchable catalog of 200+ tools — no typing or file upload required.</p>
+            <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px">
+              <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--mut)"><span style="color:var(--blue);font-weight:700">1</span> Select your tools from catalog</div>
+              <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--mut)"><span style="color:var(--blue);font-weight:700">2</span> Set criticality, cost &amp; deployment</div>
+              <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--mut)"><span style="color:var(--blue);font-weight:700">3</span> Configure EOL &amp; risk flags</div>
+              <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--mut)"><span style="color:var(--blue);font-weight:700">4</span> AI generates full assessment</div>
+            </div>
+            <button id="mwToggleBtn" class="btn wf" style="background:var(--navy);color:#fff;padding:12px 16px;font-size:14px;font-weight:700" onclick="mwToggle()">&#9998;&nbsp;Launch Manual Entry Wizard</button>
+          </div>
+
+        </div>
+
+        <!-- ── RIGHT COLUMN: Framework + Awaiting + Free Text ── -->
+        <div style="display:flex;flex-direction:column;gap:16px">
+
+          <!-- Rationalization Framework -->
+          <div class="card">
+            <div class="ch"><span class="ct">Rationalization Framework</span></div>
+            <div style="display:flex;flex-direction:column;gap:9px">
+              <div class="fx g2 ic2"><span class="b br">Retain</span><span class="tx">Strategic &amp; healthy &mdash; no immediate action required</span></div>
+              <div class="fx g2 ic2"><span class="b bh">Rehost</span><span class="tx">Lift-and-shift to cloud infrastructure</span></div>
+              <div class="fx g2 ic2"><span class="b bp">Replatform</span><span class="tx">Minor modernization with managed services</span></div>
+              <div class="fx g2 ic2"><span class="b bf">Refactor</span><span class="tx">Significant redesign &amp; re-architecture needed</span></div>
+              <div class="fx g2 ic2"><span class="b bl">Replace</span><span class="tx">Better market alternative &mdash; plan migration</span></div>
+              <div class="fx g2 ic2"><span class="b bt">Retire</span><span class="tx">Decommission &mdash; redundant or end-of-life</span></div>
+            </div>
+          </div>
+
+          <!-- Awaiting Tool Data -->
+          <div class="card" id="p2status" style="border:2px dashed var(--bdr);background:#fafbff">
+            <div class="es" style="padding:32px 16px">
+              <h3>Awaiting Tool Data</h3>
+              <p>Upload a file, use the wizard, or paste text below, then click <strong>Ingest &amp; Score Tools</strong>.</p>
+            </div>
+          </div>
+
+          <!-- Paste Free Text Description (below Awaiting Tool Data) -->
           <div class="card">
             <div class="ch"><span class="ct">Or Paste Free Text Description</span></div>
             <textarea id="ti" rows="6" placeholder="Describe tools in plain text. Example:&#10;&#10;Tool: Splunk Enterprise&#10;Vendor: Splunk&#10;Category: Logging&#10;Annual Cost: 180000&#10;Users: 150&#10;Criticality: High&#10;Deployment: On-Prem"></textarea>
@@ -869,38 +916,12 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
             <div class="fx g2 mt4" style="justify-content:flex-end"><button class="btn bs1 bsm" id="bsmp">Load Sample Data (12 tools)</button></div>
             <p class="tx mu2" style="margin-top:8px;text-align:center">After uploading a file or pasting text above, click <strong>Ingest &amp; Score Tools</strong> to process your inventory.</p>
           </div>
-        </div>
-        <div>
-          <div class="card m4">
-            <div class="ch"><span class="ct">Rationalization Framework</span></div>
-            <div style="display:flex;flex-direction:column;gap:9px">
-              <div class="fx g2 ic2"><span class="b br">Retain</span><span class="tx">Strategic &amp; healthy &mdash; no immediate action required</span></div>
-              <div class="fx g2 ic2"><span class="b bh">Rehost</span><span class="tx">Lift-and-shift to cloud infrastructure</span></div>
-              <div class="fx g2 ic2"><span class="b bp">Replatform</span><span class="tx">Minor modernization with managed services</span></div>
-              <div class="fx g2 ic2"><span class="b bf">Refactor</span><span class="tx">Significant redesign &amp; re-architecture needed</span></div>
-              <div class="fx g2 ic2"><span class="b bl">Replace</span><span class="tx">Better market alternative &mdash; plan migration</span></div>
-              <div class="fx g2 ic2"><span class="b bt">Retire</span><span class="tx">Decommission &mdash; redundant or end-of-life</span></div>
-            </div>
-          </div>
-          <div class="card" id="p2status" style="border:2px dashed var(--bdr);background:#fafbff">
-            <div class="es" style="padding:32px 16px">
-              <h3>Awaiting Tool Data</h3>
-              <p>Upload a file or paste tool descriptions above, then click <strong>Ingest &amp; Score Tools</strong>.</p>
-            </div>
-          </div>
+
         </div>
       </div>
-      <!-- ── OR / Manual Entry Wizard ── -->
-      <div style="display:flex;align-items:center;gap:10px;margin:18px 0 10px">
-        <div style="flex:1;height:1px;background:var(--bdr)"></div>
-        <span style="font-size:10px;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.8px;white-space:nowrap">OR USE MANUAL ENTRY WIZARD</span>
-        <div style="flex:1;height:1px;background:var(--bdr)"></div>
-      </div>
-      <div style="text-align:center;margin-bottom:10px">
-        <button id="mwToggleBtn" class="btn" style="background:var(--navy);color:#fff;padding:10px 22px;font-size:13px" onclick="mwToggle()">&#9998;&nbsp;Manual Entry Wizard &mdash; Select Tools &amp; Parameters</button>
-        <p style="font-size:11px;color:var(--mut);margin-top:6px">Build your tool portfolio step-by-step — searchable catalog, toggle buttons, no typing or file upload required</p>
-      </div>
-      <div id="mwWrap" style="display:none;margin-bottom:12px">
+
+      <!-- ── Manual Entry Wizard Expanded Panel (full width) ── -->
+      <div id="mwWrap" style="display:none;margin-top:16px;margin-bottom:12px">
         <div class="card" style="padding:20px;border:1.5px solid var(--blue)">
           <div id="mwStepBar" style="margin-bottom:20px"></div>
           <div id="mwContent" style="min-height:300px"></div>
@@ -2490,7 +2511,7 @@ function mwToggle(){
   const b=document.getElementById('mwToggleBtn');
   const open=w.style.display==='none';
   w.style.display=open?'block':'none';
-  b.innerHTML=open?'&#10006;&nbsp;Close Manual Wizard':'&#9998;&nbsp;Manual Entry Wizard &mdash; Select Tools &amp; Parameters';
+  b.innerHTML=open?'&#10006;&nbsp;Close Manual Wizard':'&#9998;&nbsp;Launch Manual Entry Wizard';
   if(open){MW_STEP=1;MW_SEL={};MW_CFG={industry:'',size:'',infra:'',cloud:'',goals:[],compliance:[],pain:[],extra:'',budget:0};_MW_CAT='All';_MW_Q='';mwRender();}
 }
 function mwGoto(n){
@@ -2658,7 +2679,7 @@ async function mwSubmit(){
   if(MW_CFG.budget){const bf=document.getElementById('p5budget');if(bf)bf.value=MW_CFG.budget;}
   document.getElementById('ti').value=txt;
   document.getElementById('mwWrap').style.display='none';
-  document.getElementById('mwToggleBtn').innerHTML='&#9998;&nbsp;Manual Entry Wizard &mdash; Select Tools &amp; Parameters';
+  document.getElementById('mwToggleBtn').innerHTML='&#9998;&nbsp;Launch Manual Entry Wizard';
   await doIngest('mw');
 }
 
