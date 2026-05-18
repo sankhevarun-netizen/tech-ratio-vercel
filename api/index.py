@@ -419,6 +419,11 @@ Return ONLY valid JSON (no markdown, no explanation) with these exact keys:
     "recommendations": "Bullet-point list of 6-8 specific platform decisions. Each bullet starts with '- [Action]:'. Group by action type. Format: '- Retain: [Tool] — [rationale]', '- Replace: [Tool A] with [Tool B] — [cost/risk rationale]', '- Retire: [Tool] — [reason]. Estimated savings: $X/yr'",
     "rollout_roadmap": "Structured phase-wise bullet list with dependencies. Format:\\nPhase 1 — Quick Wins (0-3 Months):\\n- [action with dependency note]\\n- [action]\\nPhase 2 — Strategic Delivery (3-12 Months):\\n- [action] (Depends on: Phase 1 [item])\\n- [action]\\nPhase 3 — Transformation (12-24 Months):\\n- [action] (Depends on: Phase 2 [item])\\n- [action]"
   }},
+  "three_pillars": {{
+    "as_is_assessment": "Bullet-point analysis of 7-9 key findings about the CURRENT AS-IS state of this specific tool portfolio. Each bullet MUST start with '- '. Use the actual tools, costs, categories and scores from the inventory above. Cover: total tool count vs industry benchmark (May 2026 average is 18-25 tools for mid-market), on-prem vs cloud split and migration debt, vendor concentration risk, tools with composite score below 5, EOL/legacy exposure, estimated licence waste from duplicates, integration gaps creating manual work. Cite specific tool names and numbers. Format: '- [Finding with specific tool names or numbers]: [Impact and benchmark context]'",
+    "governance_framework": "Bullet-point list of 7-9 governance recommendations tailored to THIS portfolio. Each bullet MUST start with '- '. Apply current (May 2026) best practices: ITIL 4 Service Value Chain, COBIT 2019 governance objectives, ISO/IEC 27001:2022 controls, DORA regulation (if financial sector), and FinOps Foundation cloud spend principles. Cover: tool procurement and approval policy, software licence lifecycle management, shadow IT discovery controls, vendor SLA and contract review cadence, cloud spend guardrails, zero-trust access policy for SaaS tools, rationalization review board cadence, and compliance audit trail requirements. Format: '- [Governance control or policy]: [Specific recommendation citing current framework standard]'",
+    "tools_standardization": "Bullet-point list of 7-9 standardization decisions for THIS portfolio. Each bullet MUST start with '- '. Reference current (May 2026) market leaders per category: e.g. security (CrowdStrike Falcon, Wiz, Palo Alto XSIAM), ITSM (ServiceNow, Jira Service Management), observability (Datadog, Grafana, Dynatrace), collaboration (Microsoft 365, Slack), DevOps (GitHub Actions, GitLab CI, Azure DevOps), identity (Entra ID, Okta), data (Snowflake, Databricks, dbt). Cover: category-by-category preferred platform decisions from THIS portfolio, SaaS-first vs on-prem policy, API-first integration standard, single-vendor vs best-of-breed approach per domain, standard evaluation scorecard criteria for new tool requests, sunset timeline for non-standard tools. Format: '- [Category or domain]: [Standard platform decision citing specific tools from the portfolio and market alternatives]'"
+  }},
   "portfolio_overview": {{"total_tools":<int>,"total_annual_cost":<float>,"portfolio_health":"Healthy|At Risk|Critical","health_rationale":"<brief>"}},
   "before_after_comparison": {{
     "current_state": {{
@@ -463,13 +468,19 @@ For tool_analysis, include ALL tools (up to 30). Be specific and data-driven for
         kpis  = _gs("kpis_success_factors")
         rec   = _gs("recommendations")
         road  = _gs("rollout_roadmap")
+        p_asis  = _gs("as_is_assessment")
+        p_gov   = _gs("governance_framework")
+        p_std   = _gs("tools_standardization")
         if eco or ovlp:
             return {"executive_summary": {"tool_ecosystem": eco or "See full assessment.",
                                           "overlapping_tools": ovlp or "",
                                           "benchmarking": bench or "",
                                           "kpis_success_factors": kpis or "",
                                           "recommendations": rec or "",
-                                          "rollout_roadmap": road or ""}}
+                                          "rollout_roadmap": road or ""},
+                    "three_pillars": {"as_is_assessment": p_asis,
+                                      "governance_framework": p_gov,
+                                      "tools_standardization": p_std}}
         return {"executive_summary": {"tool_ecosystem": raw[:1000], "overlapping_tools": "", "benchmarking": "", "kpis_success_factors": "", "recommendations": "", "rollout_roadmap": ""}}
 
 def build_report(tools:List[Dict],dups:List[Dict],assessment:Dict)->str:
@@ -519,6 +530,7 @@ def build_report(tools:List[Dict],dups:List[Dict],assessment:Dict)->str:
     dup_tools=assessment.get("duplicate_tools",[])
     tool_analysis=assessment.get("tool_analysis",[])
     bac=assessment.get("before_after_comparison",{})
+    pillars=assessment.get("three_pillars",{})
 
     # Build before/after comparison HTML block
     if bac:
@@ -789,6 +801,79 @@ def build_report(tools:List[Dict],dups:List[Dict],assessment:Dict)->str:
              +"".join(_hp(c,d) for c,d in sorted(cats_h.items(),key=lambda x:x[1]["cnt"],reverse=True)[:7])+'</div>')
     three_col_html=f'<div class="three-col">{tf_html}{ib_html}{hp_html}</div>'
 
+    # ── Three Pillars section ──────────────────────────────────────────────────
+    def _pillar_card(icon_svg, accent, bg, title, subtitle, content):
+        bullets = _bullets_to_html(content) if content else \
+            '<p style="font-size:12px;color:#999">Run assessment to generate content.</p>'
+        return (
+            f'<div style="background:{bg}!important;border:1px solid rgba(0,0,0,.08);'
+            f'border-top:4px solid {accent};border-radius:10px;padding:20px">'
+            f'<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">'
+            f'<div style="width:44px;height:44px;background:{accent}18;border-radius:10px;'
+            f'display:flex;align-items:center;justify-content:center;flex-shrink:0">'
+            f'{icon_svg}</div>'
+            f'<div><div style="font-size:14px;font-weight:800;color:#003366;line-height:1.2">{title}</div>'
+            f'<div style="font-size:10px;color:#6B7A99;margin-top:2px;text-transform:uppercase;'
+            f'letter-spacing:.6px;font-weight:600">{subtitle}</div></div></div>'
+            f'{bullets}</div>'
+        )
+
+    _icon_asis = ('<svg width="24" height="24" viewBox="0 0 44 44" fill="none" '
+                  'xmlns="http://www.w3.org/2000/svg">'
+                  '<path d="M22 6 A16 16 0 1 1 8 28" stroke="#1E49E2" stroke-width="2.8" stroke-linecap="round"/>'
+                  '<path d="M6 22 L8 28 L14 26" stroke="#1E49E2" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>'
+                  '<path d="M22 38 A16 16 0 0 1 36 16" stroke="#1E49E2" stroke-width="2.8" stroke-linecap="round"/>'
+                  '<path d="M38 22 L36 16 L30 18" stroke="#1E49E2" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>'
+                  '<circle cx="22" cy="22" r="5" stroke="#1E49E2" stroke-width="2"/>'
+                  '<path d="M22 15v2M22 27v2M15 22h2M27 22h2" stroke="#1E49E2" stroke-width="1.8" stroke-linecap="round"/>'
+                  '</svg>')
+    _icon_gov  = ('<svg width="24" height="26" viewBox="0 0 40 44" fill="none" '
+                  'xmlns="http://www.w3.org/2000/svg">'
+                  '<rect x="3" y="2" width="34" height="40" rx="3" stroke="#1E49E2" stroke-width="2.5"/>'
+                  '<rect x="8" y="11" width="6" height="6" rx="1" stroke="#1E49E2" stroke-width="2"/>'
+                  '<polyline points="9,14 11,16 13,12" stroke="#1E49E2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>'
+                  '<line x1="18" y1="14" x2="32" y2="14" stroke="#1E49E2" stroke-width="2" stroke-linecap="round"/>'
+                  '<rect x="8" y="20" width="6" height="6" rx="1" stroke="#1E49E2" stroke-width="2"/>'
+                  '<polyline points="9,23 11,25 13,21" stroke="#1E49E2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>'
+                  '<line x1="18" y1="23" x2="32" y2="23" stroke="#1E49E2" stroke-width="2" stroke-linecap="round"/>'
+                  '<rect x="8" y="29" width="6" height="6" rx="1" stroke="#1E49E2" stroke-width="2"/>'
+                  '<polyline points="9,32 11,34 13,30" stroke="#1E49E2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>'
+                  '<line x1="18" y1="32" x2="32" y2="32" stroke="#1E49E2" stroke-width="2" stroke-linecap="round"/>'
+                  '</svg>')
+    _icon_std  = ('<svg width="24" height="24" viewBox="0 0 44 44" fill="none" '
+                  'xmlns="http://www.w3.org/2000/svg">'
+                  '<path d="M18 20 C18 20 20 15 22 12 C23 10 25 10 25 13 L25 18 L31 18 '
+                  'C33 18 34 20 33 22 L30 32 C29.5 33.5 28 34 27 34 L16 34 L16 20 Z" '
+                  'stroke="#1E49E2" stroke-width="2.2" stroke-linejoin="round"/>'
+                  '<rect x="10" y="20" width="6" height="14" rx="1.5" stroke="#1E49E2" stroke-width="2.2"/>'
+                  '<circle cx="35" cy="37" r="4" stroke="#1E49E2" stroke-width="1.8"/>'
+                  '<path d="M35 33v1M35 40v1M31 37h1M38 37h1" stroke="#1E49E2" stroke-width="1.5" stroke-linecap="round"/>'
+                  '<circle cx="39" cy="30" r="3" stroke="#1E49E2" stroke-width="1.6"/>'
+                  '<path d="M39 27v1M39 32v1M36 30h1M41 30h1" stroke="#1E49E2" stroke-width="1.4" stroke-linecap="round"/>'
+                  '</svg>')
+
+    pillars_html = ""
+    if pillars:
+        p_asis = pillars.get("as_is_assessment", "")
+        p_gov  = pillars.get("governance_framework", "")
+        p_std  = pillars.get("tools_standardization", "")
+        if p_asis or p_gov or p_std:
+            pillars_html = (
+                f'<div class="sec pb">'
+                f'<h2>Strategic Pillars: Assessment, Governance &amp; Standardization</h2>'
+                f'<p style="font-size:12px;color:#6B7A99;margin-bottom:16px">'
+                f'Current-state analysis and forward-looking recommendations across three strategic lenses. '
+                f'Benchmarked against May 2026 industry standards and market-leading platforms.</p>'
+                f'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px">'
+                + _pillar_card(_icon_asis, "#1E49E2", "#f0f6ff",
+                               "As-is Tools Assessment", "Current State &amp; Gap Analysis", p_asis)
+                + _pillar_card(_icon_gov,  "#00338D", "#f0f4fa",
+                               "Governance Framework", "Policy, Compliance &amp; Controls", p_gov)
+                + _pillar_card(_icon_std,  "#00A651", "#f0faf5",
+                               "Tools Standardization", "Platform Decisions &amp; Stack Consolidation", p_std)
+                + f'</div></div>'
+            )
+
     return f"""<!DOCTYPE html><html lang="en"><head>
 <meta charset="UTF-8"><title>Tool Rationalization Report — {datetime.now().strftime('%B %Y')}</title>
 <style>
@@ -922,6 +1007,9 @@ tbody tr{{page-break-inside:avoid}}
 </div>
 
 {bac_html}
+
+<!-- THREE STRATEGIC PILLARS -->
+{pillars_html}
 
 <!-- ACTION SUMMARY -->
 <div class="sec">
