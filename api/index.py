@@ -339,6 +339,50 @@ def parse_pdf_bytes(b:bytes)->str:
         return txt[:8000]
     except: return ""
 
+def parse_pptx_bytes(b:bytes)->str:
+    try:
+        from pptx import Presentation
+        prs=Presentation(io.BytesIO(b))
+        lines=[]
+        for slide in prs.slides:
+            for shape in slide.shapes:
+                if shape.has_text_frame:
+                    for para in shape.text_frame.paragraphs:
+                        ln=" ".join(run.text for run in para.runs if run.text.strip())
+                        if ln.strip(): lines.append(ln.strip())
+                if shape.has_table:
+                    for row in shape.table.rows:
+                        row_txt=" | ".join(c.text.strip() for c in row.cells if c.text.strip())
+                        if row_txt: lines.append(row_txt)
+        return "\n".join(lines)[:8000]
+    except: return ""
+
+async def parse_image_bytes(b:bytes, media_type:str)->List[Dict]:
+    import base64
+    img_b64=base64.standard_b64encode(b).decode("utf-8")
+    resp=await client.messages.create(
+        model=ANTHROPIC_MODEL, max_tokens=3000, temperature=0.1,
+        messages=[{"role":"user","content":[
+            {"type":"image","source":{"type":"base64","media_type":media_type,"data":img_b64}},
+            {"type":"text","text":(
+                "This image shows a software/tool inventory or IT portfolio. "
+                "Extract every tool or application visible. For each tool return: "
+                "name, vendor, category, annual_cost (number only, omit currency symbols), "
+                "user_count (number only), criticality (Critical/High/Medium/Low), "
+                "deployment (Cloud/On-Prem/Hybrid), age_years (number), "
+                "integrations_count (number), end_of_life (true/false). "
+                'Return ONLY a JSON array: [{"name":"...","vendor":"...",...}, ...]. '
+                "Omit fields not visible. Always include name."
+            )}
+        ]}]
+    )
+    raw=resp.content[0].text
+    try:
+        m=re.search(r'\[.*\]', raw, re.DOTALL)
+        if m: return [normalize(t) for t in json.loads(m.group())]
+    except: pass
+    return []
+
 _LAST_INGEST_META: Dict = {}
 
 def _df(df)->List[Dict]:
@@ -517,7 +561,7 @@ For tool_analysis, include ALL tools (up to 30). Be specific and data-driven for
                                       "tools_standardization": p_std}}
         return {"executive_summary": {"tool_ecosystem": raw[:1000], "overlapping_tools": "", "benchmarking": "", "kpis_success_factors": "", "recommendations": "", "rollout_roadmap": ""}}
 
-def build_report(tools:List[Dict],dups:List[Dict],assessment:Dict)->str:
+def build_report(tools:List[Dict],dups:List[Dict],assessment:Dict,chat_context:Optional[str]=None)->str:
     from datetime import datetime
     total_cost=sum(t.get("annual_cost",0) or 0 for t in tools)
     pot_save=sum(d.get("potential_annual_savings",0) or 0 for d in dups)
@@ -886,6 +930,35 @@ def build_report(tools:List[Dict],dups:List[Dict],assessment:Dict)->str:
                   '<path d="M39 27v1M39 32v1M36 30h1M41 30h1" stroke="#1E49E2" stroke-width="1.4" stroke-linecap="round"/>'
                   '</svg>')
 
+    # ── AI Advisor chat section ───────────────────────────────────────────────
+    chat_html = ""
+    if chat_context and chat_context.strip():
+        def _chat_row(line: str) -> str:
+            is_q = line.startswith("Client question:")
+            label = line[:line.index(":")+1] if ":" in line else ""
+            body  = line[len(label):].strip()
+            bg    = "#f0f6ff" if is_q else "#f0faf5"
+            border= "#1E49E2" if is_q else "#00A651"
+            icon  = "&#10067;" if is_q else "&#129302;"
+            return (
+                f'<div style="background:{bg}!important;border-left:3px solid {border};'
+                f'border-radius:0 6px 6px 0;padding:10px 14px;margin-bottom:8px">'
+                f'<div style="font-size:10px;font-weight:700;text-transform:uppercase;'
+                f'letter-spacing:.6px;color:{border};margin-bottom:5px">{icon}&nbsp;{label}</div>'
+                f'<div style="font-size:12px;line-height:1.65;color:#1a2340">{body}</div></div>'
+            )
+        rows = "".join(_chat_row(l) for l in chat_context.strip().split("\n") if l.strip())
+        if rows:
+            chat_html = (
+                f'<div class="sec pb" style="page-break-inside:avoid">'
+                f'<h2>AI Advisor Session &mdash; Key Insights</h2>'
+                f'<p style="font-size:12px;color:#6B7A99;margin-bottom:16px">'
+                f'The following questions and answers were generated during the AI Advisor session '
+                f'and have been incorporated into this assessment.</p>'
+                f'<hr style="border:none;border-top:2px solid #e0e8f4;margin-bottom:16px">'
+                f'{rows}</div>'
+            )
+
     pillars_html = ""
     if pillars:
         p_asis = pillars.get("as_is_assessment", "")
@@ -1045,6 +1118,9 @@ tbody tr{{page-break-inside:avoid}}
 <!-- THREE STRATEGIC PILLARS -->
 {pillars_html}
 
+<!-- AI ADVISOR SESSION -->
+{chat_html}
+
 <!-- ACTION SUMMARY -->
 <div class="sec">
 <h2>Rationalization Action Summary</h2>
@@ -1126,6 +1202,7 @@ class ReportReq(BaseModel):
     tools: List[Dict]
     duplications: List[Dict] = []
     assessment: Dict = {}
+    chat_context: Optional[str] = None
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -1153,14 +1230,22 @@ async def ingest(file: Optional[UploadFile]=File(None), text: Optional[str]=Form
         try:
             content = await file.read()
             ext = file.filename.lower().rsplit(".",1)[-1]
-            if   ext == "csv":           tools = parse_csv_bytes(content)
-            elif ext in ("xlsx","xls"):  tools = parse_excel_bytes(content)
-            elif ext == "json":          tools = parse_json_bytes(content)
+            if   ext == "csv":
+                tools = parse_csv_bytes(content)
+            elif ext in ("xlsx","xls"):
+                tools = parse_excel_bytes(content)
             elif ext == "pdf":
                 raw = parse_pdf_bytes(content)
                 if raw: tools = [normalize(t) for t in await ai_parse_text(raw)]
+            elif ext in ("pptx","ppt"):
+                raw = parse_pptx_bytes(content)
+                if raw: tools = [normalize(t) for t in await ai_parse_text(raw)]
+            elif ext in ("jpg","jpeg"):
+                tools = await parse_image_bytes(content, "image/jpeg")
+            elif ext == "png":
+                tools = await parse_image_bytes(content, "image/png")
             else:
-                raise HTTPException(400, f"Unsupported file type: .{ext}. Use CSV, Excel, JSON, or PDF.")
+                raise HTTPException(400, f"Unsupported file type: .{ext}. Supported: CSV, Excel, PDF, PPT/PPTX, JPG, PNG.")
         except HTTPException: raise
         except Exception as ex:
             raise HTTPException(400, f"File parsing failed: {str(ex)}. Ensure the file has a header row with tool data.")
@@ -1218,7 +1303,7 @@ async def assess(req: AssessReq):
 
 @app.post("/api/report")
 async def report(req: ReportReq):
-    return {"html": build_report(req.tools, req.duplications, req.assessment)}
+    return {"html": build_report(req.tools, req.duplications, req.assessment, req.chat_context)}
 
 
 @app.get("/api/health")

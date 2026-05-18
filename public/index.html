@@ -794,17 +794,19 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
         <div>
           <div class="card m4">
             <div class="ch"><span class="ct">Phase 2 &mdash; Upload Tool Inventory</span></div>
-            <p class="tx mu2 m4">Upload a CSV, Excel, JSON or PDF file with your tool portfolio. Supported column names: Tool Name, Vendor, Category, Annual Cost, Users, Criticality, Deployment, Age, Integrations, End of Life.</p>
+            <p class="tx mu2 m4">Upload a CSV, Excel, PDF, PowerPoint, or Image file with your tool portfolio. Supported column names: Tool Name, Vendor, Category, Annual Cost, Users, Criticality, Deployment, Age, Integrations, End of Life.</p>
             <div class="uz" id="uz">
               <h3 style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:6px">Drop file here or click to browse</h3>
-              <p id="un" style="color:var(--mut);font-size:13px">CSV, Excel, JSON, PDF supported</p>
-              <div style="display:flex;gap:6px;justify-content:center;margin-top:12px">
+              <p id="un" style="color:var(--mut);font-size:13px">CSV, Excel, PDF, PPT, JPG, PNG supported</p>
+              <div style="display:flex;gap:6px;justify-content:center;margin-top:12px;flex-wrap:wrap">
                 <span style="background:var(--bg);border:1px solid var(--bdr);padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;color:var(--mut)">CSV</span>
                 <span style="background:var(--bg);border:1px solid var(--bdr);padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;color:var(--mut)">XLSX</span>
-                <span style="background:var(--bg);border:1px solid var(--bdr);padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;color:var(--mut)">JSON</span>
                 <span style="background:var(--bg);border:1px solid var(--bdr);padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;color:var(--mut)">PDF</span>
+                <span style="background:var(--bg);border:1px solid var(--bdr);padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;color:var(--mut)">PPT</span>
+                <span style="background:var(--bg);border:1px solid var(--bdr);padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;color:var(--mut)">JPG</span>
+                <span style="background:var(--bg);border:1px solid var(--bdr);padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;color:var(--mut)">PNG</span>
               </div>
-              <input type="file" id="fi" accept=".csv,.xlsx,.xls,.json,.pdf" style="display:none">
+              <input type="file" id="fi" accept=".csv,.xlsx,.xls,.pdf,.pptx,.ppt,.jpg,.jpeg,.png" style="display:none">
             </div>
           </div>
           <div class="card">
@@ -1367,6 +1369,10 @@ function buildP6Summary(){
     <div class="sum-card"><div class="sum-label">Cost Target</div><div class="sum-val">${e(target.options[target.selectedIndex].text)} reduction</div></div>
     <div class="sum-card"><div class="sum-label">Timeline</div><div class="sum-val">${e(timeline.options[timeline.selectedIndex].text)}</div></div>
   </div>`;
+  // If an assessment already exists, show its preview automatically
+  if(ASSESS&&Object.keys(ASSESS).length){
+    renderP6Preview();
+  }
 }
 
 async function doIngest(wizardMode=false){
@@ -1767,11 +1773,14 @@ async function runAssess(){
     const d=await r.json(); hideLd();
     if(!r.ok)return toast(d.detail||'Assessment failed','er');
     ASSESS=d.assessment;
-    renderAssess();
-    // If user triggered from Phase 6 wizard, show inline preview there instead of navigating away
-    const fromPhase6=window.__p6trigger||(CUR_PHASE===6&&(document.getElementById('tab-ingest')||{}).classList&&document.getElementById('tab-ingest').classList.contains('on'));
+    // Capture Phase 6 flag BEFORE any rendering that could throw
+    const fromPhase6=window.__p6trigger||(CUR_PHASE===6&&document.getElementById('tab-ingest')&&document.getElementById('tab-ingest').classList.contains('on'));
     window.__p6trigger=false;
+    // Render assessment tab (isolated — errors here must not block Phase 6 preview)
+    try{renderAssess();}catch(re){console.warn('renderAssess:',re);}
     if(fromPhase6){
+      // Ensure we are on the ingest tab at Phase 6 so the preview is visible
+      go('ingest'); gotoPhase(6);
       renderP6Preview();
       toast('Assessment complete — full report preview loading below...','ok');
       renderP6FullReport();
@@ -2012,7 +2021,7 @@ function rPrev(){
     <div style="background:var(--bg);padding:14px;border-radius:8px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--blue)">${TOOLS.length}</div><div class="tx mu2">Tools</div></div>
     <div style="background:var(--bg);padding:14px;border-radius:8px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--blue)">$${fmt(tc)}</div><div class="tx mu2">Annual Spend</div></div></div>
     <div style="margin-top:12px">${Object.entries(cnt).map(([a,c])=>`<div class="fx jb ic2" style="padding:7px 0;border-bottom:1px solid var(--bdr)">${bdg(a)}<strong>${c} tools</strong></div>`).join('')}</div>
-    ${ASSESS.executive_summary?`<div style="margin-top:12px;background:var(--bg);padding:12px;border-radius:7px;font-size:12px;line-height:1.6;color:var(--mut)">${e(ASSESS.executive_summary.slice(0,280))}...</div>`:''}`;
+    ${ASSESS.executive_summary?`<div style="margin-top:12px;background:var(--bg);padding:12px;border-radius:7px;font-size:12px;line-height:1.6;color:var(--mut)">${e((typeof ASSESS.executive_summary==='string'?ASSESS.executive_summary:(Object.values(ASSESS.executive_summary).find(v=>v&&typeof v==='string')||'')).slice(0,280))}...</div>`:''}`;
 }
 
 // Helpers
@@ -2298,15 +2307,14 @@ function setInfra(type){
 
 async function applyChat2Report(){
   if(!TOOLS.length)return toast('Ingest tools first before updating the report','er');
-  // Combine last 8 chat turns as extra context for the AI assessment
-  _CHAT_EXTRA_CTX=HIST.slice(-8).map(h=>(h.role==='user'?'Client question':'AI Advisor answer')+': '+h.content).join('\n');
+  const chatTurns=HIST.slice(-8).map(h=>(h.role==='user'?'Client question':'AI Advisor answer')+': '+h.content).join('\n');
+  _CHAT_EXTRA_CTX=chatTurns;
+  // Store separately for report section rendering
+  window._p6ChatForReport=chatTurns;
   toast('Re-running assessment with your conversation context — preview will load in Phase 6','in');
-  // Navigate to Phase 6 wizard
   go('ingest');
   gotoPhase(6);
-  // Run assessment — this will detect CUR_PHASE===6 and call renderP6FullReport()
   await runAssess();
-  // Clear so next assessment doesn't include stale chat
   _CHAT_EXTRA_CTX='';
 }
 
@@ -2338,8 +2346,10 @@ async function renderP6FullReport(){
       <button class="btn bs1 bsm" onclick="renderP6FullReport()">Retry Preview</button>
     </div></div>`;
   try{
+    const chatCtxForReport=window._p6ChatForReport||null;
+    window._p6ChatForReport=null;
     const r=await fetch(A+'/api/report',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({tools:TOOLS,duplications:DUPS,assessment:ASSESS})});
+      body:JSON.stringify({tools:TOOLS,duplications:DUPS,assessment:ASSESS,chat_context:chatCtxForReport})});
     const d=await r.json();
     if(!r.ok||!d.html){iframeWrap.innerHTML=errCard(d.detail||'Report generation failed — try the Reports section.');return;}
     const blob=new Blob([d.html],{type:'text/html'});
