@@ -11,18 +11,23 @@
 :root{--navy:#003366;--blue:#0063DC;--sky:#00A3E0;--green:#00A651;--amber:#FFC200;--red:#E31837;--purple:#7B2FBE;--bg:#F0F4FA;--sur:#fff;--bdr:#E0E7F0;--txt:#1A2340;--mut:#6B7A99}
 html,body{height:100%;font-family:'Helvetica Neue',Helvetica,'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--txt);font-size:14px}
 .app{display:flex;height:100vh;overflow:hidden}
-/* Sidebar */
-.sb{width:230px;background:var(--navy);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
-.sb-logo{display:flex;align-items:center;gap:10px;padding:18px 16px;border-bottom:1px solid rgba(255,255,255,.1)}
-.sb-logo .ic{width:36px;height:36px;background:linear-gradient(135deg,var(--blue),var(--sky));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff;flex-shrink:0}
-.sb-logo strong{color:#fff;font-size:13px;display:block;line-height:1.2}.sb-logo span{color:rgba(255,255,255,.45);font-size:11px}
-.sb-sec{padding:14px 10px 4px}
-.sb-lbl{font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,.35);padding:0 8px;margin-bottom:5px}
-.nav{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:7px;cursor:pointer;color:rgba(255,255,255,.65);font-size:13px;font-weight:500;transition:all .15s;margin-bottom:2px}
-.nav:hover{background:rgba(255,255,255,.08);color:#fff}.nav.on{background:var(--blue);color:#fff}
+/* ── Sidebar ── */
+.sb{width:242px;background:#0d1f3c;display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.sb-logo{display:flex;align-items:center;gap:12px;padding:20px 18px 18px;border-bottom:1px solid rgba(255,255,255,.07)}
+.sb-logo .ic{width:38px;height:38px;background:linear-gradient(135deg,#1E49E2,#0d3acc);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:#fff;flex-shrink:0;letter-spacing:-1px}
+.sb-logo strong{color:#fff;font-size:13px;font-weight:700;display:block;line-height:1.3;font-family:Arial,sans-serif}
+.sb-logo span{color:rgba(255,255,255,.38);font-size:10px;font-family:Arial,sans-serif}
+.sb-sec{padding:18px 10px 4px}
+.sb-lbl{font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.28);padding:0 10px;margin-bottom:6px;font-family:Arial,sans-serif}
+.nav{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:9px;cursor:pointer;color:rgba(255,255,255,.55);font-size:13px;font-weight:500;font-family:Arial,sans-serif;transition:all .15s;margin-bottom:3px}
+.nav:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.9)}
+.nav:hover svg{opacity:1}
+.nav.on{background:#1E49E2;color:#fff;font-weight:600}
+.nav.on svg{opacity:1}
+.nav svg{flex-shrink:0;opacity:.55;transition:opacity .15s}
 .ni{font-size:15px;width:20px;text-align:center;flex-shrink:0}
-.nb{margin-left:auto;background:var(--red);color:#fff;border-radius:10px;font-size:10px;font-weight:700;padding:2px 6px;display:none}.nb.show{display:inline-block}
-.sb-ft{margin-top:auto;padding:14px;border-top:1px solid rgba(255,255,255,.1)}
+.nb{margin-left:auto;background:#E31837;color:#fff;border-radius:10px;font-size:10px;font-weight:700;padding:2px 6px;display:none}.nb.show{display:inline-block}
+.sb-ft{margin-top:auto;padding:14px 12px;border-top:1px solid rgba(255,255,255,.07)}
 .sc{background:rgba(255,255,255,.07);border-radius:7px;padding:10px}
 .sl{font-size:10px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.7px}
 .sv{font-size:11px;color:rgba(255,255,255,.65);font-family:monospace;margin-top:3px}
@@ -678,27 +683,52 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
 <div class="app">
 <!-- SIDEBAR -->
 <aside class="sb">
-  <div class="sb-logo" style="align-items:center;gap:10px;padding:14px 14px 12px">
-    <div style="width:36px;height:36px;background:linear-gradient(135deg,#1E49E2,#00338D);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;color:#fff;flex-shrink:0;letter-spacing:-1px">TR</div>
+  <!-- Logo -->
+  <div class="sb-logo">
+    <div class="ic">TR</div>
     <div>
-      <span style="color:rgba(255,255,255,.85);font-size:12px;font-weight:700;display:block;line-height:1.2">Tool Rationalization</span>
-      <span style="color:rgba(255,255,255,.35);font-size:10px">Enterprise Advisory</span>
+      <strong>Tool Rationalization</strong>
+      <span>Enterprise Advisory</span>
     </div>
   </div>
+
+  <!-- Main -->
   <div class="sb-sec">
     <div class="sb-lbl">Main</div>
-    <div class="nav on" data-tab="dashboard"><span>Dashboard</span></div>
-    <div class="nav" data-tab="ingest"><span>Data Ingest</span></div>
+    <div class="nav on" data-tab="dashboard">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      <span>Dashboard</span>
+    </div>
+    <div class="nav" data-tab="ingest">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <span>Data Ingest</span>
+    </div>
   </div>
+
+  <!-- Analysis -->
   <div class="sb-sec">
     <div class="sb-lbl">Analysis</div>
-    <div class="nav" data-tab="inventory"><span>Tool Inventory</span><span class="nb" id="nb">0</span></div>
-    <div class="nav" data-tab="assessment"><span>AI Assessment</span></div>
-    <div class="nav" data-tab="chat"><span>AI Advisor</span></div>
+    <div class="nav" data-tab="inventory">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      <span>Tool Inventory</span><span class="nb" id="nb">0</span>
+    </div>
+    <div class="nav" data-tab="assessment">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      <span>AI Assessment</span>
+    </div>
+    <div class="nav" data-tab="chat">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 10h.01M12 10h.01M16 10h.01" stroke-width="2.5"/></svg>
+      <span>AI Advisor</span>
+    </div>
   </div>
+
+  <!-- Output -->
   <div class="sb-sec">
     <div class="sb-lbl">Output</div>
-    <div class="nav" data-tab="reports"><span>Reports</span></div>
+    <div class="nav" data-tab="reports">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      <span>Reports</span>
+    </div>
   </div>
   <!-- Signed-in user -->
   <div class="sb-ft">
