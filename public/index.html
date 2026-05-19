@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Tool Rationalization Agent</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--navy:#003366;--blue:#0063DC;--sky:#00A3E0;--green:#00A651;--amber:#FFC200;--red:#E31837;--purple:#7B2FBE;--bg:#F0F4FA;--sur:#fff;--bdr:#E0E7F0;--txt:#1A2340;--mut:#6B7A99}
@@ -285,9 +286,55 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
 .mw-sline.dn{background:var(--green)}
 .mw-slbl{font-size:9px;color:var(--mut);font-weight:700;text-align:center;white-space:nowrap}
 .mw-slbl.on{color:var(--blue)}.mw-slbl.dn{color:var(--green)}
+/* ── Login Screen ── */
+#loginScreen{position:fixed;inset:0;z-index:9999;background:linear-gradient(145deg,#001433 0%,#00338D 55%,#0a0a2e 100%);display:flex;align-items:center;justify-content:center;flex-direction:column}
+.lc{background:#fff;border-radius:16px;padding:40px 36px;width:100%;max-width:400px;box-shadow:0 28px 80px rgba(0,0,0,.5)}
+.lc-logo{text-align:center;margin-bottom:28px}
+.lc-badge{display:inline-block;background:#e8f0fe;color:#1E49E2;font-size:9px;font-weight:800;padding:3px 10px;border-radius:20px;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px}
+.lc-title{font-size:20px;font-weight:800;color:#003366;margin-bottom:4px;font-family:Arial,sans-serif}
+.lc-sub{font-size:12px;color:#6B7A99;font-family:Arial,sans-serif}
+.lc-field{margin-bottom:16px}
+.lc-label{font-size:11px;font-weight:700;color:#6B7A99;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;display:block;font-family:Arial,sans-serif}
+.lc-input{width:100%;padding:12px 14px;border:1.5px solid #E0E7F0;border-radius:8px;font-size:14px;font-family:Arial,sans-serif;color:#1A2340;outline:none;transition:border-color .15s;background:#fafbff}
+.lc-input:focus{border-color:#0063DC;background:#fff}
+.lc-btn{width:100%;padding:13px;background:linear-gradient(135deg,#1E49E2 0%,#00338D 100%);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;font-family:Arial,sans-serif;transition:opacity .15s;letter-spacing:.3px;margin-top:4px}
+.lc-btn:hover{opacity:.88}
+.lc-btn:disabled{opacity:.55;cursor:not-allowed}
+.lc-err{background:#fff0f2;border:1px solid #E31837;border-radius:7px;padding:10px 14px;font-size:12px;color:#c0001d;margin-bottom:14px;display:none;font-family:Arial,sans-serif}
+.lc-footer{margin-top:24px;font-size:11px;color:rgba(255,255,255,.35);text-align:center;font-family:Arial,sans-serif;letter-spacing:.3px}
+/* ── Sidebar User Footer ── */
+.sb-user{display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(255,255,255,.06);border-radius:8px;margin-bottom:10px}
+.sb-avatar{width:32px;height:32px;background:linear-gradient(135deg,#1E49E2,#00338D);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0}
+.sb-signout{width:100%;padding:8px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:7px;color:rgba(255,255,255,.65);font-size:12px;font-weight:600;cursor:pointer;font-family:Arial,sans-serif;transition:background .15s}
+.sb-signout:hover{background:rgba(255,80,80,.2);color:#ffaaaa;border-color:rgba(255,80,80,.3)}
 </style>
 </head>
 <body>
+
+<!-- ══ LOGIN SCREEN ══ -->
+<div id="loginScreen">
+  <div class="lc">
+    <div class="lc-logo">
+      <div style="width:54px;height:54px;background:linear-gradient(135deg,#1E49E2,#00338D);border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#fff;margin:0 auto 14px;letter-spacing:-1px">TR</div>
+      <div class="lc-badge">Enterprise Advisory Platform</div>
+      <div class="lc-title">Tool Rationalization Agent</div>
+      <div class="lc-sub">Sign in to access your workspace</div>
+    </div>
+    <div class="lc-err" id="loginErr"></div>
+    <div class="lc-field">
+      <label class="lc-label" for="loginEmail">Email Address</label>
+      <input class="lc-input" id="loginEmail" type="email" placeholder="you@organisation.com" autocomplete="email">
+    </div>
+    <div class="lc-field">
+      <label class="lc-label" for="loginPass">Password</label>
+      <input class="lc-input" id="loginPass" type="password" placeholder="••••••••" autocomplete="current-password"
+        onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="lc-btn" id="loginBtn" onclick="doLogin()">Sign In &rarr;</button>
+    <p style="text-align:center;font-size:11px;color:#a0aab8;margin-top:14px;font-family:Arial,sans-serif">Authorised personnel only &bull; All access is logged</p>
+  </div>
+  <div class="lc-footer">&#169; Tool Rationalization Agent &bull; Confidential &bull; Internal Use Only</div>
+</div>
 
 <!-- WELCOME SCREEN -->
 <div class="ws-overlay" id="welcomeScreen">
@@ -652,6 +699,17 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
   <div class="sb-sec">
     <div class="sb-lbl">Output</div>
     <div class="nav" data-tab="reports"><span>Reports</span></div>
+  </div>
+  <!-- Signed-in user -->
+  <div class="sb-ft">
+    <div class="sb-user">
+      <div class="sb-avatar" id="sbAvatar">?</div>
+      <div style="min-width:0;flex:1">
+        <div style="font-size:11px;color:rgba(255,255,255,.88);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="sbEmail">—</div>
+        <div style="font-size:10px;margin-top:1px" id="sbRole" style="color:rgba(255,255,255,.4)">—</div>
+      </div>
+    </div>
+    <button class="sb-signout" onclick="doLogout()">&#x2192; Sign Out</button>
   </div>
 </aside>
 <!-- MAIN -->
@@ -1353,6 +1411,71 @@ let cD=null, cB=null;
 let INFRA_TYPE='onprem';
 let _CHAT_EXTRA_CTX='';
 const A='';
+
+// ══ SUPABASE AUTH ══════════════════════════════════════════════════════════
+const _SUPA_URL='https://tjdrmzmadrxzvvfkrsca.supabase.co';
+const _SUPA_KEY='sb_publishable_YxNMOSXFRE2HTOmCHpdHzw_fMkzCjXQ';
+const _supa=window.supabase.createClient(_SUPA_URL,_SUPA_KEY);
+
+function _setLoginError(msg){
+  const el=document.getElementById('loginErr');
+  el.textContent=msg; el.style.display=msg?'block':'none';
+}
+
+function _updateSidebar(email,role){
+  const av=document.getElementById('sbAvatar');
+  const em=document.getElementById('sbEmail');
+  const rl=document.getElementById('sbRole');
+  if(av) av.textContent=(email||'?')[0].toUpperCase();
+  if(em) em.textContent=email||'—';
+  if(rl){
+    rl.textContent=role?role.charAt(0).toUpperCase()+role.slice(1):'—';
+    rl.style.color=role==='admin'?'#FFC200':'rgba(255,255,255,.45)';
+  }
+}
+
+async function _afterLogin(user){
+  const {data:profile}=await _supa.from('profiles').select('email,role').eq('id',user.id).single();
+  const email=profile?.email||user.email;
+  const role=profile?.role||'user';
+  _updateSidebar(email,role);
+  document.getElementById('loginScreen').style.display='none';
+}
+
+async function doLogin(){
+  const email=document.getElementById('loginEmail').value.trim();
+  const pass=document.getElementById('loginPass').value;
+  const btn=document.getElementById('loginBtn');
+  _setLoginError('');
+  if(!email||!pass){_setLoginError('Please enter your email and password.');return;}
+  btn.disabled=true; btn.textContent='Signing in...';
+  const {data,error}=await _supa.auth.signInWithPassword({email,password:pass});
+  if(error){
+    _setLoginError(error.message||'Invalid credentials. Please try again.');
+    btn.disabled=false; btn.textContent='Sign In →';
+    return;
+  }
+  await _afterLogin(data.user);
+  btn.disabled=false; btn.textContent='Sign In →';
+}
+
+async function doLogout(){
+  await _supa.auth.signOut();
+  _updateSidebar('—','—');
+  document.getElementById('loginEmail').value='';
+  document.getElementById('loginPass').value='';
+  _setLoginError('');
+  document.getElementById('loginScreen').style.display='flex';
+}
+
+// Auto-restore session on page load
+(async()=>{
+  const {data:{session}}=await _supa.auth.getSession();
+  if(session?.user){
+    await _afterLogin(session.user);
+  }
+})();
+// ══════════════════════════════════════════════════════════════════════════
 
 async function init(){
   setupNav(); setupIngest(); setupChat();
