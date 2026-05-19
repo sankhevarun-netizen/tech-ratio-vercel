@@ -1509,7 +1509,9 @@ async function doIngest(wizardMode=false){
   if(text)form.append('text',text);
   try{
     const r=await fetch(A+'/api/ingest',{method:'POST',body:form});
-    const d=await r.json(); hideLd();
+    hideLd();
+    let d;
+    try{d=await r.json();}catch{return toast('Server error — check your API key or server logs and try again','er');}
     if(!r.ok)return toast(d.detail||'Ingest failed','er');
     TOOLS=d.tools; DUPS=d.duplications;
     renderDash(); renderInv();
@@ -1887,7 +1889,9 @@ async function runAssess(){
   try{
     const r=await fetch(A+'/api/assess',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({tools:TOOLS,duplications:DUPS,industry,focus})});
-    const d=await r.json(); hideLd();
+    hideLd();
+    let d;
+    try{d=await r.json();}catch{return toast('Server error during assessment — check your API key and try again','er');}
     if(!r.ok)return toast(d.detail||'Assessment failed','er');
     ASSESS=d.assessment;
     // Capture Phase 6 flag BEFORE any rendering that could throw
@@ -2073,7 +2077,9 @@ async function sendChat(){
   try{
     const r=await fetch(A+'/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({message:msg,history:HIST.slice(-20),tools:TOOLS})});
-    const d=await r.json(); typ.remove();
+    typ.remove();
+    let d;
+    try{d=await r.json();}catch{addMsg('assistant','Server error — unable to get a response. Please try again.');return;}
     const rep=d.reply||'Sorry, I could not generate a response.';
     addMsg('assistant',rep); HIST.push({role:'assistant',content:rep});
     // Show report update banner if an assessment has already been run

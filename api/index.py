@@ -451,6 +451,59 @@ def _extract_json(text: str):
     except Exception:
         raise ValueError("JSON parse failed")
 
+def _parse_structured_text(text: str) -> List[Dict]:
+    """Parse key:value block format (Tool:/Vendor:/Category:/...) without AI."""
+    KEY_MAP = {
+        "tool": "name", "tool name": "name", "application": "name", "app": "name",
+        "vendor": "vendor", "provider": "vendor", "manufacturer": "vendor",
+        "category": "category", "type": "category",
+        "annual cost": "annual_cost", "cost": "annual_cost", "annual spend": "annual_cost",
+        "spend": "annual_cost", "price": "annual_cost", "licence cost": "annual_cost",
+        "license cost": "annual_cost",
+        "users": "user_count", "user count": "user_count", "seats": "user_count",
+        "criticality": "criticality", "priority": "criticality",
+        "deployment": "deployment", "hosting": "deployment",
+        "integrations": "integrations", "integration count": "integrations",
+        "age years": "age_years", "age": "age_years", "years": "age_years",
+        "end of life": "end_of_life", "eol": "end_of_life",
+        "description": "description", "notes": "description",
+        "business unit": "business_unit", "department": "business_unit",
+        "compliance": "compliance_required", "compliance required": "compliance_required",
+    }
+    tools = []
+    current: Dict = {}
+    for raw_line in text.splitlines():
+        line = raw_line.strip()
+        if not line:
+            if current.get("name"):
+                tools.append(current)
+                current = {}
+            continue
+        if ":" not in line:
+            continue
+        key_raw, _, val = line.partition(":")
+        key = key_raw.strip().lower()
+        val = val.strip()
+        if not val:
+            continue
+        mapped = KEY_MAP.get(key)
+        if not mapped:
+            continue
+        if mapped in ("annual_cost", "integrations", "age_years", "user_count"):
+            try:
+                current[mapped] = int(float(re.sub(r"[^\d.]", "", val)))
+            except (ValueError, TypeError):
+                pass
+        elif mapped == "end_of_life":
+            current[mapped] = val.lower() in ("true", "yes", "1", "y")
+        elif mapped == "compliance_required":
+            current[mapped] = val.lower() in ("true", "yes", "1", "y")
+        else:
+            current[mapped] = val
+    if current.get("name"):
+        tools.append(current)
+    return tools
+
 async def ai_parse_text(text:str)->List[Dict]:
     resp=await client.messages.create(
         model=ANTHROPIC_MODEL,temperature=0.1,max_tokens=3000,
@@ -769,11 +822,6 @@ def build_report(tools:List[Dict],dups:List[Dict],assessment:Dict,chat_context:O
 {bdg(r.get('priority','Medium'))} {bdg(r.get('confidence','Medium'))}</div>
 <p style="font-size:12px;color:#444;line-height:1.6;margin-bottom:5px">{r.get('description','')}</p>
 <p style="font-size:11px;color:#0063DC;font-style:italic">Impact: {r.get('impact','')} &nbsp;&bull;&nbsp; {r.get('timeline','')}</p></div>""" for r in recs[:5])
-
-    def ph_items(key):
-        items=rm.get(key,[])
-        if isinstance(items,str): items=[items]
-        return "".join(f'<li style="padding:6px 0;border-bottom:1px solid rgba(0,0,0,.06)">{x}</li>' for x in items)
 
     def _ph_list(key):
         items=rm.get(key,[])
@@ -1099,7 +1147,7 @@ tbody tr{{page-break-inside:avoid}}
 </div>
 <h1>Technology Rationalization Assessment Report</h1>
 <p style="margin-top:5px">Enterprise Application &amp; Tools Assessment &nbsp;&bull;&nbsp; AI-Powered Advisory &nbsp;&bull;&nbsp; Rationalization Framework</p>
-<p style="margin-top:8px;opacity:.55;font-size:11px">Generated: {datetime.now().strftime('%d %B %Y, %H:%M')} &nbsp;&bull;&nbsp; CONFIDENTIAL &nbsp;&bull;&nbsp; For Internal Use Only</p>
+<p style="margin-top:8px;opacity:.55;font-size:11px">Generated: {datetime.now().strftime('%d %B %Y')} &nbsp;&bull;&nbsp; CONFIDENTIAL &nbsp;&bull;&nbsp; For Internal Use Only</p>
 </div>
 
 <!-- KPI ROW + LAYER NAV + THREE-COL -->
@@ -1250,7 +1298,18 @@ async def ingest(file: Optional[UploadFile]=File(None), text: Optional[str]=Form
         except Exception as ex:
             raise HTTPException(400, f"File parsing failed: {str(ex)}. Ensure the file has a header row with tool data.")
     elif text:
-        tools = [normalize(t) for t in await ai_parse_text(text)]
+        try:
+            # Try fast direct parser first (handles Tool:/Vendor:/... block format)
+            direct = _parse_structured_text(text)
+            if direct:
+                tools = [normalize(t) for t in direct]
+            else:
+                # Fall back to AI for unstructured / prose text
+                tools = [normalize(t) for t in await ai_parse_text(text)]
+        except HTTPException:
+            raise
+        except Exception as ex:
+            raise HTTPException(500, f"AI text parsing failed: {str(ex)}")
     else:
         raise HTTPException(400, "No file or text provided.")
     tools = apply_scores(tools)
@@ -1297,7 +1356,12 @@ async def ingest(file: Optional[UploadFile]=File(None), text: Optional[str]=Form
 @app.post("/api/assess")
 async def assess(req: AssessReq):
     if not req.tools: raise HTTPException(400,"No tools provided.")
-    result = await ai_assess(req.tools, req.duplications, req.industry, req.focus or "")
+    try:
+        result = await ai_assess(req.tools, req.duplications, req.industry, req.focus or "")
+    except HTTPException:
+        raise
+    except Exception as ex:
+        raise HTTPException(500, f"AI assessment failed: {str(ex)}")
     return {"assessment": result}
 
 
