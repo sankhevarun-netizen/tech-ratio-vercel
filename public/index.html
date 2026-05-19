@@ -236,6 +236,16 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
 /* Chat report update banner */
 .chat-report-bar{background:linear-gradient(135deg,#003366,#0063DC);border-radius:9px;padding:11px 16px;display:flex;align-items:center;gap:12px;margin-top:10px;display:none}
 .chat-report-bar.show{display:flex}
+/* ── Guided Portfolio Configurator ── */
+@keyframes gpc-pulse{0%,100%{box-shadow:0 0 0 0 rgba(30,73,226,.28)}60%{box-shadow:0 0 0 7px rgba(30,73,226,0)}}
+.gpc-card{animation:gpc-pulse 2.6s ease-in-out infinite}
+.gpc-badge{display:inline-flex;align-items:center;gap:5px;background:#e8f0fe;border:1px solid #1E49E2;color:#1E49E2;font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;letter-spacing:.5px;text-transform:uppercase}
+.gpc-step{display:flex;align-items:flex-start;gap:10px;padding:8px 12px;border-radius:7px;background:#fff;border:1px solid #dde4f5}
+.gpc-num{width:22px;height:22px;border-radius:50%;background:var(--blue);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.gpc-btn{background:linear-gradient(135deg,#1E49E2 0%,#0d3acc 100%);color:#fff;border:none;border-radius:8px;padding:14px 20px;font-size:15px;font-weight:800;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:10px;transition:all .2s;letter-spacing:.3px}
+.gpc-btn:hover{background:linear-gradient(135deg,#1a3fcc 0%,#0b2fa8 100%);transform:translateY(-1px);box-shadow:0 4px 16px rgba(30,73,226,.35)}
+.gpc-btn .gpc-arr{font-size:18px;transition:transform .2s}
+.gpc-btn:hover .gpc-arr{transform:translateX(4px)}
 /* ── Manual Entry Wizard ── */
 .mw-sec-lbl{font-size:10px;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
 .mw-radio{display:flex;flex-direction:column;gap:8px}
@@ -854,19 +864,42 @@ select:focus,input:focus{outline:none;border-color:var(--blue)}
             </div>
           </div>
 
-          <!-- Manual Entry Wizard (same-size card, directly below Upload) -->
-          <div class="card" style="flex:1;border:2px solid var(--navy);background:linear-gradient(135deg,#f5f7ff 0%,#eef1fa 100%)">
-            <div class="ch" style="background:var(--navy);margin:-20px -20px 16px;padding:12px 20px;border-radius:8px 8px 0 0">
-              <span class="ct" style="color:#fff">&#9998;&nbsp;Manual Entry Wizard</span>
+          <!-- Guided Portfolio Configurator card (same-size, directly below Upload) -->
+          <div class="card gpc-card" style="flex:1;border:2px solid #1E49E2;background:linear-gradient(160deg,#f0f4ff 0%,#e8effe 100%);padding:0;overflow:hidden">
+            <!-- Header banner -->
+            <div style="background:linear-gradient(90deg,#1a2f6e 0%,#1E49E2 100%);padding:14px 20px 12px">
+              <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+                <span style="color:#fff;font-size:14px;font-weight:800;letter-spacing:.3px">&#128196;&nbsp;Guided Portfolio Configurator</span>
+              </div>
+              <p style="color:#b8ccff;font-size:11px;margin:5px 0 0;font-style:italic">Select tools using toggles &amp; dropdowns — zero typing required</p>
             </div>
-            <p class="tx mu2 m4" style="font-size:12px">Build your tool portfolio step-by-step using a searchable catalog of 200+ tools — no typing or file upload required.</p>
-            <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px">
-              <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--mut)"><span style="color:var(--blue);font-weight:700">1</span> Select your tools from catalog</div>
-              <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--mut)"><span style="color:var(--blue);font-weight:700">2</span> Set criticality, cost &amp; deployment</div>
-              <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--mut)"><span style="color:var(--blue);font-weight:700">3</span> Configure EOL &amp; risk flags</div>
-              <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--mut)"><span style="color:var(--blue);font-weight:700">4</span> AI generates full assessment</div>
+            <!-- Steps guide -->
+            <div style="padding:16px 20px 14px;display:flex;flex-direction:column;gap:8px">
+              <div class="gpc-step">
+                <div class="gpc-num">1</div>
+                <div><div style="font-size:12px;font-weight:700;color:var(--navy)">Select Tools from Searchable Catalog</div><div style="font-size:11px;color:var(--mut);margin-top:1px">200+ tools across 17 categories — click to toggle</div></div>
+              </div>
+              <div class="gpc-step">
+                <div class="gpc-num">2</div>
+                <div><div style="font-size:12px;font-weight:700;color:var(--navy)">Configure Criticality, Cost &amp; Deployment</div><div style="font-size:11px;color:var(--mut);margin-top:1px">Toggle buttons for each parameter — no typing</div></div>
+              </div>
+              <div class="gpc-step">
+                <div class="gpc-num">3</div>
+                <div><div style="font-size:12px;font-weight:700;color:var(--navy)">Set EOL Status &amp; Risk Flags</div><div style="font-size:11px;color:var(--mut);margin-top:1px">Mark end-of-life and integration dependencies</div></div>
+              </div>
+              <div class="gpc-step">
+                <div class="gpc-num">4</div>
+                <div><div style="font-size:12px;font-weight:700;color:var(--navy)">AI Generates Full 6R Assessment</div><div style="font-size:11px;color:var(--mut);margin-top:1px">Complete rationalization report with recommendations</div></div>
+              </div>
             </div>
-            <button id="mwToggleBtn" class="btn wf" style="background:var(--navy);color:#fff;padding:12px 16px;font-size:14px;font-weight:700" onclick="mwToggle()">&#9998;&nbsp;Launch Manual Entry Wizard</button>
+            <!-- CTA Button -->
+            <div style="padding:0 20px 20px">
+              <button id="mwToggleBtn" class="gpc-btn" onclick="mwToggle()">
+                <span>&#9654;&nbsp;Begin Portfolio Configuration</span>
+                <span class="gpc-arr">&#8594;</span>
+              </button>
+              <p style="font-size:10px;color:#5a6ea0;text-align:center;margin:8px 0 0">Recommended when no file is available &bull; Takes 3&ndash;5 minutes</p>
+            </div>
           </div>
 
         </div>
@@ -1496,7 +1529,7 @@ async function doIngest(wizardMode=false){
       // File button or Manual Wizard — stay on Phase 2, show success
       const ws2=document.getElementById('ws2');
       if(ws2){ws2.classList.remove('active');ws2.classList.add('done');}
-      const src=wizardMode==='mw'?'Manual Wizard':'file/text';
+      const src=wizardMode==='mw'?'Portfolio Configurator':'file/text';
       toast(`✓ ${d.summary.total_tools} tools ingested via ${src} — ${DUPS.length} overlaps detected. Click Continue below to proceed`,'ok');
       const p2nav=document.querySelector('#ph2 .wiz-nav');
       if(p2nav) p2nav.scrollIntoView({behavior:'smooth',block:'nearest'});
@@ -2511,7 +2544,7 @@ function mwToggle(){
   const b=document.getElementById('mwToggleBtn');
   const open=w.style.display==='none';
   w.style.display=open?'block':'none';
-  b.innerHTML=open?'&#10006;&nbsp;Close Manual Wizard':'&#9998;&nbsp;Launch Manual Entry Wizard';
+  b.innerHTML=open?'&#10006;&nbsp;Close Configurator':'&#9654;&nbsp;Begin Portfolio Configuration&nbsp;&#8594;';
   if(open){MW_STEP=1;MW_SEL={};MW_CFG={industry:'',size:'',infra:'',cloud:'',goals:[],compliance:[],pain:[],extra:'',budget:0};_MW_CAT='All';_MW_Q='';mwRender();}
 }
 function mwGoto(n){
@@ -2679,7 +2712,7 @@ async function mwSubmit(){
   if(MW_CFG.budget){const bf=document.getElementById('p5budget');if(bf)bf.value=MW_CFG.budget;}
   document.getElementById('ti').value=txt;
   document.getElementById('mwWrap').style.display='none';
-  document.getElementById('mwToggleBtn').innerHTML='&#9998;&nbsp;Launch Manual Entry Wizard';
+  document.getElementById('mwToggleBtn').innerHTML='&#9654;&nbsp;Begin Portfolio Configuration&nbsp;&#8594;';
   await doIngest('mw');
 }
 
