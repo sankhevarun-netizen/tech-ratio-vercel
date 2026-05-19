@@ -6,7 +6,7 @@ Local dev:  uvicorn api.index:app --reload --port 8000
 Vercel:     vercel deploy
 """
 
-import json, uuid, io, os, re
+import json, uuid, io, os, re, asyncio
 from typing import Optional, List, Dict, Any
 from collections import defaultdict
 
@@ -1271,32 +1271,67 @@ async def chat(req: ChatReq):
     return {"reply": resp.content[0].text}
 
 
+async def _parse_single_file(file: UploadFile) -> List[Dict]:
+    """Parse one uploaded file and return a list of normalised tool dicts."""
+    content = await file.read()
+    ext = (file.filename or "").lower().rsplit(".", 1)[-1]
+    if ext == "csv":
+        return parse_csv_bytes(content)
+    elif ext in ("xlsx", "xls"):
+        return parse_excel_bytes(content)
+    elif ext == "pdf":
+        raw = parse_pdf_bytes(content)
+        return [normalize(t) for t in await ai_parse_text(raw)] if raw else []
+    elif ext in ("pptx", "ppt"):
+        raw = parse_pptx_bytes(content)
+        return [normalize(t) for t in await ai_parse_text(raw)] if raw else []
+    elif ext in ("jpg", "jpeg"):
+        return await parse_image_bytes(content, "image/jpeg")
+    elif ext == "png":
+        return await parse_image_bytes(content, "image/png")
+    else:
+        raise HTTPException(400, f"Unsupported file type: .{ext}. Supported: CSV, Excel, PDF, PPT/PPTX, JPG, PNG.")
+
+def _merge_tools(all_tools: List[Dict]) -> List[Dict]:
+    """Deduplicate tools by name (case-insensitive), merging non-null fields."""
+    seen: Dict[str, Dict] = {}
+    for t in all_tools:
+        key = (t.get("name") or "").strip().lower()
+        if not key:
+            continue
+        if key not in seen:
+            seen[key] = t
+        else:
+            # Merge: fill in missing fields from duplicate
+            for k, v in t.items():
+                if v is not None and seen[key].get(k) is None:
+                    seen[key][k] = v
+    return list(seen.values())
+
 @app.post("/api/ingest")
-async def ingest(file: Optional[UploadFile]=File(None), text: Optional[str]=Form(None)):
+async def ingest(files: List[UploadFile]=File(default=[]), text: Optional[str]=Form(None)):
     tools: List[Dict] = []
-    if file and file.filename:
-        try:
-            content = await file.read()
-            ext = file.filename.lower().rsplit(".",1)[-1]
-            if   ext == "csv":
-                tools = parse_csv_bytes(content)
-            elif ext in ("xlsx","xls"):
-                tools = parse_excel_bytes(content)
-            elif ext == "pdf":
-                raw = parse_pdf_bytes(content)
-                if raw: tools = [normalize(t) for t in await ai_parse_text(raw)]
-            elif ext in ("pptx","ppt"):
-                raw = parse_pptx_bytes(content)
-                if raw: tools = [normalize(t) for t in await ai_parse_text(raw)]
-            elif ext in ("jpg","jpeg"):
-                tools = await parse_image_bytes(content, "image/jpeg")
-            elif ext == "png":
-                tools = await parse_image_bytes(content, "image/png")
-            else:
-                raise HTTPException(400, f"Unsupported file type: .{ext}. Supported: CSV, Excel, PDF, PPT/PPTX, JPG, PNG.")
-        except HTTPException: raise
-        except Exception as ex:
-            raise HTTPException(400, f"File parsing failed: {str(ex)}. Ensure the file has a header row with tool data.")
+    # Filter out empty file slots (browser may send an empty file entry)
+    valid_files = [f for f in files if f and f.filename]
+    if valid_files:
+        all_parsed: List[Dict] = []
+        errors: List[str] = []
+        # Process all files concurrently
+        async def safe_parse(f: UploadFile) -> List[Dict]:
+            try:
+                return await _parse_single_file(f)
+            except HTTPException as he:
+                errors.append(f"{f.filename}: {he.detail}")
+                return []
+            except Exception as ex:
+                errors.append(f"{f.filename}: {str(ex)}")
+                return []
+        results = await asyncio.gather(*[safe_parse(f) for f in valid_files])
+        for r in results:
+            all_parsed.extend(r)
+        if errors and not all_parsed:
+            raise HTTPException(400, "All files failed to parse: " + "; ".join(errors))
+        tools = _merge_tools(all_parsed)
     elif text:
         try:
             # Try fast direct parser first (handles Tool:/Vendor:/... block format)
